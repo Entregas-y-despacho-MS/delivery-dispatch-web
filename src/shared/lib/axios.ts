@@ -19,6 +19,11 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // El login muestra sus errores dentro del formulario (credenciales, bloqueo, 2FA…).
+    // Sin este corte, un 401 por contraseña incorrecta se leería como "Sesión expirada"
+    // y además cerraría una sesión que ni siquiera existe.
+    if (error.config?.url?.startsWith("/auth/login")) return Promise.reject(error);
+
     let message = "Ocurrió un error inesperado";
 
     if (error.response) {
@@ -34,7 +39,7 @@ api.interceptors.response.use(
         case 404: message = "El recurso solicitado no existe."; break;
         case 422: message = apiMessage ?? "Los datos enviados son incorrectos."; break;
         case 500: message = "Error interno del servidor. Reintenta más tarde."; break;
-        default:  message = apiMessage ?? message;
+        default: message = apiMessage ?? message;
       }
     } else if (error.request) {
       message = "No se pudo conectar con el servidor. Revisa tu internet.";

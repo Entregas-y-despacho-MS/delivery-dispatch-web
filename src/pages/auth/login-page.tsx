@@ -1,39 +1,27 @@
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { Navigate } from "react-router-dom";
 
-import { useLogin, loginSchema, type LoginInput } from "@/domains/auth";
-import { Button } from "@/shared/components/ui/button";
-import { Input } from "@/shared/components/ui/input";
-import { Label } from "@/shared/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { LoginBrandPanel, LoginForm, useLoginDestination } from "@/domains/auth";
+import { hasRole, ROLES_WEB } from "@/config/roles";
+import { useAuthHydrated } from "@/shared/hooks/use-hydrated";
+import { useAuthStore } from "@/shared/store/use-auth-store";
 
+/** La página solo decide qué mostrar; el diseño vive en domains/auth/components. */
 export default function LoginPage() {
-  const login = useLogin();
-  const { register, handleSubmit, formState: { errors } } =
-    useForm<LoginInput>({ resolver: zodResolver(loginSchema) });
+  const user = useAuthStore((s) => s.user);
+  const hydrated = useAuthHydrated();
+  const destination = useLoginDestination();
+
+  // Si ya hay sesión válida no tiene sentido ver el login.
+  if (hydrated && user && hasRole(user.rol.id, ROLES_WEB)) {
+    return <Navigate to={destination} replace />;
+  }
 
   return (
-    <div className="grid min-h-screen place-items-center px-4">
-      <Card className="w-full max-w-sm">
-        <CardHeader><CardTitle>Iniciar sesión</CardTitle></CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit((v) => login.mutate(v))} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Correo</Label>
-              <Input id="email" type="email" autoComplete="email" {...register("email")} />
-              {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Contraseña</Label>
-              <Input id="password" type="password" autoComplete="current-password" {...register("password")} />
-              {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
-            </div>
-            <Button type="submit" className="w-full" disabled={login.isPending}>
-              {login.isPending ? "Entrando..." : "Entrar"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+    <div className="grid min-h-screen lg:grid-cols-2">
+      <LoginBrandPanel />
+      <main className="flex items-center justify-center px-4 py-10">
+        <LoginForm />
+      </main>
     </div>
   );
 }

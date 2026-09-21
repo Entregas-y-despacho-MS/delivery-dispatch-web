@@ -1,0 +1,5 @@
+interface:
+  display_name: "Delivery Dispatch Design"
+  short_description: "Diseña interfaces consistentes para Delivery Dispatch"
+  brand_color: "#FA7B32"
+  default_prompt: "Usa $delivery-dispatch-design para diseñar esta pantalla con los patrones visuales de la aplicación."

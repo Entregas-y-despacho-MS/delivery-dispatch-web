@@ -1,62 +1,105 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient, type UseMutationResult } from "@tanstack/react-query";
 import { toast } from "sonner";
-import type { CrudService } from "@/shared/lib/base.service";
+import type { CrudService, ListResult, QueryParams } from "@/shared/lib/base.service";
 import { createQueryKeys } from "@/shared/lib/query-keys";
 
-/**
- * Una pantalla CRUD completa sin useState / useEffect / try-catch:
- *
- *   const { data, loading, createItem } = useCrud(clientesService, "clientes");
- */
-export const useCrud = <T>(
-  service: CrudService<T>,
-  scope: string,
-  options?: { enabled?: boolean; refetchInterval?: number }
-) => {
-  const queryClient = useQueryClient();
-  const keys = createQueryKeys(scope);
+export interface CrudNotifications {
+  created?: string;
+  updated?: string;
+  deleted?: string;
+}
 
-  const { data = [], isLoading: loading, isError: error, refetch } = useQuery<T[]>({
-    queryKey: keys.lists(),
-    queryFn: () => service.getAll(),
-    staleTime: 1000 * 60 * 5,
-    enabled: options?.enabled ?? true,
-    refetchInterval: options?.refetchInterval,
+export interface UseCrudOptions<TParams extends QueryParams, TItem> {
+  params?: TParams;
+  enabled?: boolean;
+  staleTime?: number;
+  refetchInterval?: number;
+  notifications?: CrudNotifications;
+  onCreated?: (item: TItem) => void;
+  onUpdated?: (item: TItem) => void;
+  onDeleted?: (id: string | number) => void;
+}
+
+/**
+ * CRUD estándar para recursos con lista, detalle y mutaciones.
+ * La caché usa los filtros como parte de la query key y las notificaciones son
+ * opt-in para que los dominios puedan mostrar errores o resultados inline.
+ */
+export function useCrud<TItem, TCreate, TUpdate, TParams extends QueryParams = QueryParams>(
+  service: CrudService<TItem, TCreate, TUpdate, TParams>,
+  scope: string,
+  options: UseCrudOptions<TParams, TItem> = {},
+) {
+  const queryClient = useQueryClient();
+  const keys = createQueryKeys<TParams>(scope);
+  const result = useQuery<ListResult<TItem>>({
+    queryKey: keys.lists(options.params),
+    queryFn: () => service.list(options.params),
+    enabled: options.enabled ?? true,
+    staleTime: options.staleTime ?? 5 * 60 * 1000,
+    refetchInterval: options.refetchInterval,
   });
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: keys.all });
+  const notify = (message?: string) => { if (message) toast.success(message); };
 
   const createMutation = useMutation({
-    mutationFn: (payload: Partial<T>) => service.create(payload),
-    onSuccess: () => { invalidate(); toast.success("Registro creado exitosamente"); },
+    mutationFn: (payload: TCreate) => service.create(payload),
+    onSuccess: async (item) => {
+      await invalidate();
+      notify(options.notifications?.created);
+      options.onCreated?.(item);
+    },
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string | number; data: Partial<T> }) =>
-      service.update(id, data),
-    onSuccess: () => { invalidate(); toast.success("Registro actualizado exitosamente"); },
+    mutationFn: ({ id, data }: { id: string | number; data: TUpdate }) => service.update(id, data),
+    onSuccess: async (item) => {
+      await invalidate();
+      notify(options.notifications?.updated);
+      options.onUpdated?.(item);
+    },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string | number) => service.delete(id),
-    onSuccess: () => { invalidate(); toast.success("Registro eliminado exitosamente"); },
+    onSuccess: async (_, id) => {
+      await invalidate();
+      notify(options.notifications?.deleted);
+      options.onDeleted?.(id);
+    },
   });
 
   return {
-    data, loading, error, refetch, keys,
+    ...result,
+    data: result.data?.items ?? [],
+    result: result.data,
+    total: result.data?.total ?? 0,
+    page: result.data?.page,
+    pageSize: result.data?.pageSize,
+    pages: result.data?.pages,
+    keys,
+    createMutation,
+    updateMutation,
+    deleteMutation,
     createItem: createMutation.mutateAsync,
     updateItem: updateMutation.mutateAsync,
     deleteItem: deleteMutation.mutateAsync,
-    isSaving: createMutation.isPending || updateMutation.isPending,
+    isSaving: createMutation.isPending || updateMutation.isPending || deleteMutation.isPending,
   };
-};
+}
 
-/** Detalle de un registro, con la misma convención de keys. */
-export const useCrudItem = <T>(service: CrudService<T>, scope: string, id?: string | number) => {
-  const keys = createQueryKeys(scope);
-  return useQuery<T>({
+export function useCrudItem<TItem, TCreate, TUpdate, TParams extends QueryParams = QueryParams>(
+  service: CrudService<TItem, TCreate, TUpdate, TParams>,
+  scope: string,
+  id?: string | number,
+) {
+  const keys = createQueryKeys<TParams>(scope);
+  return useQuery<TItem>({
     queryKey: keys.detail(id ?? ""),
     queryFn: () => service.getOne(id!),
     enabled: id !== undefined,
   });
-};
+}
+
+export type CrudMutation<TVariables, TData> = UseMutationResult<TData, Error, TVariables, unknown>;

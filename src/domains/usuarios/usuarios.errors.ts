@@ -8,6 +8,7 @@ export type UsuarioErrorKind =
   | "datos"
   | "permisos"
   | "no-encontrado"
+  | "bloqueado"
   | "red"
   | "desconocido";
 
@@ -39,4 +40,17 @@ export function describeUsuarioError(error: unknown): UsuarioErrorInfo {
     return { kind: "red", message: "No se pudo conectar con el servidor. Revisa tu conexión." };
   }
   return { kind: "desconocido", message: "No se pudo completar la operación. Inténtalo de nuevo." };
+}
+
+/**
+ * Igual que describeUsuarioError, pero para la desactivación: aquí un 409/422 no significa "duplicado"
+ * sino que el backend se negó por una regla de negocio (por ejemplo, órdenes activas asignadas).
+ * El backend actual no valida eso todavía; cuando lo haga, su mensaje se muestra tal cual.
+ */
+export function describeDesactivacionError(error: unknown): UsuarioErrorInfo {
+  const { status, message } = parseApiError(error);
+  if (status === 409 || status === 422) {
+    return { kind: "bloqueado", message: `No se pudo desactivar al usuario. ${message}` };
+  }
+  return describeUsuarioError(error);
 }

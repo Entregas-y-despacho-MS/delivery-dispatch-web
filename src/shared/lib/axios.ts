@@ -3,6 +3,17 @@ import { toast } from "sonner";
 import { env } from "@/config/env";
 import { useAuthStore } from "@/shared/store/use-auth-store";
 
+declare module "axios" {
+  interface AxiosRequestConfig {
+    /**
+     * La pantalla que hace la llamada muestra el error por su cuenta (dentro de un formulario
+     * o de un aviso en la página). Evita el toast global para no repetir el mismo mensaje.
+     * El 401 nunca se silencia: la sesión expirada siempre se avisa y se cierra.
+     */
+    skipErrorToast?: boolean;
+  }
+}
+
 const api = axios.create({
   baseURL: env.VITE_API_URL,
   headers: { "Content-Type": "application/json" },
@@ -45,7 +56,8 @@ api.interceptors.response.use(
       message = "No se pudo conectar con el servidor. Revisa tu internet.";
     }
 
-    toast.error(message);
+    const silenciado = error.config?.skipErrorToast && error.response?.status !== 401;
+    if (!silenciado) toast.error(message);
     return Promise.reject(error);
   }
 );

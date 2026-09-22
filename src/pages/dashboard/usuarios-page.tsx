@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Plus, TriangleAlert } from "lucide-react";
 
-import { UsuarioDialog, UsuariosTable, useUsuarios, type Usuario } from "@/domains/usuarios";
+import { DesactivarUsuarioDialog, UsuarioDialog, UsuariosTable, useUsuarios, type Usuario } from "@/domains/usuarios";
 import { PageHeader } from "@/shared/components/common/page-header";
 import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 import { Button } from "@/shared/components/ui/button";
@@ -14,6 +14,9 @@ export default function UsuariosPage() {
     abierto: false,
     usuario: null,
   });
+
+  // Usuario que se está por desactivar; null = el modal de confirmación está cerrado.
+  const [porDesactivar, setPorDesactivar] = useState<Usuario | null>(null);
 
   return (
     <div className="space-y-6">
@@ -43,6 +46,7 @@ export default function UsuariosPage() {
           usuarios={data?.items ?? []}
           loading={isPending}
           onEditar={(usuario) => setDialogo({ abierto: true, usuario })}
+          onDesactivar={setPorDesactivar}
         />
       )}
 
@@ -51,6 +55,8 @@ export default function UsuariosPage() {
         onOpenChange={(abierto) => setDialogo((actual) => ({ ...actual, abierto }))}
         usuario={dialogo.usuario}
       />
+
+      <DesactivarUsuarioDialog usuario={porDesactivar} onOpenChange={(abierto) => !abierto && setPorDesactivar(null)} />
     </div>
   );
 }

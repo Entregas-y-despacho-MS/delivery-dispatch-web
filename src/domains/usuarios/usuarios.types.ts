@@ -61,4 +61,6 @@ export interface ActualizarUsuarioPayload {
   username?: string;
   email?: string;
   roleId?: number;
+  /** false desactiva la cuenta (soft delete: sigue en la lista como Inactivo). */
+  active?: boolean;
 }

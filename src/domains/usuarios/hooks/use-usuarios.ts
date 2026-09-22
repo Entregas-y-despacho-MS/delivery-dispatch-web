@@ -1,9 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { describeUsuarioError } from "../usuarios.errors";
+import { describeDesactivacionError, describeUsuarioError } from "../usuarios.errors";
 import type { UsuarioFormValues } from "../usuarios.schemas";
 import { toActualizarPayload, toCrearPayload, usuariosService } from "../services/usuarios.service";
-import type { Usuario } from "../usuarios.types";
+import type { Usuario, UsuariosPagina } from "../usuarios.types";
 
 export const USUARIOS_QUERY_KEY = ["usuarios"] as const;
 
@@ -43,5 +43,31 @@ export function useGuardarUsuario(original: Usuario | null, onGuardado: () => vo
     ...mutation,
     /** Tipo + texto listos para mostrar en el formulario. null si no hay error. */
     errorInfo: mutation.error ? describeUsuarioError(mutation.error) : null,
+  };
+}
+
+/**
+ * Desactivación de una cuenta. La tabla cambia al instante (se actualiza la caché con la respuesta del
+ * backend) y después se vuelve a pedir la lista para quedar sincronizada, sin recargar la página.
+ */
+export function useDesactivarUsuario(onDesactivado: () => void) {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: (usuario: Usuario) => usuariosService.desactivar(usuario.id),
+    onSuccess: (actualizado) => {
+      queryClient.setQueryData<UsuariosPagina>(USUARIOS_QUERY_KEY, (actual) =>
+        actual && { ...actual, items: actual.items.map((u) => (u.id === actualizado.id ? actualizado : u)) }
+      );
+      toast.success("Usuario desactivado.");
+      onDesactivado();
+      void queryClient.invalidateQueries({ queryKey: USUARIOS_QUERY_KEY });
+    },
+  });
+
+  return {
+    ...mutation,
+    /** Tipo + texto listos para mostrar dentro del modal. null si no hay error. */
+    errorInfo: mutation.error ? describeDesactivacionError(mutation.error) : null,
   };
 }

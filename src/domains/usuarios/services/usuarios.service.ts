@@ -76,4 +76,7 @@ export const usuariosService = {
     const { data } = await api.put<BackendUser>(`/users/${id}`, payload, SILENCIOSO);
     return toUsuario(data);
   },
+
+  /** Desactiva la cuenta (PUT con active:false). El backend la conserva; solo cambia su estado. */
+  desactivar: (id: number): Promise<Usuario> => usuariosService.update(id, { active: false }),
 };

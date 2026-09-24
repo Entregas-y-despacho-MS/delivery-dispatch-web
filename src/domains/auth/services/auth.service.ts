@@ -2,7 +2,13 @@ import api from "@/shared/lib/axios";
 import type { AuthUser } from "@/shared/store/use-auth-store";
 import { ROLE_BY_BACKEND_NAME, ROLE_LABELS } from "@/config/roles";
 import type { LoginInput } from "../auth.schemas";
-import type { BackendUser, LoginResponse, Session } from "../auth.types";
+import type {
+  BackendUser,
+  ForgotPasswordPayload,
+  LoginResponse,
+  ResetPasswordPayload,
+  Session,
+} from "../auth.types";
 import { UnknownRoleError } from "../auth.errors";
 
 /** Adapta el usuario del backend al modelo del front. Es el único lugar que conoce ambos. */
@@ -50,4 +56,20 @@ export const authService = {
       accessToken ? { headers: { Authorization: `Bearer ${accessToken}` } } : undefined
     );
   },
+
+  /**
+   * Solicita el envío de correo para recuperación de contraseña (RF-A23).
+   * Devuelve 204 siempre (evita enumeración de usuarios).
+   */
+  forgotPassword: async (payload: ForgotPasswordPayload): Promise<void> => {
+    await api.post("/auth/forgot-password", payload);
+  },
+
+  /**
+   * Establece una nueva contraseña validando el token temporal recibido por correo (RF-A25).
+   */
+  resetPassword: async (payload: ResetPasswordPayload): Promise<void> => {
+    await api.post("/auth/reset-password", payload);
+  },
 };
+

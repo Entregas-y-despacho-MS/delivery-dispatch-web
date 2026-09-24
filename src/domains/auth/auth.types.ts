@@ -26,3 +26,15 @@ export interface Session {
   accessToken: string;
   refreshToken: string;
 }
+
+/** Payload para POST /auth/forgot-password */
+export interface ForgotPasswordPayload {
+  email: string;
+}
+
+/** Payload para POST /auth/reset-password */
+export interface ResetPasswordPayload {
+  token: string;
+  newPassword: string;
+}
+

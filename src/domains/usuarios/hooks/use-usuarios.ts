@@ -3,13 +3,16 @@ import { toast } from "sonner";
 import { describeDesactivacionError, describeUsuarioError } from "../usuarios.errors";
 import type { UsuarioFormValues } from "../usuarios.schemas";
 import { toActualizarPayload, toCrearPayload, usuariosService } from "../services/usuarios.service";
-import type { Usuario, UsuariosPagina } from "../usuarios.types";
+import type { Usuario, UsuariosFiltrosParams, UsuariosPagina } from "../usuarios.types";
 
 export const USUARIOS_QUERY_KEY = ["usuarios"] as const;
 
-/** Lista de usuarios internos. */
-export function useUsuarios() {
-  return useQuery({ queryKey: USUARIOS_QUERY_KEY, queryFn: usuariosService.list });
+/** Lista de usuarios internos con soporte para filtros y paginación server-side. */
+export function useUsuarios(params?: UsuariosFiltrosParams) {
+  return useQuery({
+    queryKey: ["usuarios", params] as const,
+    queryFn: () => usuariosService.list(params),
+  });
 }
 
 /**

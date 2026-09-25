@@ -1,57 +1,510 @@
-import { Pencil, UserX } from "lucide-react";
+import { useMemo, useState } from "react";
+import {
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsUpDown,
+  ChevronUp,
+  Pencil,
+  TriangleAlert,
+  UserX,
+} from "lucide-react";
 
-import { DataTable, type Column } from "@/shared/components/common/data-table";
+import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
-import type { Usuario } from "../usuarios.types";
+import { EmptyState } from "@/shared/components/feedback/empty-state";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select";
+import { Skeleton } from "@/shared/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/shared/components/ui/table";
+import { useDebounce } from "@/shared/hooks/use-debounce";
+import { useRoles } from "../hooks/use-roles";
+import { useUsuarios } from "../hooks/use-usuarios";
+import type { Usuario, UsuarioEstado, UsuariosFiltrosParams } from "../usuarios.types";
+import { UsuariosTableFilters } from "./usuarios-table-filters";
+
+type SortCol = "nombre" | "correo" | "rol" | "estado" | "ultimoAcceso";
 
 interface UsuariosTableProps {
-  usuarios: Usuario[];
-  loading: boolean;
   onEditar: (usuario: Usuario) => void;
   onDesactivar: (usuario: Usuario) => void;
 }
 
-/** Tabla básica de usuarios. Los filtros por rol y estado y la paginación son de la ES-20. */
-export function UsuariosTable({ usuarios, loading, onEditar, onDesactivar }: UsuariosTableProps) {
-  const columnas: Column<Usuario>[] = [
-    { header: "Nombre", cell: "nombreCompleto" },
-    { header: "Usuario", cell: "username" },
-    { header: "Correo", cell: (u) => u.email ?? <span className="text-muted-foreground">—</span> },
-    { header: "Rol", cell: (u) => u.rol.etiqueta },
-    {
-      header: "Estado",
-      cell: (u) => <Badge variant={u.activo ? "default" : "secondary"}>{u.activo ? "Activo" : "Inactivo"}</Badge>,
-    },
-    {
-      header: "Acciones",
-      className: "w-28 text-right",
-      cell: (u) => {
-        // La cuenta root es del sistema: no se edita ni se desactiva desde esta pantalla.
-        const esRoot = u.rol.nombre === "root";
-        return (
-          <div className="flex justify-end gap-1">
-            <Button variant="ghost" size="icon" onClick={() => onEditar(u)} disabled={esRoot} aria-label={`Editar a ${u.nombreCompleto}`}>
-              <Pencil className="h-4 w-4" aria-hidden />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => onDesactivar(u)}
-              // Una cuenta ya inactiva no tiene nada más que desactivar.
-              disabled={esRoot || !u.activo}
-              aria-label={`Desactivar a ${u.nombreCompleto}`}
-              className="text-destructive hover:text-destructive"
-            >
-              <UserX className="h-4 w-4" aria-hidden />
-            </Button>
-          </div>
-        );
-      },
-    },
-  ];
+/** Formatea una fecha ISO a fecha y hora en formato legible local. */
+function formatUltimoAcceso(fechaIso: string | null): string {
+  if (!fechaIso) return "Nunca";
+  try {
+    const d = new Date(fechaIso);
+    if (isNaN(d.getTime())) return "Nunca";
+    return new Intl.DateTimeFormat("es-BO", {
+      dateStyle: "short",
+      timeStyle: "short",
+    }).format(d);
+  } catch {
+    return "Nunca";
+  }
+}
+
+/** Badges cromáticos representativos de los estados operativos. */
+function EstadoBadge({ estado }: { estado: UsuarioEstado }) {
+  switch (estado) {
+    case "active":
+      return (
+        <Badge
+          variant="outline"
+          className="bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 gap-1.5 font-medium"
+        >
+          <span className="size-1.5 rounded-full bg-emerald-500" aria-hidden />
+          Activo
+        </Badge>
+      );
+    case "inactive":
+      return (
+        <Badge
+          variant="outline"
+          className="bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 gap-1.5 font-medium"
+        >
+          <span className="size-1.5 rounded-full bg-slate-400" aria-hidden />
+          Inactivo
+        </Badge>
+      );
+    case "locked":
+      return (
+        <Badge
+          variant="outline"
+          className="bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800 gap-1.5 font-medium"
+        >
+          <span className="size-1.5 rounded-full bg-rose-500" aria-hidden />
+          Bloqueado
+        </Badge>
+      );
+    default:
+      return <Badge variant="outline">{estado}</Badge>;
+  }
+}
+
+/** Ícono indicador de sentido de ordenamiento en cabeceras. */
+function SortIcon({ active, order }: { active: boolean; order?: "asc" | "desc" }) {
+  if (!active) {
+    return <ChevronsUpDown className="ml-1 size-3.5 text-muted-foreground/60 shrink-0" aria-hidden />;
+  }
+  if (order === "asc") {
+    return <ChevronUp className="ml-1 size-3.5 text-foreground shrink-0" aria-hidden />;
+  }
+  return <ChevronDown className="ml-1 size-3.5 text-foreground shrink-0" aria-hidden />;
+}
+
+export function UsuariosTable({ onEditar, onDesactivar }: UsuariosTableProps) {
+  // Filtros reactivos
+  const [search, setSearch] = useState("");
+  const [rolId, setRolId] = useState("todos");
+  const [estado, setEstado] = useState("todos");
+
+  // Ordenamiento interactivo
+  const [sortCol, setSortCol] = useState<SortCol>("nombre");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+
+  // Paginación server-side
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+
+  // Debounce de 300ms en el campo de búsqueda
+  const debouncedSearch = useDebounce(search, 300);
+
+  // Carga de catálogo de roles para selector
+  const { data: roles, isPending: loadingRoles } = useRoles();
+
+  // Construcción de parámetros para el backend
+  const queryParams: UsuariosFiltrosParams = useMemo(() => {
+    const params: UsuariosFiltrosParams = {
+      page,
+      limit,
+    };
+
+    const trimmed = debouncedSearch.trim();
+    if (trimmed) params.search = trimmed;
+
+    if (rolId !== "todos") {
+      const parsedRoleId = Number(rolId);
+      if (!isNaN(parsedRoleId)) params.roleId = parsedRoleId;
+    }
+
+    if (estado !== "todos") {
+      params.status = estado as UsuarioEstado;
+    }
+
+    // Ordenamiento soportado en backend
+    if (sortCol === "nombre") {
+      params.sortBy = "fullName";
+      params.sortOrder = sortOrder;
+    } else if (sortCol === "ultimoAcceso") {
+      params.sortBy = "lastLoginAt";
+      params.sortOrder = sortOrder;
+    }
+
+    return params;
+  }, [page, limit, debouncedSearch, rolId, estado, sortCol, sortOrder]);
+
+  const { data, isPending, isError, refetch } = useUsuarios(queryParams);
+
+  // Manejo de cambio de ordenamiento por cabecera
+  const handleSort = (col: SortCol) => {
+    if (sortCol === col) {
+      setSortOrder((current) => (current === "asc" ? "desc" : "asc"));
+    } else {
+      setSortCol(col);
+      setSortOrder("asc");
+    }
+  };
+
+  // Manejo de búsqueda con reinicio a página 1
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
+    setPage(1);
+  };
+
+  // Manejo de rol con reinicio a página 1
+  const handleRolChange = (value: string) => {
+    setRolId(value);
+    setPage(1);
+  };
+
+  // Manejo de estado con reinicio a página 1
+  const handleEstadoChange = (value: string) => {
+    setEstado(value);
+    setPage(1);
+  };
+
+  // Ordenamiento local complementario si la columna activa no es soportada en backend
+  const userItems = data?.items;
+  const items = useMemo(() => {
+    const list = userItems ? [...userItems] : [];
+    if (sortCol === "correo") {
+      list.sort((a, b) => {
+        const mailA = a.email ?? "";
+        const mailB = b.email ?? "";
+        return sortOrder === "asc"
+          ? mailA.localeCompare(mailB)
+          : mailB.localeCompare(mailA);
+      });
+    } else if (sortCol === "rol") {
+      list.sort((a, b) => {
+        const rolA = a.rol.etiqueta ?? "";
+        const rolB = b.rol.etiqueta ?? "";
+        return sortOrder === "asc"
+          ? rolA.localeCompare(rolB)
+          : rolB.localeCompare(rolA);
+      });
+    } else if (sortCol === "estado") {
+      list.sort((a, b) => {
+        return sortOrder === "asc"
+          ? a.estado.localeCompare(b.estado)
+          : b.estado.localeCompare(a.estado);
+      });
+    }
+    return list;
+  }, [userItems, sortCol, sortOrder]);
+
+  // Cálculos de rango para texto de paginación
+  const total = data?.total ?? 0;
+  const totalPages = data?.pages ?? Math.max(1, Math.ceil(total / limit));
+  const desde = total > 0 ? (page - 1) * limit + 1 : 0;
+  const hasta = total > 0 ? Math.min(page * limit, total) : 0;
 
   return (
-    <DataTable columns={columnas} data={usuarios} loading={loading} emptyMessage="Aún no hay usuarios registrados." />
+    <div className="space-y-4">
+      {/* Controles de búsqueda y filtros */}
+      <UsuariosTableFilters
+        search={search}
+        onSearchChange={handleSearchChange}
+        rolId={rolId}
+        onRolIdChange={handleRolChange}
+        estado={estado}
+        onEstadoChange={handleEstadoChange}
+        roles={roles}
+        loadingRoles={loadingRoles}
+      />
+
+      {/* Manejo de error con reintento */}
+      {isError && (
+        <Alert variant="destructive">
+          <TriangleAlert className="size-4" aria-hidden />
+          <AlertDescription className="flex flex-wrap items-center gap-3">
+            No se pudo cargar la lista de usuarios.
+            <Button variant="outline" size="sm" onClick={() => refetch()}>
+              Reintentar
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Tabla responsiva */}
+      {!isError && (
+        <div className="rounded-lg border bg-card overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent">
+                {/* Nombre */}
+                <TableHead>
+                  <button
+                    type="button"
+                    onClick={() => handleSort("nombre")}
+                    className="flex items-center font-semibold text-foreground hover:text-primary transition-colors cursor-pointer select-none"
+                    aria-label="Ordenar por nombre"
+                  >
+                    Nombre
+                    <SortIcon active={sortCol === "nombre"} order={sortOrder} />
+                  </button>
+                </TableHead>
+
+                {/* Correo (oculto en móviles) */}
+                <TableHead className="hidden md:table-cell">
+                  <button
+                    type="button"
+                    onClick={() => handleSort("correo")}
+                    className="flex items-center font-semibold text-foreground hover:text-primary transition-colors cursor-pointer select-none"
+                    aria-label="Ordenar por correo"
+                  >
+                    Correo
+                    <SortIcon active={sortCol === "correo"} order={sortOrder} />
+                  </button>
+                </TableHead>
+
+                {/* Rol */}
+                <TableHead>
+                  <button
+                    type="button"
+                    onClick={() => handleSort("rol")}
+                    className="flex items-center font-semibold text-foreground hover:text-primary transition-colors cursor-pointer select-none"
+                    aria-label="Ordenar por rol"
+                  >
+                    Rol
+                    <SortIcon active={sortCol === "rol"} order={sortOrder} />
+                  </button>
+                </TableHead>
+
+                {/* Estado */}
+                <TableHead>
+                  <button
+                    type="button"
+                    onClick={() => handleSort("estado")}
+                    className="flex items-center font-semibold text-foreground hover:text-primary transition-colors cursor-pointer select-none"
+                    aria-label="Ordenar por estado"
+                  >
+                    Estado
+                    <SortIcon active={sortCol === "estado"} order={sortOrder} />
+                  </button>
+                </TableHead>
+
+                {/* Último Acceso (oculto en pantallas pequeñas) */}
+                <TableHead className="hidden lg:table-cell">
+                  <button
+                    type="button"
+                    onClick={() => handleSort("ultimoAcceso")}
+                    className="flex items-center font-semibold text-foreground hover:text-primary transition-colors cursor-pointer select-none"
+                    aria-label="Ordenar por último acceso"
+                  >
+                    Último Acceso
+                    <SortIcon active={sortCol === "ultimoAcceso"} order={sortOrder} />
+                  </button>
+                </TableHead>
+
+                {/* Acciones */}
+                <TableHead className="w-24 text-right pr-4">Acciones</TableHead>
+              </TableRow>
+            </TableHeader>
+
+            <TableBody>
+              {/* Estado de carga */}
+              {isPending &&
+                Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell>
+                      <div className="space-y-1">
+                        <Skeleton className="h-4 w-32" />
+                        <Skeleton className="h-3 w-20" />
+                      </div>
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      <Skeleton className="h-4 w-36" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-24" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-5 w-16 rounded-full" />
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      <Skeleton className="h-4 w-28" />
+                    </TableCell>
+                    <TableCell className="text-right pr-4">
+                      <div className="flex justify-end gap-1">
+                        <Skeleton className="size-8 rounded-md" />
+                        <Skeleton className="size-8 rounded-md" />
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+
+              {/* Sin resultados */}
+              {!isPending && items.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={6} className="h-44 text-center">
+                    <EmptyState
+                      title="Sin usuarios encontrados"
+                      description="No hay registros que coincidan con la búsqueda o filtros aplicados."
+                    />
+                  </TableCell>
+                </TableRow>
+              )}
+
+              {/* Filas de usuarios */}
+              {!isPending &&
+                items.map((u) => {
+                  const esRoot = u.rol.nombre === "root";
+                  return (
+                    <TableRow key={u.id} className="hover:bg-muted/40 transition-colors">
+                      {/* Nombre y usuario */}
+                      <TableCell>
+                        <div className="flex flex-col">
+                          <span className="font-medium text-foreground">{u.nombreCompleto}</span>
+                          <span className="text-xs text-muted-foreground">@{u.username}</span>
+                        </div>
+                      </TableCell>
+
+                      {/* Correo */}
+                      <TableCell className="hidden md:table-cell text-muted-foreground">
+                        {u.email ?? <span className="text-muted-foreground/60">—</span>}
+                      </TableCell>
+
+                      {/* Rol */}
+                      <TableCell>
+                        <span className="text-sm font-medium">{u.rol.etiqueta}</span>
+                      </TableCell>
+
+                      {/* Estado con Badge cromático */}
+                      <TableCell>
+                        <EstadoBadge estado={u.estado} />
+                      </TableCell>
+
+                      {/* Último Acceso */}
+                      <TableCell className="hidden lg:table-cell text-sm text-muted-foreground">
+                        {formatUltimoAcceso(u.ultimoAcceso)}
+                      </TableCell>
+
+                      {/* Acciones */}
+                      <TableCell className="text-right pr-4">
+                        <div className="flex justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => onEditar(u)}
+                            disabled={esRoot}
+                            aria-label={`Editar a ${u.nombreCompleto}`}
+                            className="size-8"
+                          >
+                            <Pencil className="size-4" aria-hidden />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => onDesactivar(u)}
+                            disabled={esRoot || !u.activo}
+                            aria-label={`Desactivar a ${u.nombreCompleto}`}
+                            className="size-8 text-destructive hover:text-destructive"
+                          >
+                            <UserX className="size-4" aria-hidden />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+
+      {/* Pie de tabla con controles de paginación */}
+      {!isError && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-muted-foreground px-1">
+          <div>
+            {total > 0 ? (
+              <span>
+                Mostrando <span className="font-medium text-foreground">{desde}</span>–
+                <span className="font-medium text-foreground">{hasta}</span> de{" "}
+                <span className="font-medium text-foreground">{total}</span> usuarios
+              </span>
+            ) : (
+              <span>0 usuarios</span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-4">
+            {/* Selector de registros por página */}
+            <div className="flex items-center gap-2">
+              <span className="text-xs">Filas:</span>
+              <Select
+                value={String(limit)}
+                onValueChange={(val) => {
+                  setLimit(Number(val));
+                  setPage(1);
+                }}
+              >
+                <SelectTrigger className="h-8 w-[72px]" aria-label="Cantidad de filas por página">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="20">20</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Navegación de páginas */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs">
+                Pág. <span className="font-medium text-foreground">{page}</span> de{" "}
+                <span className="font-medium text-foreground">{totalPages || 1}</span>
+              </span>
+              <Button
+                variant="outline"
+                size="icon"
+                className="size-8"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page <= 1 || isPending}
+                aria-label="Página anterior"
+              >
+                <ChevronLeft className="size-4" aria-hidden />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="size-8"
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page >= totalPages || isPending}
+                aria-label="Página siguiente"
+              >
+                <ChevronRight className="size-4" aria-hidden />
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

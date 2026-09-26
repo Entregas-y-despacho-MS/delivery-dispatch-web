@@ -69,8 +69,13 @@ export function AppRouter() {
           {/* ─── Autenticación ─── */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/recuperar-password" element={<RecuperarPasswordPage />} />
+          <Route path="/forgot-password" element={<RecuperarPasswordPage />} />
+          <Route path="/restablecer-password" element={<RestablecerPasswordPage />} />
           <Route path="/restablecer-password/:token" element={<RestablecerPasswordPage />} />
+          <Route path="/reset-password" element={<RestablecerPasswordPage />} />
+          <Route path="/reset-password/:token" element={<RestablecerPasswordPage />} />
           <Route path="/acceso-denegado" element={<AccesoDenegado />} />
+
 
           {/* ─── Panel interno: el repartidor usa la app móvil, no entra aquí ─── */}
           <Route element={<ProtectedRoute roles={ROLES_WEB} />}>

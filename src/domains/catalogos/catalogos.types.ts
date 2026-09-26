@@ -27,3 +27,32 @@ export interface DeliveryZonesResponse {
     total: number;
   };
 }
+
+export interface NivelServicio {
+  id: number;
+  name: string;
+  description: string | null;
+  targetTimeMin: number;
+  priorityLevel: number;
+  active: boolean;
+  createdAt: string;
+}
+
+export type NivelServicioListParams = {
+  page?: number;
+  limit?: number;
+  search?: string;
+  active?: boolean;
+};
+
+export type NivelServicioCreate = {
+  name: string;
+  description?: string;
+  targetTimeMin: number;
+  priorityLevel: number;
+};
+
+export type NivelServicioUpdate = Partial<Omit<NivelServicioCreate, "description">> & {
+  description?: string | null;
+  active?: boolean;
+};

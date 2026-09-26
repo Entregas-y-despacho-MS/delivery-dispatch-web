@@ -1,22 +1,26 @@
-import { Pencil, Power, Timer } from "lucide-react";
+import { MoreHorizontal, Pencil, Power, Timer, Trash2 } from "lucide-react";
 
 import { DataTable, type Column } from "@/shared/components/common/data-table";
 import { EmptyState } from "@/shared/components/feedback/empty-state";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/shared/components/ui/dropdown-menu";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { Switch } from "@/shared/components/ui/switch";
-import type { NivelServicio, NivelServicioPriority } from "../catalogos.types";
+import type { NivelServicio } from "../catalogos.types";
 
-const PRIORITY_META: Record<NivelServicioPriority, { label: string; className: string }> = {
-  high: { label: "Alta", className: "border-destructive/20 bg-destructive/10 text-destructive" },
-  medium: { label: "Media", className: "border-warning/20 bg-warning/10 text-warning" },
-  low: { label: "Baja", className: "border-info/20 bg-info/10 text-info" },
-};
-
-function PriorityBadge({ priority }: { priority: NivelServicioPriority }) {
-  const meta = PRIORITY_META[priority];
-  return <Badge variant="outline" className={meta.className}>{meta.label}</Badge>;
+function PriorityBadge({ priorityLevel }: { priorityLevel: number }) {
+  return (
+    <Badge variant="secondary" className="tabular-nums">
+      Prioridad {priorityLevel}{priorityLevel === 1 ? " · más alta" : ""}
+    </Badge>
+  );
 }
 
 function StatusBadge({ active }: { active: boolean }) {
@@ -31,18 +35,49 @@ function StatusBadge({ active }: { active: boolean }) {
   );
 }
 
+function NivelActions({
+  nivel,
+  onEdit,
+  onDelete,
+  busy,
+}: {
+  nivel: NivelServicio;
+  onEdit: (nivel: NivelServicio) => void;
+  onDelete: (nivel: NivelServicio) => void;
+  busy: boolean;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button type="button" variant="ghost" size="icon-sm" disabled={busy} aria-label={`Acciones de ${nivel.name}`}>
+          <MoreHorizontal aria-hidden />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onSelect={() => onEdit(nivel)}><Pencil aria-hidden /> Editar</DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem variant="destructive" onSelect={() => onDelete(nivel)}><Trash2 aria-hidden /> Eliminar</DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 export function NivelesServicioTable({
   data,
   loading = false,
   searchActive = false,
   onEdit,
   onToggle,
+  onDelete,
+  busy = false,
 }: {
   data: NivelServicio[];
   loading?: boolean;
   searchActive?: boolean;
   onEdit: (nivel: NivelServicio) => void;
   onToggle: (nivel: NivelServicio) => void;
+  onDelete: (nivel: NivelServicio) => void;
+  busy?: boolean;
 }) {
   const columns: Column<NivelServicio>[] = [
     {
@@ -50,7 +85,7 @@ export function NivelesServicioTable({
       cell: (nivel) => (
         <div className="min-w-0 space-y-0.5">
           <p className="truncate font-medium">{nivel.name}</p>
-          <p className="max-w-[28rem] truncate text-xs text-muted-foreground">{nivel.description}</p>
+          <p className="max-w-[28rem] truncate text-xs text-muted-foreground">{nivel.description || "Sin descripción"}</p>
         </div>
       ),
       className: "w-[36%]",
@@ -60,21 +95,21 @@ export function NivelesServicioTable({
       cell: (nivel) => (
         <span className="inline-flex items-center gap-1.5 tabular-nums text-muted-foreground">
           <Timer className="size-4" aria-hidden />
-          {nivel.targetTimeMinutes} min
+          {nivel.targetTimeMin} min
         </span>
       ),
       className: "w-[22%]",
     },
     {
       header: "Prioridad",
-      cell: (nivel) => <PriorityBadge priority={nivel.priority} />,
+      cell: (nivel) => <PriorityBadge priorityLevel={nivel.priorityLevel} />,
       className: "w-[16%]",
     },
     {
       header: "Estado",
       cell: (nivel) => (
         <div className="flex items-center gap-3">
-          <Switch checked={nivel.active} onCheckedChange={() => onToggle(nivel)} aria-label={`${nivel.active ? "Desactivar" : "Activar"} ${nivel.name}`} />
+          <Switch checked={nivel.active} disabled={busy} onCheckedChange={() => onToggle(nivel)} aria-label={`${nivel.active ? "Desactivar" : "Activar"} ${nivel.name}`} />
           <StatusBadge active={nivel.active} />
         </div>
       ),
@@ -82,11 +117,7 @@ export function NivelesServicioTable({
     },
     {
       header: "",
-      cell: (nivel) => (
-        <Button type="button" variant="ghost" size="icon-sm" onClick={() => onEdit(nivel)} aria-label={`Editar ${nivel.name}`} title="Editar nivel">
-          <Pencil aria-hidden />
-        </Button>
-      ),
+      cell: (nivel) => <NivelActions nivel={nivel} onEdit={onEdit} onDelete={onDelete} busy={busy} />,
       className: "w-12 text-right",
     },
   ];
@@ -123,25 +154,23 @@ export function NivelesServicioTable({
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 space-y-1">
                 <h3 className="truncate font-semibold">{nivel.name}</h3>
-                <p className="line-clamp-2 text-sm text-muted-foreground">{nivel.description}</p>
+                <p className="line-clamp-2 text-sm text-muted-foreground">{nivel.description || "Sin descripción"}</p>
               </div>
-              <Button type="button" variant="ghost" size="icon-sm" onClick={() => onEdit(nivel)} aria-label={`Editar ${nivel.name}`} title="Editar nivel">
-                <Pencil aria-hidden />
-              </Button>
+              <NivelActions nivel={nivel} onEdit={onEdit} onDelete={onDelete} busy={busy} />
             </div>
             <div className="mt-4 grid grid-cols-2 gap-3 border-t pt-3">
               <div>
                 <p className="text-xs text-muted-foreground">Tiempo objetivo</p>
-                <p className="mt-1 inline-flex items-center gap-1.5 font-medium tabular-nums"><Timer className="size-4 text-muted-foreground" aria-hidden />{nivel.targetTimeMinutes} min</p>
+                <p className="mt-1 inline-flex items-center gap-1.5 font-medium tabular-nums"><Timer className="size-4 text-muted-foreground" aria-hidden />{nivel.targetTimeMin} min</p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Prioridad</p>
-                <div className="mt-1"><PriorityBadge priority={nivel.priority} /></div>
+                <div className="mt-1"><PriorityBadge priorityLevel={nivel.priorityLevel} /></div>
               </div>
             </div>
             <div className="mt-3 flex items-center justify-between border-t pt-3">
               <StatusBadge active={nivel.active} />
-              <Switch checked={nivel.active} onCheckedChange={() => onToggle(nivel)} aria-label={`${nivel.active ? "Desactivar" : "Activar"} ${nivel.name}`} />
+              <Switch checked={nivel.active} disabled={busy} onCheckedChange={() => onToggle(nivel)} aria-label={`${nivel.active ? "Desactivar" : "Activar"} ${nivel.name}`} />
             </div>
           </article>
         ))}

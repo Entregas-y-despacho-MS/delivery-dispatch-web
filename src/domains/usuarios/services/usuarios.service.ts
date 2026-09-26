@@ -6,6 +6,7 @@ import type {
   BackendUser,
   CrearUsuarioPayload,
   Usuario,
+  UsuariosFiltrosParams,
   UsuariosPagina,
 } from "../usuarios.types";
 import { toRol } from "./roles.service";
@@ -23,6 +24,9 @@ function toUsuario(u: BackendUser): Usuario {
     email: u.email,
     rol: toRol(u.role),
     activo: u.active,
+    estado: u.status,
+    ultimoAcceso: u.lastLoginAt,
+    bloqueadoHasta: u.lockedUntil,
   };
 }
 
@@ -58,13 +62,18 @@ export function toActualizarPayload(original: Usuario, values: UsuarioFormValues
 }
 
 export const usuariosService = {
-  // Sin filtros ni paginación en pantalla (eso es la ES-20): se pide una página amplia.
-  list: async (): Promise<UsuariosPagina> => {
+  list: async (params?: UsuariosFiltrosParams): Promise<UsuariosPagina> => {
     const { data } = await api.get<BackendPage<BackendUser>>("/users", {
-      params: { page: 1, limit: 100 },
+      params,
       ...SILENCIOSO,
     });
-    return { items: data.data.map(toUsuario), total: data.meta.total };
+    return {
+      items: data.data.map(toUsuario),
+      total: data.meta.total,
+      page: data.meta.page,
+      limit: data.meta.limit,
+      pages: data.meta.pages,
+    };
   },
 
   create: async (payload: CrearUsuarioPayload): Promise<Usuario> => {

@@ -3,7 +3,7 @@ import { ChevronDown, ChevronRight, LogOut, Package } from "lucide-react";
 
 import { NAV_GROUPS } from "@/app/navigation";
 import { hasRole, ROLE_LABELS } from "@/config/roles";
-import { useLogout } from "@/domains/auth";
+import { IdleWarningDialog, useLogout } from "@/domains/auth";
 import { useAuthStore } from "@/shared/store/use-auth-store";
 import { ThemeToggle } from "@/shared/components/theme-toggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/components/ui/avatar";
@@ -176,6 +176,8 @@ export function DashboardLayout() {
           <div className="mx-auto max-w-7xl"><Outlet /></div>
         </main>
       </div>
+      {/* RF-A24: aviso y cierre de sesión por inactividad. */}
+      <IdleWarningDialog />
     </SidebarProvider>
   );
 }

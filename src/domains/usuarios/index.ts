@@ -4,4 +4,4 @@ export { DesactivarUsuarioDialog } from "./components/desactivar-usuario-dialog"
 export { UsuarioDialog } from "./components/usuario-dialog";
 export { useUsuarios } from "./hooks/use-usuarios";
 export { describeDesactivacionError, describeUsuarioError, type UsuarioErrorInfo, type UsuarioErrorKind } from "./usuarios.errors";
-export type { Rol, Usuario } from "./usuarios.types";
+export type { Rol, Usuario, UsuarioEstado, UsuariosFiltrosParams } from "./usuarios.types";

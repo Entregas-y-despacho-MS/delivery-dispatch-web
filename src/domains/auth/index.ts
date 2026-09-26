@@ -2,10 +2,12 @@
 export { authService } from "./services/auth.service";
 export { useLogin, useLoginDestination } from "./hooks/use-login";
 export { useLogout } from "./hooks/use-logout";
+export { useIdleLogout, IDLE_TIMEOUT_MS, IDLE_WARNING_MS } from "./hooks/use-idle-logout";
 export { useRecuperarPassword } from "./hooks/use-recuperar-password";
 export { useRestablecerPassword } from "./hooks/use-restablecer-password";
 export { LoginForm } from "./components/login-form";
 export { LoginBrandPanel } from "./components/login-brand-panel";
+export { IdleWarningDialog } from "./components/idle-warning-dialog";
 export { RecuperarPasswordForm } from "./components/recuperar-password-form";
 export { RestablecerPasswordForm } from "./components/restablecer-password-form";
 export {

@@ -14,6 +14,9 @@ export interface BackendUser {
   active: boolean;
   twoFactorEnabled: boolean;
   requiresPwdChange: boolean;
+  status: "active" | "inactive" | "locked";
+  lockedUntil: string | null;
+  lastLoginAt: string | null;
   createdAt: string;
 }
 
@@ -32,6 +35,8 @@ export interface Rol {
   etiqueta: string;
 }
 
+export type UsuarioEstado = "active" | "inactive" | "locked";
+
 export interface Usuario {
   id: number;
   nombreCompleto: string;
@@ -39,11 +44,27 @@ export interface Usuario {
   email: string | null;
   rol: Rol;
   activo: boolean;
+  estado: UsuarioEstado;
+  ultimoAcceso: string | null;
+  bloqueadoHasta: string | null;
 }
 
 export interface UsuariosPagina {
   items: Usuario[];
   total: number;
+  page: number;
+  limit: number;
+  pages: number;
+}
+
+export interface UsuariosFiltrosParams {
+  page?: number;
+  limit?: number;
+  roleId?: number;
+  status?: UsuarioEstado;
+  search?: string;
+  sortBy?: "fullName" | "username" | "createdAt" | "lastLoginAt";
+  sortOrder?: "asc" | "desc";
 }
 
 // ── Cuerpos que acepta el backend (CreateUserDto / UpdateUserDto) ───────────────────────────

@@ -1,7 +1,7 @@
 import { Pencil, Power, Search } from "lucide-react";
 
 import { DataTable, type Column } from "@/shared/components/common/data-table";
-import { EmptyState } from "@/shared/components/feedback/empty-state";
+import { EmptyState, NoResultsState } from "@/shared/components/feedback/empty-state";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Skeleton } from "@/shared/components/ui/skeleton";
@@ -15,6 +15,7 @@ export function ZonasTable({
   onDeactivate,
   deactivating = false,
   searchActive = false,
+  onClearFilters,
 }: {
   data: Zona[];
   loading?: boolean;
@@ -22,6 +23,7 @@ export function ZonasTable({
   onDeactivate: (zona: Zona) => void;
   deactivating?: boolean;
   searchActive?: boolean;
+  onClearFilters?: () => void;
 }) {
   const columns: Column<Zona>[] = [
     {
@@ -81,6 +83,8 @@ export function ZonasTable({
           columns={columns}
           data={data}
           loading={loading}
+          isFiltered={searchActive}
+          onClearFilters={onClearFilters}
           emptyMessage={searchActive ? "No encontramos zonas con ese criterio." : "Crea la primera zona para comenzar a planificar entregas."}
         />
       </div>
@@ -95,10 +99,18 @@ export function ZonasTable({
         ))}
 
         {!loading && data.length === 0 && (
-          <EmptyState
-            title="Sin resultados"
-            description={searchActive ? "No encontramos zonas con ese criterio." : "Crea la primera zona para comenzar a planificar entregas."}
-          />
+          searchActive ? (
+            <NoResultsState
+              description="No encontramos zonas con ese criterio."
+              onClearFilters={onClearFilters}
+              bordered
+            />
+          ) : (
+            <EmptyState
+              title="Sin resultados"
+              description="Crea la primera zona para comenzar a planificar entregas."
+            />
+          )
         )}
 
         {!loading && data.map((zona) => (

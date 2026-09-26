@@ -6,14 +6,13 @@ import {
   ChevronsUpDown,
   ChevronUp,
   Pencil,
-  TriangleAlert,
   UserX,
 } from "lucide-react";
-
-import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
-import { EmptyState } from "@/shared/components/feedback/empty-state";
+import { EmptyState, NoResultsState } from "@/shared/components/feedback/empty-state";
+import { ErrorAlert } from "@/shared/components/feedback/error-alert";
+import { TableSkeletonRows, type SkeletonColumnDef } from "@/shared/components/feedback/table-skeleton";
 import {
   Select,
   SelectContent,
@@ -21,7 +20,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-import { Skeleton } from "@/shared/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -158,7 +156,26 @@ export function UsuariosTable({ onEditar, onDesactivar }: UsuariosTableProps) {
     return params;
   }, [page, limit, debouncedSearch, rolId, estado, sortCol, sortOrder]);
 
-  const { data, isPending, isError, refetch } = useUsuarios(queryParams);
+  const { data, isPending, isError, error, refetch } = useUsuarios(queryParams);
+
+  // Detección de filtros activos y callback para reseteo rápido
+  const isFiltered = Boolean(search.trim() || rolId !== "todos" || estado !== "todos");
+
+  const handleClearFilters = () => {
+    setSearch("");
+    setRolId("todos");
+    setEstado("todos");
+    setPage(1);
+  };
+
+  const SKELETON_COLUMNS: SkeletonColumnDef[] = [
+    { type: "subtitle" },
+    { type: "text", className: "hidden md:table-cell" },
+    { type: "text" },
+    { type: "badge" },
+    { type: "text", className: "hidden lg:table-cell" },
+    { type: "actions", className: "w-24 text-right pr-4" },
+  ];
 
   // Manejo de cambio de ordenamiento por cabecera
   const handleSort = (col: SortCol) => {
@@ -238,17 +255,13 @@ export function UsuariosTable({ onEditar, onDesactivar }: UsuariosTableProps) {
         loadingRoles={loadingRoles}
       />
 
-      {/* Manejo de error con reintento */}
+      {/* Manejo de error con reintento automático y manual */}
       {isError && (
-        <Alert variant="destructive">
-          <TriangleAlert className="size-4" aria-hidden />
-          <AlertDescription className="flex flex-wrap items-center gap-3">
-            No se pudo cargar la lista de usuarios.
-            <Button variant="outline" size="sm" onClick={() => refetch()}>
-              Reintentar
-            </Button>
-          </AlertDescription>
-        </Alert>
+        <ErrorAlert
+          error={error}
+          onRetry={() => refetch()}
+          autoRetry={5}
+        />
       )}
 
       {/* Tabla responsiva */}
@@ -328,45 +341,26 @@ export function UsuariosTable({ onEditar, onDesactivar }: UsuariosTableProps) {
             </TableHeader>
 
             <TableBody>
-              {/* Estado de carga */}
-              {isPending &&
-                Array.from({ length: 5 }).map((_, i) => (
-                  <TableRow key={i}>
-                    <TableCell>
-                      <div className="space-y-1">
-                        <Skeleton className="h-4 w-32" />
-                        <Skeleton className="h-3 w-20" />
-                      </div>
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      <Skeleton className="h-4 w-36" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-4 w-24" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-5 w-16 rounded-full" />
-                    </TableCell>
-                    <TableCell className="hidden lg:table-cell">
-                      <Skeleton className="h-4 w-28" />
-                    </TableCell>
-                    <TableCell className="text-right pr-4">
-                      <div className="flex justify-end gap-1">
-                        <Skeleton className="size-8 rounded-md" />
-                        <Skeleton className="size-8 rounded-md" />
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+              {/* Estado de carga con Skeleton anatómico */}
+              {isPending && (
+                <TableSkeletonRows
+                  columns={SKELETON_COLUMNS}
+                  rows={Math.min(limit, 10)}
+                />
+              )}
 
-              {/* Sin resultados */}
+              {/* Sin resultados / Filtros sin coincidencias */}
               {!isPending && items.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-44 text-center">
-                    <EmptyState
-                      title="Sin usuarios encontrados"
-                      description="No hay registros que coincidan con la búsqueda o filtros aplicados."
-                    />
+                  <TableCell colSpan={6} className="h-56 text-center">
+                    {isFiltered ? (
+                      <NoResultsState onClearFilters={handleClearFilters} />
+                    ) : (
+                      <EmptyState
+                        title="Sin usuarios registrados"
+                        description="Aún no hay usuarios dados de alta en el sistema."
+                      />
+                    )}
                   </TableCell>
                 </TableRow>
               )}

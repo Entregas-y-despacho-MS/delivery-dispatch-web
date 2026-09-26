@@ -1,5 +1,5 @@
 import { useDeferredValue, useMemo, useState } from "react";
-import { MapPin, Plus, RotateCw, Timer } from "lucide-react";
+import { MapPin, Plus, Timer } from "lucide-react";
 
 import {
   ZonaForm,
@@ -10,7 +10,7 @@ import {
   type ZonaFormValues,
 } from "@/domains/catalogos";
 import { PageHeader } from "@/shared/components/common/page-header";
-import { Alert, AlertDescription, AlertTitle } from "@/shared/components/ui/alert";
+import { ErrorAlert } from "@/shared/components/feedback/error-alert";
 import { Button } from "@/shared/components/ui/button";
 import {
   Dialog,
@@ -101,22 +101,19 @@ export default function ZonasPage() {
         </div>
 
         {zonas.isError ? (
-          <Alert variant="destructive" className="mt-4">
-            <RotateCw aria-hidden />
-            <AlertTitle>No pudimos cargar las zonas</AlertTitle>
-            <AlertDescription>
-              Revisa tu conexión y vuelve a intentarlo.
-              <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => zonas.refetch()}>
-                Reintentar
-              </Button>
-            </AlertDescription>
-          </Alert>
+          <ErrorAlert
+            error={zonas.error}
+            onRetry={() => zonas.refetch()}
+            autoRetry={5}
+            className="mt-4"
+          />
         ) : (
           <div className="mt-4">
             <ZonasTable
               data={zonas.data}
               loading={zonas.isLoading}
               searchActive={hasSearch}
+              onClearFilters={() => { setSearch(""); setPage(1); }}
               deactivating={zonas.deleteMutation.isPending}
               onEdit={openEdit}
               onDeactivate={setZonaToDeactivate}

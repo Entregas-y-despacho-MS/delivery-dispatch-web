@@ -27,3 +27,14 @@ export interface DeliveryZonesResponse {
     total: number;
   };
 }
+
+export type NivelServicioPriority = "high" | "medium" | "low";
+
+export interface NivelServicio {
+  id: number;
+  name: string;
+  description: string;
+  targetTimeMinutes: number;
+  priority: NivelServicioPriority;
+  active: boolean;
+}

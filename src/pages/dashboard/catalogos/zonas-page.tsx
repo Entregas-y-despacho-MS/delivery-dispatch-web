@@ -1,4 +1,4 @@
-import { useDeferredValue, useMemo, useState } from "react";
+import { useDeferredValue, useMemo, useState, type ComponentProps } from "react";
 import { MapPin, Plus, RotateCw, Timer } from "lucide-react";
 
 import {
@@ -7,7 +7,6 @@ import {
   ZonasTable,
   useZonas,
   type Zona,
-  type ZonaFormValues,
 } from "@/domains/catalogos";
 import { PageHeader } from "@/shared/components/common/page-header";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/components/ui/alert";
@@ -53,7 +52,7 @@ export default function ZonasPage() {
     if (!open) setEditingZona(undefined);
   };
 
-  const saveZona = async (values: ZonaFormValues) => {
+  const saveZona: ComponentProps<typeof ZonaForm>["onSubmit"] = async (values) => {
     if (editingZona) {
       await zonas.updateItem({ id: editingZona.id, data: values });
     } else {

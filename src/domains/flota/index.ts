@@ -1,7 +1,7 @@
-export { flotaService } from "./services/flota.service";
-export { useFlota } from "./hooks/use-flota";
+export { vehiculosService } from "./services/vehiculos.service";
+export { useVehiculos } from "./hooks/use-vehiculos";
 export { VehiculoForm } from "./components/vehiculo-form";
-export { FlotaSearch, FlotaTable } from "./components/flota-table";
+export { VehiculosSearch, VehiculosTable } from "./components/vehiculos-table";
 export { vehiculoSchema, type VehiculoFormValues } from "./flota.schemas";
 export type {
   EstadoVehiculo,

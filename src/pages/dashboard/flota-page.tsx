@@ -2,10 +2,10 @@ import { useDeferredValue, useMemo, useState } from "react";
 import { Plus, RotateCw, Truck } from "lucide-react";
 
 import {
-  FlotaSearch,
-  FlotaTable,
+  VehiculosSearch,
+  VehiculosTable,
   VehiculoForm,
-  useFlota,
+  useVehiculos,
   type Vehiculo,
   type VehiculoFormValues,
 } from "@/domains/flota";
@@ -33,7 +33,7 @@ export default function FlotaPage() {
     limit: PAGE_SIZE,
     search: deferredSearch.trim() || undefined,
   }), [deferredSearch, page]);
-  const flota = useFlota(params);
+  const flota = useVehiculos(params);
   const hasSearch = deferredSearch.trim().length > 0;
   const totalPages = flota.pages ?? 1;
 
@@ -86,7 +86,7 @@ export default function FlotaPage() {
               {flota.total} {flota.total === 1 ? "vehículo registrado" : "vehículos registrados"}
             </p>
           </div>
-          <FlotaSearch
+          <VehiculosSearch
             value={search}
             onChange={(value) => { setSearch(value); setPage(1); }}
           />
@@ -105,7 +105,7 @@ export default function FlotaPage() {
           </Alert>
         ) : (
           <div className="mt-4">
-            <FlotaTable
+            <VehiculosTable
               data={flota.data}
               loading={flota.isLoading}
               searchActive={hasSearch}

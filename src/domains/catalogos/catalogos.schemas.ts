@@ -27,3 +27,12 @@ export const nivelServicioSchema = z.object({
 });
 
 export type NivelServicioFormValues = z.infer<typeof nivelServicioSchema>;
+
+export const motivoIncidenciaSchema = z.object({
+  code: z.string().trim().toUpperCase().min(1, "Ingresa el código del motivo").max(30, "Usa máximo 30 caracteres"),
+  name: z.string().trim().min(1, "Ingresa el nombre del motivo").max(150, "Usa máximo 150 caracteres"),
+  requiresEvidence: z.boolean(),
+  active: z.boolean(),
+});
+
+export type MotivoIncidenciaFormValues = z.infer<typeof motivoIncidenciaSchema>;

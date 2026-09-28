@@ -36,3 +36,28 @@ export const motivoIncidenciaSchema = z.object({
 });
 
 export type MotivoIncidenciaFormValues = z.infer<typeof motivoIncidenciaSchema>;
+
+const motivoReprogramacionCategoriaSchema = z.enum(["client", "operations", "force_majeure"], {
+  required_error: "Selecciona el origen de la causa",
+});
+
+/** Comprueba que la respuesta del catálogo conserve los campos acordados con el backend. */
+export const motivoReprogramacionResponseSchema = z.object({
+  id: z.number(),
+  code: z.string(),
+  name: z.string(),
+  description: z.string().nullable(),
+  category: motivoReprogramacionCategoriaSchema,
+  active: z.boolean(),
+  affectsSla: z.boolean(),
+  createdAt: z.string(),
+});
+
+export const motivoReprogramacionSchema = z.object({
+  code: z.string().trim().toUpperCase().min(1, "Ingresa el código del motivo").max(30, "Usa máximo 30 caracteres"),
+  name: z.string().trim().min(1, "Ingresa el nombre del motivo").max(150, "Usa máximo 150 caracteres"),
+  description: z.string().trim().max(255, "Usa máximo 255 caracteres"),
+  category: motivoReprogramacionCategoriaSchema,
+});
+
+export type MotivoReprogramacionFormValues = z.infer<typeof motivoReprogramacionSchema>;

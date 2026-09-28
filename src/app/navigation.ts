@@ -57,7 +57,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { title: "Niveles de servicio",  href: "/app/catalogos/niveles-servicio",           icon: Gauge,         roles: COORD },
       { title: "Motivos de incidencia", href: "/app/catalogos/motivos-incidencia",        icon: ListX,         roles: COORD },
       { title: "Motivos de reprogramación", href: "/app/catalogos/motivos-reprogramacion", icon: CalendarClock, roles: COORD },
-      { title: "Tipos de incidente",   href: "/app/catalogos/tipos-incidente-vehiculo",   icon: CarFront,      roles: COORD },
+      { title: "Fallas mecánicas",       href: "/app/catalogos/tipos-incidente-vehiculo",   icon: CarFront,      roles: SUPER },
       // NAV_ANCHOR — no borres esta línea
     ],
   },

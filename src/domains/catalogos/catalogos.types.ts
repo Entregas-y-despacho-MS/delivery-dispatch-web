@@ -118,3 +118,15 @@ export type MotivoReprogramacionUpdate = Partial<MotivoReprogramacionCreate> & {
   description?: string | null;
   active?: boolean;
 };
+
+export type SeveridadIncidenteVehiculo = "LEVE" | "MODERADA" | "CRITICA";
+
+/** Tipo de avería configurable por el supervisor de flota (RF-A34). */
+export interface TipoIncidenteVehiculo {
+  id: number;
+  code: string;
+  name: string;
+  severity: SeveridadIncidenteVehiculo;
+  disablesVehicle: boolean;
+  active: boolean;
+}

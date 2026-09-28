@@ -102,13 +102,13 @@ export function AppRouter() {
                 <Route path="catalogos/niveles-servicio" element={<NivelesServicioPage />} />
                 <Route path="catalogos/motivos-incidencia" element={<MotivosIncidenciaPage />} />
                 <Route path="catalogos/motivos-reprogramacion" element={<MotivosReprogramacionPage />} />
-                <Route path="catalogos/tipos-incidente-vehiculo" element={<TiposIncidenteVehiculoPage />} />
               </Route>
 
               {/* Solo supervisor de flota */}
               <Route element={<ProtectedRoute roles={[ROLES.SUPERVISOR]} />}>
                 <Route path="flota" element={<FlotaPage />} />
                 <Route path="flota/:id/mantenimiento" element={<FlotaMantenimientoPage />} />
+                <Route path="catalogos/tipos-incidente-vehiculo" element={<TiposIncidenteVehiculoPage />} />
               </Route>
 
               {/* ROUTE_ANCHOR — no borres esta línea */}

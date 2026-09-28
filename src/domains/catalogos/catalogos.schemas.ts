@@ -61,3 +61,15 @@ export const motivoReprogramacionSchema = z.object({
 });
 
 export type MotivoReprogramacionFormValues = z.infer<typeof motivoReprogramacionSchema>;
+
+export const tipoIncidenteVehiculoSchema = z.object({
+  code: z.string().trim().toUpperCase().min(1, "Ingresa el código de la falla"),
+  name: z.string().trim().min(1, "Ingresa el nombre de la falla").max(100, "Usa máximo 100 caracteres"),
+  severity: z.enum(["LEVE", "MODERADA", "CRITICA"], {
+    required_error: "Selecciona la severidad",
+  }),
+  disablesVehicle: z.boolean(),
+  active: z.boolean(),
+});
+
+export type TipoIncidenteVehiculoFormValues = z.infer<typeof tipoIncidenteVehiculoSchema>;

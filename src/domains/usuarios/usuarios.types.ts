@@ -77,11 +77,11 @@ export interface CrearUsuarioPayload {
   roleId: number;
 }
 
+/** Cuerpo de PUT /users/:id. El rol NO va aquí: se cambia solo con PATCH /users/:id/role (RF-A27). */
 export interface ActualizarUsuarioPayload {
   fullName?: string;
   username?: string;
   email?: string;
-  roleId?: number;
   /** false desactiva la cuenta (soft delete: sigue en la lista como Inactivo). */
   active?: boolean;
 }

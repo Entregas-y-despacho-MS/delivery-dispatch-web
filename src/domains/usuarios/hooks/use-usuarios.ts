@@ -27,19 +27,32 @@ export function useGuardarUsuario(original: Usuario | null, onGuardado: () => vo
       if (!original) return usuariosService.create(toCrearPayload(values));
 
       const cambios = toActualizarPayload(original, values);
+      const nuevoRol = Number(values.roleId);
+      const cambiaRol = nuevoRol !== original.rol.id;
       // Nada cambió: no hace falta llamar al backend.
-      if (Object.keys(cambios).length === 0) return null;
-      return usuariosService.update(original.id, cambios);
+      if (Object.keys(cambios).length === 0 && !cambiaRol) return null;
+
+      // Datos y rol van por endpoints distintos: el rol solo se cambia con PATCH /users/:id/role (RF-A27).
+      let guardado = original;
+      if (Object.keys(cambios).length > 0) guardado = await usuariosService.update(original.id, cambios);
+      if (cambiaRol) guardado = await usuariosService.cambiarRol(original.id, nuevoRol);
+      return { guardado, cambiaRol };
     },
-    onSuccess: async (guardado) => {
-      if (guardado === null) {
+    onSuccess: async (resultado) => {
+      if (resultado === null) {
         toast.info("No hay cambios que guardar.");
+      } else if ("cambiaRol" in resultado && resultado.cambiaRol) {
+        toast.success(`Rol actualizado a ${resultado.guardado.rol.etiqueta}.`, {
+          description: "El usuario deberá iniciar sesión de nuevo para usar su nuevo rol.",
+        });
       } else {
         toast.success(original ? "Usuario actualizado." : "Usuario creado.");
-        await queryClient.invalidateQueries({ queryKey: USUARIOS_QUERY_KEY });
       }
+      if (resultado !== null) await queryClient.invalidateQueries({ queryKey: USUARIOS_QUERY_KEY });
       onGuardado();
     },
+    // Si los datos se guardaron pero el rol falló, la lista igual debe reflejar lo que sí cambió.
+    onError: () => void queryClient.invalidateQueries({ queryKey: USUARIOS_QUERY_KEY }),
   });
 
   return {

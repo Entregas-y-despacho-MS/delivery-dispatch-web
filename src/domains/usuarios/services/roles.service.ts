@@ -12,7 +12,8 @@ export const rolesService = {
   list: async (): Promise<Rol[]> => {
     // skipErrorToast: el selector avisa por su cuenta si no se pudieron cargar los roles.
     const { data } = await api.get<BackendPage<BackendRole>>("/roles", {
-      params: { page: 1, limit: 100 },
+      // assignable: el backend ya excluye los roles que quien llama no puede dar (root, salvo para root).
+      params: { page: 1, limit: 100, assignable: true },
       skipErrorToast: true,
     });
     return data.data.map(toRol);

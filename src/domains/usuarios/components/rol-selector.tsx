@@ -9,16 +9,18 @@ interface RolSelectorProps {
   onBlur?: () => void;
   roles: Rol[] | undefined;
   loading?: boolean;
+  /** Bloquea el selector (por ejemplo, al editar la propia cuenta). */
+  disabled?: boolean;
   invalid?: boolean;
   describedBy?: string;
 }
 
 /** Selector de rol. La cuenta semilla "root" no se ofrece: solo existe una y la crea el sistema. */
-export function RolSelector({ id, value, onChange, onBlur, roles, loading, invalid, describedBy }: RolSelectorProps) {
+export function RolSelector({ id, value, onChange, onBlur, roles, loading, disabled, invalid, describedBy }: RolSelectorProps) {
   const opciones = (roles ?? []).filter((r) => r.nombre !== "root");
 
   return (
-    <Select value={value} onValueChange={onChange} disabled={loading}>
+    <Select value={value} onValueChange={onChange} disabled={loading || disabled}>
       <SelectTrigger id={id} onBlur={onBlur} aria-invalid={invalid} aria-describedby={describedBy}>
         <SelectValue placeholder={loading ? "Cargando roles…" : "Selecciona un rol"} />
       </SelectTrigger>

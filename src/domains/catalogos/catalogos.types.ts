@@ -86,3 +86,35 @@ export type MotivoIncidenciaCreate = {
 export type MotivoIncidenciaUpdate = Partial<MotivoIncidenciaCreate> & {
   active?: boolean;
 };
+
+export type MotivoReprogramacionCategoria = "client" | "operations" | "force_majeure";
+
+export interface MotivoReprogramacion {
+  id: number;
+  code: string;
+  name: string;
+  description: string | null;
+  category: MotivoReprogramacionCategoria;
+  active: boolean;
+  /** Calculado por el backend; true excluye los cambios del cliente de la métrica interna. */
+  affectsSla: boolean;
+  createdAt: string;
+}
+
+export type MotivoReprogramacionListParams = {
+  page?: number;
+  limit?: number;
+  search?: string;
+  category?: MotivoReprogramacionCategoria;
+  active?: boolean;
+};
+
+export type MotivoReprogramacionCreate = Pick<
+  MotivoReprogramacion,
+  "code" | "name" | "category"
+> & { description?: string };
+
+export type MotivoReprogramacionUpdate = Partial<MotivoReprogramacionCreate> & {
+  description?: string | null;
+  active?: boolean;
+};

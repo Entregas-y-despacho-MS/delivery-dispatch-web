@@ -10,8 +10,15 @@ export { MotivoIncidenciaForm } from "./components/motivo-incidencia-form";
 export { MotivosIncidenciaTable } from "./components/motivos-incidencia-table";
 export { useMotivosIncidencia } from "./hooks/use-motivos";
 
+export { MotivoReprogramacionForm } from "./components/motivo-reprogramacion-form";
+export { MotivosReprogramacionTable } from "./components/motivos-reprogramacion-table";
+export { useMotivosReprogramacionScreen } from "./hooks/use-motivos-reprogramacion-screen";
+export { MOTIVO_REPROGRAMACION_CATEGORIAS } from "./motivos-reprogramacion.constants";
+export type { CategoryFilter, StatusFilter } from "./hooks/use-motivos-reprogramacion-screen";
+
 export type {
   Zona,
   NivelServicio,
   MotivoIncidencia,
+  MotivoReprogramacion,
 } from "./catalogos.types";

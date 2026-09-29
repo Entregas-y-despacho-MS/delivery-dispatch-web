@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Check, Circle, Eye, EyeOff, LoaderCircle, TriangleAlert } from "lucide-react";
+import { Check, Circle, Eye, EyeOff, Info, LoaderCircle, TriangleAlert } from "lucide-react";
 
 import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
+import { useAuthStore } from "@/shared/store/use-auth-store";
 import { useGuardarUsuario } from "../hooks/use-usuarios";
 import { useRoles } from "../hooks/use-roles";
 import { describeUsuarioError } from "../usuarios.errors";
@@ -17,6 +18,7 @@ import {
   type UsuarioFormValues,
 } from "../usuarios.schemas";
 import type { Usuario } from "../usuarios.types";
+import { PermisosRolPanel } from "./permisos-rol-panel";
 import { RolSelector } from "./rol-selector";
 
 interface UsuarioFormProps {
@@ -32,6 +34,9 @@ export function UsuarioForm({ usuario, onGuardado, onCancelar }: UsuarioFormProp
   const roles = useRoles();
   const guardar = useGuardarUsuario(usuario, onGuardado);
   const [verPassword, setVerPassword] = useState(false);
+  // Nadie puede cambiar su propio rol (el backend responde 403 CANNOT_MODIFY_OWN_ACCOUNT).
+  const miId = useAuthStore((s) => s.user?.id);
+  const esPropiaCuenta = editando && miId === String(usuario.id);
 
   const {
     register,
@@ -53,6 +58,11 @@ export function UsuarioForm({ usuario, onGuardado, onCancelar }: UsuarioFormProp
   });
 
   const password = useWatch({ control, name: "password" });
+  const roleIdElegido = useWatch({ control, name: "roleId" });
+  const rolElegido = roles.data?.find((r) => String(r.id) === roleIdElegido)
+    // Al editar, el rol actual puede no estar entre los asignables (ej. un usuario root).
+    ?? (usuario && String(usuario.rol.id) === roleIdElegido ? usuario.rol : undefined);
+  const cambiaRol = editando && roleIdElegido !== "" && roleIdElegido !== String(usuario.rol.id);
 
   const enviar = handleSubmit((values) =>
     guardar.mutate(values, {
@@ -122,12 +132,24 @@ export function UsuarioForm({ usuario, onGuardado, onCancelar }: UsuarioFormProp
               onBlur={field.onBlur}
               roles={roles.data}
               loading={roles.isPending}
+              disabled={esPropiaCuenta}
               invalid={!!errors.roleId}
-              describedBy={errors.roleId ? "roleId-error" : undefined}
+              describedBy={errors.roleId ? "roleId-error" : esPropiaCuenta ? "roleId-propio" : undefined}
             />
           )}
         />
         {errors.roleId && <p id="roleId-error" className="text-xs text-destructive">{errors.roleId.message}</p>}
+        {esPropiaCuenta && (
+          <p id="roleId-propio" className="text-xs text-muted-foreground">
+            No puedes cambiar el rol de tu propia cuenta. Pídeselo a otro administrador.
+          </p>
+        )}
+        {cambiaRol && (
+          <p className="flex items-start gap-1.5 text-xs text-amber-600 dark:text-amber-400" role="status">
+            <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
+            Al guardar, se cerrará la sesión de este usuario y deberá ingresar de nuevo con su nuevo rol.
+          </p>
+        )}
         {roles.isError && (
           <p className="text-xs text-destructive">
             No se pudieron cargar los roles.{" "}
@@ -137,6 +159,8 @@ export function UsuarioForm({ usuario, onGuardado, onCancelar }: UsuarioFormProp
           </p>
         )}
       </div>
+
+      <PermisosRolPanel rolNombre={rolElegido?.nombre} />
 
       {/* La contraseña solo se define al crear: cambiarla después tiene su propio flujo. */}
       {!editando && (

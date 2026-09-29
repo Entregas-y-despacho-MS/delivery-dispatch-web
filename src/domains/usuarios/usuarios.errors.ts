@@ -26,6 +26,15 @@ export function describeUsuarioError(error: unknown): UsuarioErrorInfo {
   if (status === 409 || code === USER_ALREADY_EXISTS) {
     return { kind: "duplicado", message: "Ya existe un usuario con ese nombre de usuario o ese correo." };
   }
+  if (code === "CANNOT_MODIFY_OWN_ACCOUNT") {
+    return { kind: "permisos", message: "No puedes cambiar el rol de tu propia cuenta." };
+  }
+  if (code === "ROOT_ACCOUNT_PROTECTED") {
+    return { kind: "permisos", message: "Solo la cuenta root puede asignar o quitar el rol root." };
+  }
+  if (code === "INVALID_ROLE") {
+    return { kind: "datos", message: "El rol seleccionado ya no existe. Recarga la página." };
+  }
   if (status === 400) {
     // El detalle viene en inglés desde el backend (class-validator); se muestra tal cual.
     return { kind: "datos", message: `El servidor rechazó los datos. ${message}` };

@@ -46,18 +46,17 @@ export function toCrearPayload(values: UsuarioFormValues): CrearUsuarioPayload {
  * Valores del formulario → cuerpo de la edición, con SOLO lo que cambió respecto al usuario original.
  * Mandar el usuario o el correo sin cambios podría chocar con la validación de unicidad del backend.
  * Vaciar el correo no se soporta: el backend no acepta un correo vacío.
+ * El rol no va aquí: ver cambiarRol.
  */
 export function toActualizarPayload(original: Usuario, values: UsuarioFormValues): ActualizarUsuarioPayload {
   const payload: ActualizarUsuarioPayload = {};
   const fullName = values.fullName.trim();
   const username = values.username.trim();
   const email = values.email.trim();
-  const roleId = Number(values.roleId);
 
   if (fullName !== original.nombreCompleto) payload.fullName = fullName;
   if (username !== original.username) payload.username = username;
   if (email && email !== (original.email ?? "")) payload.email = email;
-  if (roleId !== original.rol.id) payload.roleId = roleId;
   return payload;
 }
 
@@ -83,6 +82,15 @@ export const usuariosService = {
 
   update: async (id: number, payload: ActualizarUsuarioPayload): Promise<Usuario> => {
     const { data } = await api.put<BackendUser>(`/users/${id}`, payload, SILENCIOSO);
+    return toUsuario(data);
+  },
+
+  /**
+   * RF-A27 — única forma de cambiar el rol (PATCH /users/:id/role). Si el rol cambia, el backend revoca
+   * la sesión del usuario: deberá volver a iniciar sesión. Solo admin o root; nadie cambia su propio rol.
+   */
+  cambiarRol: async (id: number, roleId: number): Promise<Usuario> => {
+    const { data } = await api.patch<BackendUser>(`/users/${id}/role`, { roleId }, SILENCIOSO);
     return toUsuario(data);
   },
 

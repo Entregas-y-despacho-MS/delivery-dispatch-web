@@ -17,7 +17,9 @@ export { MOTIVO_REPROGRAMACION_CATEGORIAS } from "./motivos-reprogramacion.const
 export type { CategoryFilter, StatusFilter } from "./hooks/use-motivos-reprogramacion-screen";
 
 export { TipoIncidenteVehiculoForm } from "./components/tipo-incidente-vehiculo-form";
+export { TiposIncidenteVehiculoFilters } from "./components/tipos-incidente-vehiculo-filters";
 export { TiposIncidenteVehiculoTable } from "./components/tipos-incidente-vehiculo-table";
+export { useTiposIncidenteVehiculoScreen } from "./hooks/use-tipos-incidente-vehiculo-screen";
 
 export type {
   Zona,

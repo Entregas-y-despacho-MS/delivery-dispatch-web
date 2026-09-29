@@ -63,13 +63,22 @@ export const motivoReprogramacionSchema = z.object({
 export type MotivoReprogramacionFormValues = z.infer<typeof motivoReprogramacionSchema>;
 
 export const tipoIncidenteVehiculoSchema = z.object({
-  code: z.string().trim().toUpperCase().min(1, "Ingresa el código de la falla"),
+  code: z.string().trim().toUpperCase().min(1, "Ingresa el código de la falla").max(30, "Usa máximo 30 caracteres"),
   name: z.string().trim().min(1, "Ingresa el nombre de la falla").max(100, "Usa máximo 100 caracteres"),
-  severity: z.enum(["LEVE", "MODERADA", "CRITICA"], {
+  severity: z.enum(["minor", "moderate", "critical"], {
     required_error: "Selecciona la severidad",
   }),
-  disablesVehicle: z.boolean(),
-  active: z.boolean(),
+  disablesVehicle: z.boolean({ required_error: "Indica si bloquea la unidad" }),
 });
 
 export type TipoIncidenteVehiculoFormValues = z.infer<typeof tipoIncidenteVehiculoSchema>;
+
+/** Verifica los campos usados por la tabla antes de incorporar una respuesta de la API. */
+export const tipoIncidenteVehiculoResponseSchema = z.object({
+  id: z.number().int(),
+  code: z.string(),
+  name: z.string(),
+  severity: z.enum(["minor", "moderate", "critical"]),
+  disablesVehicle: z.boolean(),
+  createdAt: z.string(),
+});

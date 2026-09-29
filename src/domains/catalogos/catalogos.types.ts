@@ -119,7 +119,7 @@ export type MotivoReprogramacionUpdate = Partial<MotivoReprogramacionCreate> & {
   active?: boolean;
 };
 
-export type SeveridadIncidenteVehiculo = "LEVE" | "MODERADA" | "CRITICA";
+export type SeveridadIncidenteVehiculo = "minor" | "moderate" | "critical";
 
 /** Tipo de avería configurable por el supervisor de flota (RF-A34). */
 export interface TipoIncidenteVehiculo {
@@ -128,5 +128,20 @@ export interface TipoIncidenteVehiculo {
   name: string;
   severity: SeveridadIncidenteVehiculo;
   disablesVehicle: boolean;
-  active: boolean;
+  createdAt: string;
 }
+
+export type TipoIncidenteVehiculoListParams = {
+  page?: number;
+  limit?: number;
+  search?: string;
+  severity?: SeveridadIncidenteVehiculo;
+  disablesVehicle?: boolean;
+};
+
+export type TipoIncidenteVehiculoCreate = Pick<
+  TipoIncidenteVehiculo,
+  "code" | "name" | "severity" | "disablesVehicle"
+>;
+
+export type TipoIncidenteVehiculoUpdate = Partial<TipoIncidenteVehiculoCreate>;

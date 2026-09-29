@@ -5,9 +5,9 @@ const SEVERIDAD_CONFIG: Record<SeveridadIncidenteVehiculo, {
   label: string;
   badgeClassName: string;
 }> = {
-  LEVE: { value: "LEVE", label: "Leve", badgeClassName: "border-success/20 bg-success/10 text-success" },
-  MODERADA: { value: "MODERADA", label: "Moderada", badgeClassName: "border-warning/20 bg-warning/10 text-warning" },
-  CRITICA: { value: "CRITICA", label: "Crítica", badgeClassName: "border-destructive/20 bg-destructive/10 text-destructive" },
+  minor: { value: "minor", label: "Leve", badgeClassName: "border-success/20 bg-success/10 text-success" },
+  moderate: { value: "moderate", label: "Moderada", badgeClassName: "border-warning/20 bg-warning/10 text-warning" },
+  critical: { value: "critical", label: "Crítica", badgeClassName: "border-destructive/20 bg-destructive/10 text-destructive" },
 };
 
 export const SEVERIDADES_INCIDENTE_VEHICULO = Object.values(SEVERIDAD_CONFIG);

@@ -90,6 +90,7 @@ export function AppRouter() {
               <Route path="repartidores" element={<RepartidoresPage />} />
               <Route path="incidencias" element={<IncidenciasPage />} />
               <Route path="reportes" element={<ReportesPage />} />
+              <Route path="catalogos/tipos-incidente-vehiculo" element={<TiposIncidenteVehiculoPage />} />
 
               {/* Solo coordinador */}
               <Route element={<ProtectedRoute roles={[ROLES.COORDINADOR]} />}>
@@ -108,7 +109,6 @@ export function AppRouter() {
               <Route element={<ProtectedRoute roles={[ROLES.SUPERVISOR]} />}>
                 <Route path="flota" element={<FlotaPage />} />
                 <Route path="flota/:id/mantenimiento" element={<FlotaMantenimientoPage />} />
-                <Route path="catalogos/tipos-incidente-vehiculo" element={<TiposIncidenteVehiculoPage />} />
               </Route>
 
               {/* ROUTE_ANCHOR — no borres esta línea */}

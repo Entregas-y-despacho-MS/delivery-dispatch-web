@@ -18,6 +18,7 @@ export interface LoginResponse {
   accessToken: string;
   refreshToken: string;
   user: BackendUser;
+  mustChangePassword: boolean;
 }
 
 /** Lo que el front conserva tras iniciar sesión, ya adaptado a su propio modelo. */
@@ -38,3 +39,8 @@ export interface ResetPasswordPayload {
   newPassword: string;
 }
 
+/** Payload para PATCH /auth/change-password. */
+export interface ChangePasswordPayload {
+  currentPassword: string;
+  newPassword: string;
+}

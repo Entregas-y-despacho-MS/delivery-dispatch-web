@@ -3,7 +3,7 @@ import { Navigate } from "react-router-dom";
 import { LoginBrandPanel, LoginForm, useLoginDestination } from "@/domains/auth";
 import { hasRole, ROLES_WEB } from "@/config/roles";
 import { useAuthHydrated } from "@/shared/hooks/use-hydrated";
-import { useAuthStore } from "@/shared/store/use-auth-store";
+import { needsPasswordChange, useAuthStore } from "@/shared/store/use-auth-store";
 import { ThemeToggle } from "@/shared/components/theme-toggle";
 
 /** La página solo decide qué mostrar; el diseño vive en domains/auth/components. */
@@ -14,7 +14,7 @@ export default function LoginPage() {
 
   // Si ya hay sesión válida no tiene sentido ver el login.
   if (hydrated && user && hasRole(user.rol.id, ROLES_WEB)) {
-    return <Navigate to={destination} replace />;
+    return <Navigate to={needsPasswordChange(user) ? "/cambiar-password" : destination} replace />;
   }
 
   return (

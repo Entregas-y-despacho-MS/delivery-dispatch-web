@@ -10,6 +10,7 @@ export { LoginBrandPanel } from "./components/login-brand-panel";
 export { IdleWarningDialog } from "./components/idle-warning-dialog";
 export { RecuperarPasswordForm } from "./components/recuperar-password-form";
 export { RestablecerPasswordForm } from "./components/restablecer-password-form";
+export { ChangePasswordForm } from "./components/change-password-form";
 export {
   loginSchema,
   type LoginInput,
@@ -17,6 +18,8 @@ export {
   type ForgotPasswordInput,
   resetPasswordSchema,
   type ResetPasswordInput,
+  changePasswordSchema,
+  type ChangePasswordInput,
 } from "./auth.schemas";
 export {
   describeLoginError,
@@ -32,4 +35,5 @@ export type {
   Session,
   ForgotPasswordPayload,
   ResetPasswordPayload,
+  ChangePasswordPayload,
 } from "./auth.types";

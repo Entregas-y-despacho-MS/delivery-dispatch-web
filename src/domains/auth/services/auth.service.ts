@@ -4,6 +4,7 @@ import { ROLE_BY_BACKEND_NAME, ROLE_LABELS } from "@/config/roles";
 import type { LoginInput } from "../auth.schemas";
 import type {
   BackendUser,
+  ChangePasswordPayload,
   ForgotPasswordPayload,
   LoginResponse,
   ResetPasswordPayload,
@@ -26,7 +27,6 @@ function toAuthUser(u: BackendUser): AuthUser {
     apellidos: resto.join(" "),
     email: u.email ?? undefined,
     rol: { id: roleId, nombre: ROLE_LABELS[roleId] },
-    requiresPwdChange: u.requiresPwdChange,
   };
 }
 
@@ -39,7 +39,7 @@ export const authService = {
       totpCode: totpCode || undefined,
     });
     return {
-      user: toAuthUser(data.user),
+      user: { ...toAuthUser(data.user), mustChangePassword: data.mustChangePassword || data.user.requiresPwdChange },
       accessToken: data.accessToken,
       refreshToken: data.refreshToken,
     };
@@ -55,6 +55,11 @@ export const authService = {
       undefined,
       accessToken ? { headers: { Authorization: `Bearer ${accessToken}` } } : undefined
     );
+  },
+
+  /** El backend revoca la sesión tras el cambio; el usuario debe volver a iniciar sesión. */
+  changePassword: async (payload: ChangePasswordPayload): Promise<void> => {
+    await api.patch("/auth/change-password", payload, { skipErrorToast: true });
   },
 
   /**

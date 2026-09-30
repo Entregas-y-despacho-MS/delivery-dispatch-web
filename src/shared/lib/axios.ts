@@ -35,6 +35,7 @@ const refreshClient = axios.create({
 interface RefreshResponse {
   accessToken: string;
   refreshToken: string;
+  mustChangePassword: boolean;
 }
 
 // ─── Renovación silenciosa del token (ST-16.3) ────────────────────────────────────────────
@@ -57,6 +58,9 @@ function renovarAccessToken(): Promise<string> {
         throw new CanceledError("La sesión cambió durante la renovación");
       }
       useAuthStore.setState({ access_token: data.accessToken, refresh_token: data.refreshToken });
+      if (data.mustChangePassword) {
+        useAuthStore.getState().updateUser({ mustChangePassword: true });
+      }
       return data.accessToken;
     })
     .finally(() => {
@@ -103,6 +107,11 @@ api.interceptors.response.use(
     const url: string = error.config?.url ?? "";
     const parsed = parseApiError(error);
     if (parsed.kind === "cancelled") return Promise.reject(error);
+
+    if (parsed.code === "PASSWORD_CHANGE_REQUIRED") {
+      useAuthStore.getState().updateUser({ mustChangePassword: true });
+      return Promise.reject(error);
+    }
 
     // El login muestra sus errores dentro del formulario (credenciales, bloqueo, 2FA…).
     // Sin este corte, un 401 por contraseña incorrecta se leería como "Sesión expirada"

@@ -156,3 +156,18 @@ export function describeResetPasswordError(error: unknown): ResetPasswordErrorIn
     message,
   };
 }
+
+/** El error del cambio autenticado se presenta junto al campo afectado. */
+export function describeChangePasswordError(error: unknown): { field?: "currentPassword" | "newPassword"; message: string } {
+  const { code, message } = parseApiError(error);
+  if (code === AUTH_ERROR.INVALID_CREDENTIALS) {
+    return { field: "currentPassword", message: "La contraseña actual no es correcta." };
+  }
+  if (code === AUTH_ERROR.PASSWORD_RECENTLY_USED) {
+    return { field: "newPassword", message: "Usa una contraseña distinta de la actual y de las últimas tres." };
+  }
+  if (code === AUTH_ERROR.PASSWORD_TOO_SHORT) {
+    return { field: "newPassword", message: "La contraseña no cumple la longitud mínima configurada." };
+  }
+  return { message };
+}

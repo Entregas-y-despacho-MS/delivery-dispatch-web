@@ -3,7 +3,7 @@ import { Navigate, useParams, useSearchParams } from "react-router-dom";
 import { LoginBrandPanel, RestablecerPasswordForm, useLoginDestination } from "@/domains/auth";
 import { hasRole, ROLES_WEB } from "@/config/roles";
 import { useAuthHydrated } from "@/shared/hooks/use-hydrated";
-import { useAuthStore } from "@/shared/store/use-auth-store";
+import { needsPasswordChange, useAuthStore } from "@/shared/store/use-auth-store";
 import { ThemeToggle } from "@/shared/components/theme-toggle";
 
 /**
@@ -20,7 +20,7 @@ export default function RestablecerPasswordPage() {
   const destination = useLoginDestination();
 
   if (hydrated && user && hasRole(user.rol.id, ROLES_WEB)) {
-    return <Navigate to={destination} replace />;
+    return <Navigate to={needsPasswordChange(user) ? "/cambiar-password" : destination} replace />;
   }
 
   return (

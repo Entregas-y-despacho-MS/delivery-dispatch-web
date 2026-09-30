@@ -20,6 +20,7 @@ const LoginPage = lazy(() => import("@/pages/auth/login-page"));
 const AccesoDenegado = lazy(() => import("@/pages/auth/acceso-denegado"));
 const RecuperarPasswordPage = lazy(() => import("@/pages/auth/recuperar-password"));
 const RestablecerPasswordPage = lazy(() => import("@/pages/auth/restablecer-password"));
+const CambiarPasswordPage = lazy(() => import("@/pages/auth/cambiar-password"));
 
 // ── Operación ──
 const TableroPage = lazy(() => import("@/pages/dashboard/tablero-page"));
@@ -77,6 +78,13 @@ export function AppRouter() {
             <Route path="/reset-password" element={<RestablecerPasswordPage />} />
             <Route path="/reset-password/:token" element={<RestablecerPasswordPage />} />
             <Route path="/acceso-denegado" element={<AccesoDenegado />} />
+          </Route>
+
+          {/* El cambio obligatorio tiene una ruta autenticada fuera del panel. */}
+          <Route element={<ProtectedRoute passwordChangeOnly />}>
+            <Route element={<PageErrorBoundary />}>
+              <Route path="/cambiar-password" element={<CambiarPasswordPage />} />
+            </Route>
           </Route>
 
 

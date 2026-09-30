@@ -54,13 +54,9 @@ export function NivelServicioForm({
       }
 
       setError("root", {
-        message: apiError.status === 400
-          ? `El servidor rechazó los datos: ${apiError.message}`
-          : apiError.status === 403
-            ? "No tienes permiso para gestionar niveles de servicio."
-            : apiError.status === 404
-              ? "Este nivel ya no existe. Actualiza la lista."
-              : "No se pudo guardar el nivel. Revisa tu conexión e inténtalo de nuevo.",
+        message: apiError.status === 404
+          ? "Este nivel ya no existe. Actualiza la lista."
+          : apiError.message,
       });
     }
   });

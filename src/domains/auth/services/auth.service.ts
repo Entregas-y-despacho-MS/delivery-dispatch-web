@@ -62,14 +62,13 @@ export const authService = {
    * Devuelve 204 siempre (evita enumeración de usuarios).
    */
   forgotPassword: async (payload: ForgotPasswordPayload): Promise<void> => {
-    await api.post("/auth/forgot-password", payload);
+    await api.post("/auth/forgot-password", payload, { skipErrorToast: true });
   },
 
   /**
    * Establece una nueva contraseña validando el token temporal recibido por correo (RF-A25).
    */
   resetPassword: async (payload: ResetPasswordPayload): Promise<void> => {
-    await api.post("/auth/reset-password", payload);
+    await api.post("/auth/reset-password", payload, { skipErrorToast: true });
   },
 };
-

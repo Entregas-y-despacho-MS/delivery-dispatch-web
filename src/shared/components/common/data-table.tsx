@@ -37,8 +37,6 @@ export interface DataTableProps<T extends { id: string | number }> {
   error?: unknown;
   /** Callback de reintento ante errores. */
   onRetry?: () => void | Promise<unknown>;
-  /** Si debe reintentar automáticamente (segundos o booleano). */
-  autoRetry?: boolean | number;
   className?: string;
 }
 
@@ -53,7 +51,6 @@ export function DataTable<T extends { id: string | number }>({
   onClearFilters,
   error,
   onRetry,
-  autoRetry,
   className,
 }: DataTableProps<T>) {
   // Manejo de error si existe
@@ -62,7 +59,6 @@ export function DataTable<T extends { id: string | number }>({
       <ErrorAlert
         error={error}
         onRetry={onRetry}
-        autoRetry={autoRetry}
         className={className}
       />
     );

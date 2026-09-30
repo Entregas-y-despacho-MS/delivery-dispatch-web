@@ -42,6 +42,7 @@ export function useMotivosReprogramacion(params: MotivoReprogramacionListParams)
     isLoading: crud.isLoading,
     isFetching: crud.isFetching,
     isError: crud.isError,
+    error: crud.error,
     isSaving: crud.isSaving,
     refetch: crud.refetch,
     saveItem,

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ComponentProps } from "react";
-import { ListFilter, ListX, Plus, RotateCw, Search, TriangleAlert } from "lucide-react";
+import { ListFilter, ListX, Plus, Search, TriangleAlert } from "lucide-react";
 
 import {
   MotivoIncidenciaForm,
@@ -8,7 +8,8 @@ import {
   type MotivoIncidencia,
 } from "@/domains/catalogos";
 import { PageHeader } from "@/shared/components/common/page-header";
-import { Alert, AlertDescription, AlertTitle } from "@/shared/components/ui/alert";
+import { ErrorAlert } from "@/shared/components/feedback/error-alert";
+import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 import { Button } from "@/shared/components/ui/button";
 import {
   Dialog,
@@ -88,7 +89,7 @@ export default function MotivosIncidenciaPage() {
       const apiError = parseApiError(error);
       setListActionError(apiError.status === 404
         ? "Este motivo ya no existe. Actualiza la lista."
-        : "No pudimos activar el motivo. Revisa tu conexión e inténtalo de nuevo.");
+        : apiError.message);
     }
   };
 
@@ -103,7 +104,7 @@ export default function MotivosIncidenciaPage() {
       const apiError = parseApiError(error);
       setActionError(apiError.status === 404
         ? "Este motivo ya no existe. Actualiza la lista."
-        : "No pudimos desactivar el motivo. Revisa tu conexión e inténtalo de nuevo.");
+        : apiError.message);
     }
   };
 
@@ -162,16 +163,7 @@ export default function MotivosIncidenciaPage() {
         </div>
 
         {motivos.isError ? (
-          <Alert variant="destructive" className="mt-4">
-            <RotateCw aria-hidden />
-            <AlertTitle>No pudimos cargar los motivos</AlertTitle>
-            <AlertDescription>
-              Revisa tu conexión y vuelve a intentarlo.
-              <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => motivos.refetch()}>
-                Reintentar
-              </Button>
-            </AlertDescription>
-          </Alert>
+          <ErrorAlert error={motivos.error} onRetry={() => motivos.refetch()} className="mt-4" />
         ) : (
           <div className="mt-4" aria-busy={motivos.isFetching}>
             {motivos.isFetching && !motivos.isLoading && (

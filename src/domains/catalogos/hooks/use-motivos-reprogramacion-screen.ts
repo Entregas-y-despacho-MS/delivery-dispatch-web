@@ -75,9 +75,10 @@ export function useMotivosReprogramacionScreen() {
     try {
       await motivos.toggleActive(motivo);
     } catch (error) {
-      setListActionError(parseApiError(error).status === 404
+      const apiError = parseApiError(error);
+      setListActionError(apiError.status === 404
         ? "Este motivo ya no existe. Actualiza la lista."
-        : "No pudimos activar el motivo. Revisa tu conexión e inténtalo de nuevo.");
+        : apiError.message);
     }
   };
 
@@ -88,9 +89,10 @@ export function useMotivosReprogramacionScreen() {
       await motivos.toggleActive(pendingDeactivate);
       setPendingDeactivate(undefined);
     } catch (error) {
-      setActionError(parseApiError(error).status === 404
+      const apiError = parseApiError(error);
+      setActionError(apiError.status === 404
         ? "Este motivo ya no existe. Actualiza la lista."
-        : "No pudimos desactivar el motivo. Revisa tu conexión e inténtalo de nuevo.");
+        : apiError.message);
     }
   };
 

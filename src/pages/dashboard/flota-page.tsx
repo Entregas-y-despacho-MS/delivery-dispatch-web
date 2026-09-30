@@ -1,5 +1,5 @@
 import { useDeferredValue, useMemo, useState } from "react";
-import { Plus, RotateCw, Truck } from "lucide-react";
+import { Plus, Truck } from "lucide-react";
 
 import {
   VehiculosSearch,
@@ -10,7 +10,7 @@ import {
   type VehiculoFormValues,
 } from "@/domains/flota";
 import { PageHeader } from "@/shared/components/common/page-header";
-import { Alert, AlertDescription, AlertTitle } from "@/shared/components/ui/alert";
+import { ErrorAlert } from "@/shared/components/feedback/error-alert";
 import { Button } from "@/shared/components/ui/button";
 import {
   Dialog,
@@ -93,16 +93,7 @@ export default function FlotaPage() {
         </div>
 
         {flota.isError ? (
-          <Alert variant="destructive" className="mt-4">
-            <RotateCw aria-hidden />
-            <AlertTitle>No pudimos cargar la flota</AlertTitle>
-            <AlertDescription>
-              Revisa tu conexión y vuelve a intentarlo.
-              <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => flota.refetch()}>
-                Reintentar
-              </Button>
-            </AlertDescription>
-          </Alert>
+          <ErrorAlert error={flota.error} onRetry={() => flota.refetch()} className="mt-4" />
         ) : (
           <div className="mt-4">
             <VehiculosTable

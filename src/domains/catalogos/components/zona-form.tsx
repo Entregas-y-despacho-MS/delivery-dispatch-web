@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
+import { parseApiError } from "@/shared/lib/api-error";
 import { zonaSchema, type ZonaFormValues } from "../catalogos.schemas";
 import type { Zona } from "../catalogos.types";
 
@@ -24,6 +25,8 @@ export function ZonaForm({
   const {
     register,
     handleSubmit,
+    setError,
+    setFocus,
     formState: { errors },
   } = useForm<ZonaFormValues>({
     resolver: zodResolver(zonaSchema),
@@ -36,8 +39,23 @@ export function ZonaForm({
     reValidateMode: "onChange",
   });
 
+  const submit = handleSubmit(async (values) => {
+    try {
+      await onSubmit(values);
+    } catch (error) {
+      const parsed = parseApiError(error);
+      if (parsed.code === "DELIVERY_ZONE_CODE_ALREADY_EXISTS") {
+        setError("code", { message: "Ya existe una zona con este código." });
+        setFocus("code");
+        return;
+      }
+      setError("root", { message: parsed.message });
+    }
+  });
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
+    <form onSubmit={submit} className="space-y-5" noValidate>
+      {errors.root?.message && <p role="alert" className="text-sm text-destructive">{errors.root.message}</p>}
       <div className="grid gap-5 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="zona-code">Código</Label>

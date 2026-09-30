@@ -16,6 +16,7 @@ export const vehiculosService = createCrudService<
   VehiclesResponse
 >({
   endpoint: "/vehicles",
+  requestConfig: { skipErrorToast: true },
   updateMethod: "put",
   mapListResponse: ({ data, meta }) => ({
     items: data,

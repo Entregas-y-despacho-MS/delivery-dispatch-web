@@ -49,15 +49,11 @@ export function TipoIncidenteVehiculoForm({
     } catch (error) {
       const apiError = parseApiError(error);
       setError("root", {
-        message: apiError.status === 409
+        message: apiError.code === "VEHICLE_INCIDENT_TYPE_CODE_ALREADY_EXISTS"
           ? "Ya existe un tipo de falla con este código o nombre. Revisa ambos datos."
-          : apiError.status === 403
-            ? "No tienes permiso para gestionar tipos de falla."
-            : apiError.status === 404
-              ? "Este tipo de falla ya no existe. Actualiza la lista."
-              : apiError.status === 400
-                ? "El servidor rechazó los datos. Revisa los campos e inténtalo de nuevo."
-                : "No se pudo guardar la falla. Revisa tu conexión e inténtalo de nuevo.",
+          : apiError.status === 404
+            ? "Este tipo de falla ya no existe. Actualiza la lista."
+            : apiError.message,
       });
     }
   });

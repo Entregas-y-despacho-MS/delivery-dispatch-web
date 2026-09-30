@@ -1,4 +1,4 @@
-import { CarFront, Plus, RotateCw } from "lucide-react";
+import { CarFront, Plus } from "lucide-react";
 
 import {
   TipoIncidenteVehiculoForm,
@@ -7,7 +7,7 @@ import {
   useTiposIncidenteVehiculoScreen,
 } from "@/domains/catalogos";
 import { PageHeader } from "@/shared/components/common/page-header";
-import { Alert, AlertDescription, AlertTitle } from "@/shared/components/ui/alert";
+import { ErrorAlert } from "@/shared/components/feedback/error-alert";
 import { Button } from "@/shared/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/shared/components/ui/dialog";
 
@@ -42,15 +42,7 @@ export default function TiposIncidenteVehiculoPage() {
         </div>
 
         {tipos.isError ? (
-          <Alert variant="destructive" className="mt-4">
-            <RotateCw aria-hidden />
-            <AlertTitle>No pudimos cargar los tipos de falla</AlertTitle>
-            <AlertDescription>
-              Vuelve a intentarlo. Si el problema continúa, verifica que el catálogo esté disponible.
-              <Button type="button" variant="outline" size="sm" className="mt-2"
-                onClick={() => tipos.refetch()}>Reintentar</Button>
-            </AlertDescription>
-          </Alert>
+          <ErrorAlert error={tipos.error} onRetry={() => tipos.refetch()} className="mt-4" />
         ) : (
           <div className="mt-4" aria-busy={tipos.isFetching}>
             {tipos.isFetching && !tipos.isLoading && (

@@ -6,6 +6,7 @@ import { TrackingLayout } from "@/shared/components/layout/tracking-layout";
 import { DashboardLayout } from "@/shared/components/layout/dashboard-layout";
 import { ProtectedRoute } from "@/shared/guards/protected-route";
 import { LoadingScreen } from "@/shared/components/feedback/loading-screen";
+import { PageErrorBoundary } from "@/shared/components/feedback/page-error-boundary";
 import { ROLES, ROLES_WEB } from "@/config/roles";
 
 // ── Público ──
@@ -67,14 +68,16 @@ export function AppRouter() {
           </Route>
 
           {/* ─── Autenticación ─── */}
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/recuperar-password" element={<RecuperarPasswordPage />} />
-          <Route path="/forgot-password" element={<RecuperarPasswordPage />} />
-          <Route path="/restablecer-password" element={<RestablecerPasswordPage />} />
-          <Route path="/restablecer-password/:token" element={<RestablecerPasswordPage />} />
-          <Route path="/reset-password" element={<RestablecerPasswordPage />} />
-          <Route path="/reset-password/:token" element={<RestablecerPasswordPage />} />
-          <Route path="/acceso-denegado" element={<AccesoDenegado />} />
+          <Route element={<PageErrorBoundary />}>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/recuperar-password" element={<RecuperarPasswordPage />} />
+            <Route path="/forgot-password" element={<RecuperarPasswordPage />} />
+            <Route path="/restablecer-password" element={<RestablecerPasswordPage />} />
+            <Route path="/restablecer-password/:token" element={<RestablecerPasswordPage />} />
+            <Route path="/reset-password" element={<RestablecerPasswordPage />} />
+            <Route path="/reset-password/:token" element={<RestablecerPasswordPage />} />
+            <Route path="/acceso-denegado" element={<AccesoDenegado />} />
+          </Route>
 
 
           {/* ─── Panel interno: el repartidor usa la app móvil, no entra aquí ─── */}
@@ -115,7 +118,9 @@ export function AppRouter() {
             </Route>
           </Route>
 
-          <Route path="*" element={<NotFound />} />
+          <Route element={<PageErrorBoundary />}>
+            <Route path="*" element={<NotFound />} />
+          </Route>
         </Routes>
       </Suspense>
     </BrowserRouter>

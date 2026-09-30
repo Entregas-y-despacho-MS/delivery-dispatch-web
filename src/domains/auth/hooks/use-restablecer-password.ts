@@ -32,9 +32,6 @@ export function useRestablecerPassword(options?: UseRestablecerPasswordOptions) 
     onError: (err) => {
       const described = describeResetPasswordError(err);
       setErrorInfo(described);
-      toast.error(described.title, {
-        description: described.message,
-      });
     },
   });
 

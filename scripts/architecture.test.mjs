@@ -17,7 +17,7 @@ const server = await createServer({
 });
 after(async () => server.close());
 
-const { PORTAL_ROUTES, portalHref } = await server.ssrLoadModule("/src/config/portal-routes.ts");
+const { PORTAL_ROUTES, portalHref, portalHomeHref } = await server.ssrLoadModule("/src/config/portal-routes.ts");
 const { NAV_GROUPS } = await server.ssrLoadModule("/src/config/navigation.ts");
 const { PAGE_ROUTES } = await server.ssrLoadModule("/src/app/page-routes.ts");
 const { ROLES, ROLES_WEB, hasRole } = await server.ssrLoadModule("/src/config/roles.ts");
@@ -35,9 +35,10 @@ test("cada ruta del panel tiene página y cada elemento del menú usa su ruta y 
   }
 });
 
-test("coordinador, supervisor, root y roles sin portal respetan los permisos", () => {
+test("admin, coordinador, supervisor y root llegan solo a sus pantallas", () => {
   const can = (role, key) => hasRole(role, PORTAL_ROUTES[key].roles);
   assert.equal(can(ROLES.COORDINADOR, "usuarios"), true);
+  assert.equal(can(ROLES.COORDINADOR, "configuracion"), false);
   assert.equal(can(ROLES.COORDINADOR, "flota"), false);
   assert.equal(can(ROLES.SUPERVISOR, "flota"), true);
   assert.equal(can(ROLES.SUPERVISOR, "usuarios"), false);
@@ -45,23 +46,34 @@ test("coordinador, supervisor, root y roles sin portal respetan los permisos", (
   assert.equal(can(ROLES.SUPERVISOR, "tiposIncidenteVehiculo"), true);
   assert.equal(can(ROLES.ROOT, "usuarios"), true);
   assert.equal(can(ROLES.ROOT, "flotaMantenimiento"), true);
+  assert.equal(can(ROLES.ADMIN, "usuarios"), true);
+  assert.equal(can(ROLES.ADMIN, "configuracion"), true);
+  assert.equal(can(ROLES.ADMIN, "tablero"), false);
   assert.equal(can(ROLES.REPARTIDOR, "tablero"), false);
   assert.equal(hasRole(ROLES.REPARTIDOR, ROLES_WEB), false);
-  assert.equal(hasRole(ROLES.ADMIN, ROLES_WEB), false);
+  assert.equal(hasRole(ROLES.ADMIN, ROLES_WEB), true);
+  assert.equal(portalHomeHref(ROLES.ADMIN), portalHref("usuarios"));
+  assert.equal(portalHomeHref(ROLES.COORDINADOR), portalHref("tablero"));
   assert.deepEqual(PORTAL_ROUTES.despachoDetalle.roles, PORTAL_ROUTES.despachos.roles);
   assert.deepEqual(PORTAL_ROUTES.flotaMantenimiento.roles, PORTAL_ROUTES.flota.roles);
 });
 
-test("el panel de permisos coincide con los módulos visibles para cada rol", () => {
+test("el panel muestra los permisos de API de cada rol antes de asignarlo", () => {
   const supervisor = renderToStaticMarkup(createElement(PermisosRolPanel, { rolNombre: "supervisor" }));
   assert.match(supervisor, /Vehículos/);
-  assert.match(supervisor, /Fallas mecánicas/);
+  assert.match(supervisor, /Tipos de falla mecánica/);
+  assert.match(supervisor, /Consultar, crear, editar y eliminar/);
   assert.doesNotMatch(supervisor, /Usuarios/);
   const coordinator = renderToStaticMarkup(createElement(PermisosRolPanel, { rolNombre: "coordinator" }));
   assert.match(coordinator, /Usuarios/);
-  assert.doesNotMatch(coordinator, /Vehículos/);
+  assert.match(coordinator, /Vehículos/);
+  assert.doesNotMatch(coordinator, /cambiar roles/);
+  const admin = renderToStaticMarkup(createElement(PermisosRolPanel, { rolNombre: "admin" }));
+  assert.match(admin, /cambiar roles/);
+  assert.match(admin, /Configuración/);
   const driver = renderToStaticMarkup(createElement(PermisosRolPanel, { rolNombre: "driver" }));
-  assert.match(driver, /app móvil de reparto/);
+  assert.match(driver, /app móvil/);
+  assert.doesNotMatch(driver, /Usuarios/);
 });
 
 test("el generador registra una página nueva en rutas, permisos y menú", () => {

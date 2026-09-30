@@ -7,9 +7,15 @@ import { DashboardLayout } from "@/app/layouts/dashboard-layout";
 import { ProtectedRoute } from "@/shared/guards/protected-route";
 import { LoadingScreen } from "@/shared/components/feedback/loading-screen";
 import { PageErrorBoundary } from "@/shared/components/feedback/page-error-boundary";
-import { PORTAL_ROUTES, portalHref } from "@/config/portal-routes";
+import { PORTAL_ROUTES, portalHomeHref } from "@/config/portal-routes";
 import { PAGE_ROUTES } from "@/app/page-routes";
 import { ROLES_WEB } from "@/config/roles";
+import { useAuthStore } from "@/shared/store/use-auth-store";
+
+function PortalHomeRedirect() {
+  const roleId = useAuthStore((state) => state.user?.rol.id);
+  return <Navigate to={portalHomeHref(roleId ?? 0)} replace />;
+}
 
 // ── Público ──
 const HomePage = lazy(() => import("@/pages/public/home-page"));
@@ -70,7 +76,7 @@ export function AppRouter() {
         {/* ─── Panel interno: el repartidor usa la app móvil, no entra aquí ─── */}
         <Route element={<ProtectedRoute roles={ROLES_WEB} />}>
           <Route path="/app" element={<DashboardLayout />}>
-            <Route index element={<Navigate to={portalHref("tablero")} replace />} />
+            <Route index element={<PortalHomeRedirect />} />
             {PAGE_ROUTES.map(([key, Page]) => (
               <Route key={key} element={<ProtectedRoute roles={PORTAL_ROUTES[key].roles} />}>
                 <Route path={PORTAL_ROUTES[key].path} element={<Page />} />

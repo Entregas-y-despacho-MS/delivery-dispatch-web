@@ -15,9 +15,11 @@ interface RolSelectorProps {
   describedBy?: string;
 }
 
-/** Selector de rol. La cuenta semilla "root" no se ofrece: solo existe una y la crea el sistema. */
+/** Ofrece los tres roles operativos; conserva el rol actual si la cuenta es administrativa. */
 export function RolSelector({ id, value, onChange, onBlur, roles, loading, disabled, invalid, describedBy }: RolSelectorProps) {
-  const opciones = (roles ?? []).filter((r) => r.nombre !== "root");
+  const opciones = (roles ?? []).filter((r) =>
+    ["coordinator", "supervisor", "driver"].includes(r.nombre) || String(r.id) === value
+  );
 
   return (
     <Select value={value} onValueChange={onChange} disabled={loading || disabled}>

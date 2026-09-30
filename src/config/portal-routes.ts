@@ -3,6 +3,8 @@ import { ROLES, type RoleId } from "@/config/roles";
 const BOTH = [ROLES.COORDINADOR, ROLES.SUPERVISOR] as const;
 const COORDINATOR = [ROLES.COORDINADOR] as const;
 const SUPERVISOR = [ROLES.SUPERVISOR] as const;
+const ADMIN = [ROLES.ADMIN] as const;
+const USER_READERS = [ROLES.ADMIN, ROLES.COORDINADOR] as const;
 
 interface PortalRoute {
   path: string;
@@ -27,9 +29,9 @@ export const PORTAL_ROUTES = {
   motivosIncidencia: { path: "catalogos/motivos-incidencia", roles: COORDINATOR },
   motivosReprogramacion: { path: "catalogos/motivos-reprogramacion", roles: COORDINATOR },
   tiposIncidenteVehiculo: { path: "catalogos/tipos-incidente-vehiculo", roles: BOTH },
-  usuarios: { path: "usuarios", roles: COORDINATOR },
+  usuarios: { path: "usuarios", roles: USER_READERS },
   auditoria: { path: "auditoria", roles: COORDINATOR },
-  configuracion: { path: "configuracion", roles: COORDINATOR },
+  configuracion: { path: "configuracion", roles: ADMIN },
   // PORTAL_ROUTE_ANCHOR — no borres esta línea
 } as const satisfies Record<string, PortalRoute>;
 
@@ -37,4 +39,9 @@ export type PortalRouteKey = keyof typeof PORTAL_ROUTES;
 
 export function portalHref(key: PortalRouteKey): string {
   return `/app/${PORTAL_ROUTES[key].path}`;
+}
+
+/** El administrador no dispone del tablero operativo: su inicio es Usuarios. */
+export function portalHomeHref(roleId: number): string {
+  return portalHref(roleId === ROLES.ADMIN ? "usuarios" : "tablero");
 }

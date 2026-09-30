@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { ChevronRight, LogOut, X } from "lucide-react";
 
 import { NAV_GROUPS } from "@/config/navigation";
-import { portalHref } from "@/config/portal-routes";
+import { portalHomeHref } from "@/config/portal-routes";
 import { hasRole } from "@/config/roles";
 import { useLogout } from "@/domains/auth";
 import { FlashPackLogo } from "@/shared/components/common/flash-pack-logo";
@@ -59,10 +59,10 @@ export function DashboardSidebar({ user }: { user: AuthUser }) {
       <SidebarHeader className="px-3 pt-5 pb-4 group-data-[collapsible=icon]:px-2">
         <div className="flex items-center gap-2">
           <Link
-            to={portalHref("tablero")}
+            to={portalHomeHref(user.rol.id)}
             onClick={closeMobileMenu}
             className="flex min-w-0 flex-1 items-center gap-3 rounded-lg px-2 py-1.5 outline-none transition-colors hover:bg-sidebar-foreground/10 focus-visible:ring-2 focus-visible:ring-sidebar-ring group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
-            aria-label="Flash Pack, ir al tablero"
+            aria-label="Flash Pack, ir al inicio"
           >
             <FlashPackLogo />
             <span className="min-w-0 group-data-[collapsible=icon]:hidden">

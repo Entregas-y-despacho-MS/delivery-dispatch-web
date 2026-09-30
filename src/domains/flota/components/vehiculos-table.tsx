@@ -1,9 +1,8 @@
-import { Pencil, Search } from "lucide-react";
+import { Pencil } from "lucide-react";
 
 import { DataTable, type Column } from "@/shared/components/common/data-table";
 import { EmptyState } from "@/shared/components/feedback/empty-state";
 import { Button } from "@/shared/components/ui/button";
-import { Input } from "@/shared/components/ui/input";
 import { CardSkeletonList } from "@/shared/components/feedback/card-skeleton-list";
 import type { EstadoVehiculo, Vehiculo } from "../flota.types";
 
@@ -151,23 +150,5 @@ export function VehiculosTable({
         ))}
       </div>
     </>
-  );
-}
-
-export function VehiculosSearch({ value, onChange }: { value: string; onChange: (value: string) => void }) {
-  return (
-    <div className="relative w-full md:max-w-sm">
-      <label htmlFor="vehiculos-search" className="sr-only">Buscar vehículos</label>
-      <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
-      <Input
-        id="vehiculos-search"
-        type="search"
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        placeholder="Placa, modelo o tipo"
-        className="h-10 pl-10"
-        aria-label="Buscar por placa, modelo o tipo"
-      />
-    </div>
   );
 }

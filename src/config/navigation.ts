@@ -2,7 +2,7 @@ import {
   LayoutDashboard, ClipboardList, Route, RotateCcw,
   Map, Truck, Users, AlertTriangle, BarChart3,
   UserCog, MapPin, Gauge, ListX, CalendarClock, CarFront,
-  ScrollText, Settings, type LucideIcon,
+  ScrollText, Settings, PanelsTopLeft, type LucideIcon,
 } from "lucide-react";
 import { PORTAL_ROUTES, portalHref, type PortalRouteKey } from "@/config/portal-routes";
 import type { RoleId } from "@/config/roles";
@@ -16,6 +16,7 @@ export interface NavItem {
 
 export interface NavGroup {
   label: string;
+  icon: LucideIcon;
   items: NavItem[];
 }
 
@@ -27,6 +28,7 @@ function navItem(key: PortalRouteKey, title: string, icon: LucideIcon): NavItem 
 export const NAV_GROUPS: NavGroup[] = [
   {
     label: "Operación",
+    icon: PanelsTopLeft,
     items: [
       navItem("tablero", "Tablero", LayoutDashboard),
       navItem("despachos", "Despachos", ClipboardList),
@@ -36,6 +38,7 @@ export const NAV_GROUPS: NavGroup[] = [
   },
   {
     label: "Flota",
+    icon: Truck,
     items: [
       navItem("mapa", "Mapa", Map),
       navItem("flota", "Vehículos", Truck),
@@ -44,6 +47,7 @@ export const NAV_GROUPS: NavGroup[] = [
   },
   {
     label: "Control",
+    icon: AlertTriangle,
     items: [
       navItem("incidencias", "Incidencias", AlertTriangle),
       navItem("reportes", "Reportes", BarChart3),
@@ -51,6 +55,7 @@ export const NAV_GROUPS: NavGroup[] = [
   },
   {
     label: "Catálogos",
+    icon: LayoutDashboard,
     items: [
       navItem("zonas", "Zonas de reparto", MapPin),
       navItem("nivelesServicio", "Niveles de servicio", Gauge),
@@ -62,6 +67,7 @@ export const NAV_GROUPS: NavGroup[] = [
   },
   {
     label: "Administración",
+    icon: UserCog,
     items: [
       navItem("usuarios", "Usuarios", UserCog),
       navItem("auditoria", "Auditoría", ScrollText),

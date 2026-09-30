@@ -34,7 +34,7 @@ import { useUsuarios } from "../hooks/use-usuarios";
 import type { Usuario, UsuarioEstado, UsuariosFiltrosParams } from "../usuarios.types";
 import { UsuariosTableFilters } from "./usuarios-table-filters";
 
-type SortCol = "nombre" | "correo" | "rol" | "estado" | "ultimoAcceso";
+type SortCol = "nombre" | "ultimoAcceso";
 
 interface UsuariosTableProps {
   onEditar: (usuario: Usuario) => void;
@@ -144,14 +144,8 @@ export function UsuariosTable({ onEditar, onDesactivar }: UsuariosTableProps) {
       params.status = estado as UsuarioEstado;
     }
 
-    // Ordenamiento soportado en backend
-    if (sortCol === "nombre") {
-      params.sortBy = "fullName";
-      params.sortOrder = sortOrder;
-    } else if (sortCol === "ultimoAcceso") {
-      params.sortBy = "lastLoginAt";
-      params.sortOrder = sortOrder;
-    }
+    params.sortBy = sortCol === "nombre" ? "fullName" : "lastLoginAt";
+    params.sortOrder = sortOrder;
 
     return params;
   }, [page, limit, debouncedSearch, rolId, estado, sortCol, sortOrder]);
@@ -185,6 +179,7 @@ export function UsuariosTable({ onEditar, onDesactivar }: UsuariosTableProps) {
       setSortCol(col);
       setSortOrder("asc");
     }
+    setPage(1);
   };
 
   // Manejo de búsqueda con reinicio a página 1
@@ -205,35 +200,7 @@ export function UsuariosTable({ onEditar, onDesactivar }: UsuariosTableProps) {
     setPage(1);
   };
 
-  // Ordenamiento local complementario si la columna activa no es soportada en backend
-  const userItems = data?.items;
-  const items = useMemo(() => {
-    const list = userItems ? [...userItems] : [];
-    if (sortCol === "correo") {
-      list.sort((a, b) => {
-        const mailA = a.email ?? "";
-        const mailB = b.email ?? "";
-        return sortOrder === "asc"
-          ? mailA.localeCompare(mailB)
-          : mailB.localeCompare(mailA);
-      });
-    } else if (sortCol === "rol") {
-      list.sort((a, b) => {
-        const rolA = a.rol.etiqueta ?? "";
-        const rolB = b.rol.etiqueta ?? "";
-        return sortOrder === "asc"
-          ? rolA.localeCompare(rolB)
-          : rolB.localeCompare(rolA);
-      });
-    } else if (sortCol === "estado") {
-      list.sort((a, b) => {
-        return sortOrder === "asc"
-          ? a.estado.localeCompare(b.estado)
-          : b.estado.localeCompare(a.estado);
-      });
-    }
-    return list;
-  }, [userItems, sortCol, sortOrder]);
+  const items = data?.items ?? [];
 
   // Cálculos de rango para texto de paginación
   const total = data?.total ?? 0;
@@ -270,7 +237,9 @@ export function UsuariosTable({ onEditar, onDesactivar }: UsuariosTableProps) {
             <TableHeader>
               <TableRow className="hover:bg-transparent">
                 {/* Nombre */}
-                <TableHead>
+                <TableHead
+                  aria-sort={sortCol === "nombre" ? (sortOrder === "asc" ? "ascending" : "descending") : "none"}
+                >
                   <button
                     type="button"
                     onClick={() => handleSort("nombre")}
@@ -283,46 +252,19 @@ export function UsuariosTable({ onEditar, onDesactivar }: UsuariosTableProps) {
                 </TableHead>
 
                 {/* Correo (oculto en móviles) */}
-                <TableHead className="hidden md:table-cell">
-                  <button
-                    type="button"
-                    onClick={() => handleSort("correo")}
-                    className="flex items-center font-semibold text-foreground hover:text-primary transition-colors cursor-pointer select-none"
-                    aria-label="Ordenar por correo"
-                  >
-                    Correo
-                    <SortIcon active={sortCol === "correo"} order={sortOrder} />
-                  </button>
-                </TableHead>
+                <TableHead className="hidden md:table-cell font-semibold text-foreground">Correo</TableHead>
 
                 {/* Rol */}
-                <TableHead>
-                  <button
-                    type="button"
-                    onClick={() => handleSort("rol")}
-                    className="flex items-center font-semibold text-foreground hover:text-primary transition-colors cursor-pointer select-none"
-                    aria-label="Ordenar por rol"
-                  >
-                    Rol
-                    <SortIcon active={sortCol === "rol"} order={sortOrder} />
-                  </button>
-                </TableHead>
+                <TableHead className="font-semibold text-foreground">Rol</TableHead>
 
                 {/* Estado */}
-                <TableHead>
-                  <button
-                    type="button"
-                    onClick={() => handleSort("estado")}
-                    className="flex items-center font-semibold text-foreground hover:text-primary transition-colors cursor-pointer select-none"
-                    aria-label="Ordenar por estado"
-                  >
-                    Estado
-                    <SortIcon active={sortCol === "estado"} order={sortOrder} />
-                  </button>
-                </TableHead>
+                <TableHead className="font-semibold text-foreground">Estado</TableHead>
 
                 {/* Último Acceso (oculto en pantallas pequeñas) */}
-                <TableHead className="hidden lg:table-cell">
+                <TableHead
+                  className="hidden lg:table-cell"
+                  aria-sort={sortCol === "ultimoAcceso" ? (sortOrder === "asc" ? "ascending" : "descending") : "none"}
+                >
                   <button
                     type="button"
                     onClick={() => handleSort("ultimoAcceso")}

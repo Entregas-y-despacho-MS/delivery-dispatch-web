@@ -7,7 +7,7 @@ export const ROLES_QUERY_KEY = ["roles"] as const;
 export function useRoles() {
   return useQuery({
     queryKey: ROLES_QUERY_KEY,
-    queryFn: rolesService.list,
+    queryFn: ({ signal }) => rolesService.list(signal),
     staleTime: 10 * 60 * 1000,
   });
 }

@@ -61,9 +61,10 @@ export function toActualizarPayload(original: Usuario, values: UsuarioFormValues
 }
 
 export const usuariosService = {
-  list: async (params?: UsuariosFiltrosParams): Promise<UsuariosPagina> => {
+  list: async (params?: UsuariosFiltrosParams, signal?: AbortSignal): Promise<UsuariosPagina> => {
     const { data } = await api.get<BackendPage<BackendUser>>("/users", {
       params,
+      signal,
       ...SILENCIOSO,
     });
     return {

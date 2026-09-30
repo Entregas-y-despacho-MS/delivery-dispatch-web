@@ -11,7 +11,7 @@ export const USUARIOS_QUERY_KEY = ["usuarios"] as const;
 export function useUsuarios(params?: UsuariosFiltrosParams) {
   return useQuery({
     queryKey: ["usuarios", params] as const,
-    queryFn: () => usuariosService.list(params),
+    queryFn: ({ signal }) => usuariosService.list(params, signal),
   });
 }
 

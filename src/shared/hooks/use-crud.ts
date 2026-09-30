@@ -34,7 +34,7 @@ export function useCrud<TItem, TCreate, TUpdate, TParams extends QueryParams = Q
   const keys = createQueryKeys<TParams>(scope);
   const result = useQuery<ListResult<TItem>>({
     queryKey: keys.lists(options.params),
-    queryFn: () => service.list(options.params),
+    queryFn: ({ signal }) => service.list(options.params, signal),
     enabled: options.enabled ?? true,
     staleTime: options.staleTime ?? 5 * 60 * 1000,
     refetchInterval: options.refetchInterval,
@@ -97,7 +97,7 @@ export function useCrudItem<TItem, TCreate, TUpdate, TParams extends QueryParams
   const keys = createQueryKeys<TParams>(scope);
   return useQuery<TItem>({
     queryKey: keys.detail(id ?? ""),
-    queryFn: () => service.getOne(id!),
+    queryFn: ({ signal }) => service.getOne(id!, signal),
     enabled: id !== undefined,
   });
 }

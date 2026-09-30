@@ -18,9 +18,9 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="grid min-h-screen lg:grid-cols-[1fr_1.1fr]">
+    <div className="grid min-h-screen bg-background lg:grid-cols-[1.1fr_1fr]">
       <LoginBrandPanel />
-      <main className="relative flex items-center justify-center px-4 py-12 sm:px-6">
+      <main className="relative flex items-center justify-center bg-white px-6 py-12 sm:px-12 md:px-16 lg:px-20 dark:bg-card">
         <div className="absolute right-4 top-4 sm:right-6 sm:top-6">
           <ThemeToggle />
         </div>
@@ -29,3 +29,6 @@ export default function LoginPage() {
     </div>
   );
 }
+
+
+

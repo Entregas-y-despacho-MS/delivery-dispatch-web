@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FileText, Gauge, ListOrdered, LoaderCircle, Timer, TriangleAlert } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -17,11 +18,13 @@ export function NivelServicioForm({
   nivel,
   onSubmit,
   onCancel,
+  onDirtyChange,
   guardando = false,
 }: {
   nivel?: NivelServicio;
   onSubmit: (values: NivelServicioFormValues) => Promise<void>;
   onCancel: () => void;
+  onDirtyChange?: (dirty: boolean) => void;
   guardando?: boolean;
 }) {
   const {
@@ -29,7 +32,7 @@ export function NivelServicioForm({
     handleSubmit,
     setError,
     setFocus,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<NivelServicioFormValues>({
     resolver: zodResolver(nivelServicioSchema),
     defaultValues: {
@@ -41,6 +44,8 @@ export function NivelServicioForm({
     mode: "onTouched",
     reValidateMode: "onChange",
   });
+
+  useEffect(() => onDirtyChange?.(isDirty), [isDirty, onDirtyChange]);
 
   const submit = handleSubmit(async (values) => {
     try {

@@ -1,4 +1,4 @@
-import { useMemo, useState, type ComponentProps } from "react";
+import { useMemo, type ComponentProps } from "react";
 import { MapPin, Plus, Timer } from "lucide-react";
 
 import {
@@ -14,6 +14,7 @@ import { SearchField } from "@/shared/components/common/search-field";
 import { ErrorAlert } from "@/shared/components/feedback/error-alert";
 import { Button } from "@/shared/components/ui/button";
 import { useEditorDialog } from "@/shared/hooks/use-editor-dialog";
+import { useConfirmAction } from "@/shared/hooks/use-confirm-action";
 import { useListFilters } from "@/shared/hooks/use-list-filters";
 import { parseApiError } from "@/shared/lib/api-error";
 import {
@@ -28,9 +29,6 @@ const PAGE_SIZE = 10;
 
 export default function ZonasPage() {
   const { search, debouncedSearch, page, setPage, setSearch, clearFilters, hasFilters } = useListFilters({});
-  const editor = useEditorDialog<Zona>();
-  const [zonaToDeactivate, setZonaToDeactivate] = useState<Zona>();
-  const [deactivateError, setDeactivateError] = useState("");
   const params = useMemo(() => ({
     page,
     limit: PAGE_SIZE,
@@ -38,6 +36,11 @@ export default function ZonasPage() {
   }), [debouncedSearch, page]);
   const zonas = useZonas(params);
   const totalPages = zonas.pages ?? 1;
+  const editor = useEditorDialog<Zona>({
+    busy: zonas.isSaving,
+    confirmDiscardMessage: "¿Descartar los cambios sin guardar?",
+  });
+  const confirmation = useConfirmAction<Zona>();
 
   const saveZona: ComponentProps<typeof ZonaForm>["onSubmit"] = async (values) => {
     if (editor.editingItem) {
@@ -45,18 +48,19 @@ export default function ZonasPage() {
     } else {
       await zonas.createItem(values);
     }
-    editor.onOpenChange(false);
+    editor.finish();
   };
 
   // La API actual solo expone eliminación lógica; la reactivación requerirá un endpoint adicional.
   const deactivateZona = async () => {
+    const zonaToDeactivate = confirmation.item;
     if (!zonaToDeactivate) return;
-    setDeactivateError("");
+    confirmation.setError("");
     try {
       await zonas.deleteItem(zonaToDeactivate.id);
-      setZonaToDeactivate(undefined);
+      confirmation.close();
     } catch (error) {
-      setDeactivateError(parseApiError(error).message);
+      confirmation.setError(parseApiError(error).message);
     }
   };
 
@@ -110,7 +114,7 @@ export default function ZonasPage() {
               onClearFilters={clearFilters}
               deactivating={zonas.deleteMutation.isPending}
               onEdit={editor.openEdit}
-              onDeactivate={(zona) => { setDeactivateError(""); setZonaToDeactivate(zona); }}
+              onDeactivate={confirmation.request}
             />
           </div>
         )}
@@ -136,19 +140,20 @@ export default function ZonasPage() {
             zona={editor.editingItem}
             onSubmit={saveZona}
             onCancel={() => editor.onOpenChange(false)}
+            onDirtyChange={editor.setDirty}
             guardando={zonas.isSaving}
           />
         </DialogContent>
       </Dialog>
 
-      <ConfirmActionDialog open={!!zonaToDeactivate}
-        onOpenChange={(open) => { if (!open) { setZonaToDeactivate(undefined); setDeactivateError(""); } }}
+      <ConfirmActionDialog open={!!confirmation.item}
+        onOpenChange={confirmation.onOpenChange}
         title="Desactivar zona"
-        description={zonaToDeactivate
-          ? `La zona ${zonaToDeactivate.code} dejará de aparecer en el catálogo y no podrá asignarse a nuevas entregas.`
+        description={confirmation.item
+          ? `La zona ${confirmation.item.code} dejará de aparecer en el catálogo y no podrá asignarse a nuevas entregas.`
           : "La zona dejará de estar disponible para nuevas entregas."}
         confirmLabel="Desactivar zona" busyLabel="Desactivando…"
-        busy={zonas.deleteMutation.isPending} error={deactivateError} onConfirm={deactivateZona} />
+        busy={zonas.deleteMutation.isPending} error={confirmation.error} onConfirm={deactivateZona} />
     </div>
   );
 }

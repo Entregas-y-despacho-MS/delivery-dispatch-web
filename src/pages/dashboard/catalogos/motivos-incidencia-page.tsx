@@ -13,6 +13,8 @@ import { ActiveStatusFilter, type ActiveStatusFilterValue } from "@/shared/compo
 import { SearchField } from "@/shared/components/common/search-field";
 import { PaginationControls } from "@/shared/components/common/pagination-controls";
 import { useListFilters } from "@/shared/hooks/use-list-filters";
+import { useEditorDialog } from "@/shared/hooks/use-editor-dialog";
+import { useConfirmAction } from "@/shared/hooks/use-confirm-action";
 import { ErrorAlert } from "@/shared/components/feedback/error-alert";
 import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 import { Button } from "@/shared/components/ui/button";
@@ -32,10 +34,6 @@ export default function MotivosIncidenciaPage() {
   const list = useListFilters<{ status: StatusFilter }>({ status: "all" });
   const { search, debouncedSearch, page, setPage, clearFilters, hasFilters } = list;
   const statusFilter = list.filters.status;
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingMotivo, setEditingMotivo] = useState<MotivoIncidencia>();
-  const [pendingDeactivate, setPendingDeactivate] = useState<MotivoIncidencia>();
-  const [actionError, setActionError] = useState("");
   const [listActionError, setListActionError] = useState("");
 
   const params = useMemo(() => ({
@@ -46,27 +44,16 @@ export default function MotivosIncidenciaPage() {
   }), [page, debouncedSearch, statusFilter]);
   const motivos = useMotivosIncidencia(params);
   const totalPages = Math.max(motivos.pages ?? 0, 1);
-
-  const openCreate = () => {
-    setEditingMotivo(undefined);
-    setDialogOpen(true);
-  };
-
-  const openEdit = (motivo: MotivoIncidencia) => {
-    setEditingMotivo(motivo);
-    setDialogOpen(true);
-  };
-
-  const closeDialog = (open: boolean) => {
-    if (motivos.isSaving) return;
-    setDialogOpen(open);
-    if (!open) setEditingMotivo(undefined);
-  };
+  const editor = useEditorDialog<MotivoIncidencia>({
+    busy: motivos.isSaving,
+    confirmDiscardMessage: "¿Descartar los cambios sin guardar?",
+  });
+  const confirmation = useConfirmAction<MotivoIncidencia>();
+  const editingMotivo = editor.editingItem;
 
   const saveMotivo: ComponentProps<typeof MotivoIncidenciaForm>["onSubmit"] = async (values) => {
     await motivos.saveItem(values, editingMotivo?.id);
-    setDialogOpen(false);
-    setEditingMotivo(undefined);
+    editor.finish();
     if (!editingMotivo) setPage(1);
   };
 
@@ -74,8 +61,7 @@ export default function MotivosIncidenciaPage() {
   const requestToggle = async (motivo: MotivoIncidencia) => {
     setListActionError("");
     if (motivo.active) {
-      setActionError("");
-      setPendingDeactivate(motivo);
+      confirmation.request(motivo);
       return;
     }
 
@@ -90,15 +76,16 @@ export default function MotivosIncidenciaPage() {
   };
 
   const confirmDeactivate = async () => {
+    const pendingDeactivate = confirmation.item;
     if (!pendingDeactivate) return;
-    setActionError("");
+    confirmation.setError("");
 
     try {
       await motivos.toggleActive(pendingDeactivate);
-      setPendingDeactivate(undefined);
+      confirmation.close();
     } catch (error) {
       const apiError = parseApiError(error);
-      setActionError(apiError.status === 404
+      confirmation.setError(apiError.status === 404
         ? "Este motivo ya no existe. Actualiza la lista."
         : apiError.message);
     }
@@ -111,7 +98,7 @@ export default function MotivosIncidenciaPage() {
         title="Motivos de incidencia"
         icon={ListX}
         description="Define las causas que el repartidor puede reportar y si cada una exige foto de evidencia."
-        action={<Button onClick={openCreate}><Plus aria-hidden /> Nuevo motivo</Button>}
+        action={<Button onClick={editor.openCreate}><Plus aria-hidden /> Nuevo motivo</Button>}
       />
 
       <section className="rounded-xl border bg-card p-4 shadow-sm sm:p-5" aria-label="Catálogo de motivos de incidencia">
@@ -153,7 +140,7 @@ export default function MotivosIncidenciaPage() {
               loading={motivos.isLoading}
               searchActive={hasFilters}
               busy={motivos.isSaving}
-              onEdit={openEdit}
+              onEdit={editor.openEdit}
               onToggle={requestToggle}
             />
           </div>
@@ -171,7 +158,7 @@ export default function MotivosIncidenciaPage() {
         )}
       </section>
 
-      <Dialog open={dialogOpen} onOpenChange={closeDialog}>
+      <Dialog open={editor.open} onOpenChange={editor.onOpenChange}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>{editingMotivo ? "Editar motivo de incidencia" : "Nuevo motivo de incidencia"}</DialogTitle>
@@ -185,17 +172,18 @@ export default function MotivosIncidenciaPage() {
             key={editingMotivo?.id ?? "new"}
             motivo={editingMotivo}
             onSubmit={saveMotivo}
-            onCancel={() => closeDialog(false)}
+            onCancel={() => editor.onOpenChange(false)}
+            onDirtyChange={editor.setDirty}
             guardando={motivos.isSaving}
           />
         </DialogContent>
       </Dialog>
 
-      <ConfirmActionDialog open={!!pendingDeactivate}
-        onOpenChange={(open) => { if (!open) { setPendingDeactivate(undefined); setActionError(""); } }}
+      <ConfirmActionDialog open={!!confirmation.item}
+        onOpenChange={confirmation.onOpenChange}
         title="Desactivar motivo de incidencia"
-        description={`El motivo ${pendingDeactivate?.name ?? ""} dejará de ofrecerse a los repartidores. Las incidencias ya registradas y su evidencia no cambian.`}
-        confirmLabel="Desactivar motivo" busy={motivos.isSaving} error={actionError}
+        description={`El motivo ${confirmation.item?.name ?? ""} dejará de ofrecerse a los repartidores. Las incidencias ya registradas y su evidencia no cambian.`}
+        confirmLabel="Desactivar motivo" busy={motivos.isSaving} error={confirmation.error}
         onConfirm={confirmDeactivate} />
     </div>
   );

@@ -43,7 +43,7 @@ export function useGuardarUsuario(original: Usuario | null, onGuardado: () => vo
         toast.info("No hay cambios que guardar.");
       } else if ("cambiaRol" in resultado && resultado.cambiaRol) {
         toast.success(`Rol actualizado a ${resultado.guardado.rol.etiqueta}.`, {
-          description: "El usuario deberá iniciar sesión de nuevo para usar su nuevo rol.",
+          description: "El usuario deberá iniciar sesión de nuevo para renovar su sesión.",
         });
       } else {
         toast.success(original ? "Usuario actualizado." : "Usuario creado.");

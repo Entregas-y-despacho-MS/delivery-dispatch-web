@@ -145,9 +145,9 @@ export function UsuarioForm({ usuario, onGuardado, onCancelar }: UsuarioFormProp
           </p>
         )}
         {cambiaRol && (
-          <p className="flex items-start gap-1.5 text-xs text-amber-600 dark:text-amber-400" role="status">
+          <p className="flex items-start gap-1.5 text-sm text-warning" role="status">
             <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
-            Al guardar, se cerrará la sesión de este usuario y deberá ingresar de nuevo con su nuevo rol.
+            Al guardar, este usuario deberá ingresar de nuevo para renovar su sesión con el nuevo rol.
           </p>
         )}
         {roles.isError && (

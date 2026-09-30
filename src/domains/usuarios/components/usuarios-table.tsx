@@ -29,6 +29,7 @@ import { UsuariosTableFilters } from "./usuarios-table-filters";
 type SortCol = "nombre" | "ultimoAcceso";
 
 interface UsuariosTableProps {
+  puedeAdministrar: boolean;
   onEditar: (usuario: Usuario) => void;
   onDesactivar: (usuario: Usuario) => void;
 }
@@ -97,7 +98,7 @@ function SortIcon({ active, order }: { active: boolean; order?: "asc" | "desc" }
   return <ChevronDown className="ml-1 size-3.5 text-foreground shrink-0" aria-hidden />;
 }
 
-export function UsuariosTable({ onEditar, onDesactivar }: UsuariosTableProps) {
+export function UsuariosTable({ puedeAdministrar, onEditar, onDesactivar }: UsuariosTableProps) {
   const list = useListFilters<{ role: string; status: string }>({ role: "todos", status: "todos" });
   const { search, debouncedSearch, page, setPage, clearFilters, hasFilters } = list;
   const rolId = list.filters.role;
@@ -145,7 +146,7 @@ export function UsuariosTable({ onEditar, onDesactivar }: UsuariosTableProps) {
     { header: "Rol", type: "text" },
     { header: "Estado", type: "badge" },
     { header: "Último Acceso", type: "text", className: "hidden lg:table-cell" },
-    { header: "Acciones", type: "actions", className: "w-24 text-right pr-4" },
+    ...(puedeAdministrar ? [{ header: "Acciones", type: "actions" as const, className: "w-24 text-right pr-4" }] : []),
   ];
 
   // Manejo de cambio de ordenamiento por cabecera
@@ -233,7 +234,7 @@ export function UsuariosTable({ onEditar, onDesactivar }: UsuariosTableProps) {
                 </TableHead>
 
                 {/* Acciones */}
-                <TableHead className="w-24 text-right pr-4">Acciones</TableHead>
+                {puedeAdministrar && <TableHead className="w-24 text-right pr-4">Acciones</TableHead>}
               </TableRow>
             </TableHeader>
 
@@ -272,7 +273,7 @@ export function UsuariosTable({ onEditar, onDesactivar }: UsuariosTableProps) {
                       </TableCell>
 
                       {/* Acciones */}
-                      <TableCell className="text-right pr-4">
+                      {puedeAdministrar && <TableCell className="text-right pr-4">
                         <div className="flex justify-end gap-1">
                           <Button
                             variant="ghost"
@@ -295,7 +296,7 @@ export function UsuariosTable({ onEditar, onDesactivar }: UsuariosTableProps) {
                             <UserX className="size-4" aria-hidden />
                           </Button>
                         </div>
-                      </TableCell>
+                      </TableCell>}
                     </TableRow>
                   );
               })}

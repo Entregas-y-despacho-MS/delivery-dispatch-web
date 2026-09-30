@@ -16,7 +16,7 @@ export function useNivelesServicio(params: NivelServicioListParams) {
     NivelServicioCreate,
     NivelServicioUpdate,
     NivelServicioListParams
-  >(nivelesServicioService, "service-levels", { params });
+  >(nivelesServicioService, "service-levels", { params, policy: "catalog" });
 
   const saveItem = async (values: NivelServicioFormValues, id?: number) => {
     if (id === undefined) {

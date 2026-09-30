@@ -16,6 +16,7 @@ export function useTiposIncidenteVehiculo(params: TipoIncidenteVehiculoListParam
     TipoIncidenteVehiculoListParams
   >(tiposIncidenteVehiculoService, "vehicle-incident-types", {
     params,
+    policy: "catalog",
     notifications: {
       created: "Tipo de falla creado",
       updated: "Tipo de falla actualizado",

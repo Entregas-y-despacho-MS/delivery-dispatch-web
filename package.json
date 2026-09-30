@@ -12,7 +12,8 @@
     "test:session": "node --test scripts/session-lifecycle.test.mjs",
     "test:errors": "node --test scripts/error-handling.test.mjs",
     "test:password-change": "node --test scripts/required-password-change.test.mjs",
-    "test:loading": "node --test scripts/loading-states.test.mjs"
+    "test:loading": "node --test scripts/loading-states.test.mjs",
+    "test:configuration": "node --test scripts/app-configuration.test.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

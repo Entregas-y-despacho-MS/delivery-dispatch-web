@@ -7,6 +7,7 @@ export function useZonas(
   options: Omit<UseCrudOptions<ZonaListParams, Zona>, "params"> = {},
 ) {
   return useCrud<Zona, ZonaInput, ZonaInput, ZonaListParams>(zonasService, "delivery-zones", {
+    policy: "catalog",
     ...options,
     params,
     notifications: {

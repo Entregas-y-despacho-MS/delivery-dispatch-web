@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient, type UseMutationResult } from "@
 import { toast } from "sonner";
 import type { CrudService, ListResult, QueryParams } from "@/shared/lib/base.service";
 import { createQueryKeys } from "@/shared/lib/query-keys";
+import { QUERY_POLICIES, type QueryPolicy } from "@/shared/lib/query-policies";
 
 export interface CrudNotifications {
   created?: string;
@@ -12,6 +13,7 @@ export interface CrudNotifications {
 export interface UseCrudOptions<TParams extends QueryParams, TItem> {
   params?: TParams;
   enabled?: boolean;
+  policy?: QueryPolicy;
   staleTime?: number;
   refetchInterval?: number;
   notifications?: CrudNotifications;
@@ -32,11 +34,13 @@ export function useCrud<TItem, TCreate, TUpdate, TParams extends QueryParams = Q
 ) {
   const queryClient = useQueryClient();
   const keys = createQueryKeys<TParams>(scope);
+  const policy = QUERY_POLICIES[options.policy ?? "operational"];
   const result = useQuery<ListResult<TItem>>({
+    ...policy,
     queryKey: keys.lists(options.params),
     queryFn: ({ signal }) => service.list(options.params, signal),
     enabled: options.enabled ?? true,
-    staleTime: options.staleTime ?? 5 * 60 * 1000,
+    staleTime: options.staleTime ?? policy.staleTime,
     refetchInterval: options.refetchInterval,
   });
 

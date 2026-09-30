@@ -1,11 +1,18 @@
 #!/usr/bin/env bash
-# Crea un dominio completo y lo engancha al router y al sidebar.
+# Crea un dominio completo y lo engancha al router, permisos y sidebar.
 #   bash scripts/nuevo-dominio.sh clientes
 set -euo pipefail
 
 D="${1:-}"
-[ -z "$D" ] && { echo "Uso: $0 <nombre-dominio>   (ej: clientes)"; exit 1; }
+[ -z "$D" ] && { echo "Uso: $0 <nombre-dominio> [coordinator|supervisor|both]   (ej: clientes supervisor)"; exit 1; }
 [ -d "src/domains/$D" ] && { echo "❌ El dominio '$D' ya existe"; exit 1; }
+ROLE="${2:-coordinator}"
+case "$ROLE" in
+  coordinator) ROLE_SET="COORDINATOR" ;;
+  supervisor) ROLE_SET="SUPERVISOR" ;;
+  both) ROLE_SET="BOTH" ;;
+  *) echo "Uso: $0 <nombre-dominio> [coordinator|supervisor|both]"; exit 1 ;;
+esac
 
 PASCAL="$(echo "$D" | awk -F- '{for(i=1;i<=NF;i++) printf toupper(substr($i,1,1)) substr($i,2); print ""}')"
 SINGULAR="${PASCAL%s}"
@@ -99,13 +106,14 @@ export default function ${PASCAL}Page() {
 }
 PAGE
 
-# ── Enganchar automáticamente en router.tsx y navigation.ts ──
-R="src/app/router.tsx"
-N="src/app/navigation.ts"
+# ── Enganchar automáticamente en router, permisos y navegación ──
+R="src/app/page-routes.ts"
+N="src/config/navigation.ts"
+P="src/config/portal-routes.ts"
 
-python3 - "$D" "$PASCAL" "$R" "$N" <<'PY'
+python3 - "$D" "$PASCAL" "$CAMEL" "$ROLE_SET" "$R" "$N" "$P" <<'PY'
 import sys
-d, pascal, router, nav = sys.argv[1:5]
+d, pascal, camel, role_set, router, nav, portal = sys.argv[1:8]
 
 s = open(router).read()
 s = s.replace(
@@ -113,15 +121,22 @@ s = s.replace(
     f'const {pascal}Page = lazy(() => import("@/pages/dashboard/{d}-page"));\n// LAZY_ANCHOR',
 )
 s = s.replace(
-    "{/* ROUTE_ANCHOR",
-    f'<Route path="{d}" element={{<{pascal}Page />}} />\n              {{/* ROUTE_ANCHOR',
+    "// ROUTE_ANCHOR",
+    f'["{camel}", {pascal}Page],\n  // ROUTE_ANCHOR',
 )
 open(router, "w").write(s)
+
+s = open(portal).read()
+s = s.replace(
+    "// PORTAL_ROUTE_ANCHOR",
+    f'{camel}: {{ path: "{d}", roles: {role_set} }},\n  // PORTAL_ROUTE_ANCHOR',
+)
+open(portal, "w").write(s)
 
 s = open(nav).read()
 s = s.replace(
     "// NAV_ANCHOR",
-    f'{{ title: "{pascal}", href: "/app/{d}", icon: LayoutDashboard, roles: [ROLES.ADMIN] }},\n      // NAV_ANCHOR',
+    f'navItem("{camel}", "{pascal}", LayoutDashboard),\n      // NAV_ANCHOR',
 )
 open(nav, "w").write(s)
 PY
@@ -129,6 +144,6 @@ PY
 echo "✅ Dominio '$D' creado y enganchado:"
 echo "   src/domains/$D/              (index.ts, types, schemas, service, hook)"
 echo "   src/pages/dashboard/$D-page.tsx"
-echo "   ruta /app/$D  +  ítem en el sidebar"
+echo "   ruta /app/$D  +  permisos $ROLE  +  ítem en el sidebar"
 echo ""
-echo "Ajusta el icono y los roles en src/app/navigation.ts"
+echo "Ajusta el icono en src/config/navigation.ts y revisa los permisos en src/config/portal-routes.ts"

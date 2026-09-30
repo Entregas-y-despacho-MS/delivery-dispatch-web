@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "oxlint",
+    "lint": "oxlint --deny-warnings",
     "preview": "vite preview",
     "typecheck": "tsc -b",
     "test:session": "node --test scripts/session-lifecycle.test.mjs",
@@ -14,7 +14,8 @@
     "test:password-change": "node --test scripts/required-password-change.test.mjs",
     "test:loading": "node --test scripts/loading-states.test.mjs",
     "test:configuration": "node --test scripts/app-configuration.test.mjs",
-    "test:catalog-patterns": "node --test scripts/catalog-patterns.test.mjs"
+    "test:catalog-patterns": "node --test scripts/catalog-patterns.test.mjs",
+    "test:architecture": "node --test scripts/architecture.test.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

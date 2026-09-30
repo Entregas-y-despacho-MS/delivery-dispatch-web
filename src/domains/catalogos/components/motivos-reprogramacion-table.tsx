@@ -1,10 +1,9 @@
 import { Gauge, Pencil, Power } from "lucide-react";
 
-import { DataTable, type Column } from "@/shared/components/common/data-table";
-import { EmptyState, NoResultsState } from "@/shared/components/feedback/empty-state";
+import type { Column } from "@/shared/components/common/data-table";
+import { ResponsiveList } from "@/shared/components/common/responsive-list";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
-import { CardSkeletonList } from "@/shared/components/feedback/card-skeleton-list";
 import { Switch } from "@/shared/components/ui/switch";
 import type { MotivoReprogramacion } from "../catalogos.types";
 import { getMotivoReprogramacionCategoria } from "../motivos-reprogramacion.constants";
@@ -95,38 +94,31 @@ export function MotivosReprogramacionTable({ data, loading = false, searchActive
   ];
 
   return (
-    <>
-      <div className="hidden md:block">
-        <DataTable columns={columns} data={data} loading={loading} emptyMessage={emptyMessage}
-          isFiltered={searchActive} onClearFilters={onClearFilters} />
-      </div>
-      <div className="space-y-3 md:hidden">
-        {loading && <CardSkeletonList />}
-        {!loading && data.length === 0 && (searchActive
-          ? <NoResultsState description={emptyMessage} onClearFilters={onClearFilters} bordered />
-          : <EmptyState title="Sin motivos todavía" description={emptyMessage} />)}
-        {!loading && data.map((motivo) => (
-          <article key={motivo.id} className="rounded-lg border bg-card p-4 shadow-sm">
-            <div className="flex items-start justify-between gap-4">
-              <div className="min-w-0 space-y-1">
-                <h3 className="font-semibold">{motivo.name}</h3>
-                <p className="font-mono text-xs text-muted-foreground">{motivo.code}</p>
-              </div>
-              <EditButton motivo={motivo} onEdit={onEdit} busy={busy} />
+    <ResponsiveList
+      columns={columns} data={data} loading={loading} emptyMessage={emptyMessage}
+      isFiltered={searchActive} onClearFilters={onClearFilters}
+      mobileFilteredState mobileEmptyTitle="Sin motivos todavía"
+      renderCard={(motivo) => (
+        <article className="rounded-lg border bg-card p-4 shadow-sm">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0 space-y-1">
+              <h3 className="font-semibold">{motivo.name}</h3>
+              <p className="font-mono text-xs text-muted-foreground">{motivo.code}</p>
             </div>
-            {motivo.description && <p className="mt-2 text-sm text-muted-foreground">{motivo.description}</p>}
-            <div className="mt-3 flex flex-wrap gap-2 border-t pt-3">
-              <OriginBadge motivo={motivo} />
-              <PuntualidadBadge excluded={motivo.affectsSla} />
-            </div>
-            <div className="mt-3 flex items-center justify-between border-t pt-3">
-              <StatusBadge active={motivo.active} />
-              <Switch checked={motivo.active} disabled={busy} onCheckedChange={() => onToggle(motivo)}
-                aria-label={`${motivo.active ? "Desactivar" : "Activar"} ${motivo.name}`} />
-            </div>
-          </article>
-        ))}
-      </div>
-    </>
+            <EditButton motivo={motivo} onEdit={onEdit} busy={busy} />
+          </div>
+          {motivo.description && <p className="mt-2 text-sm text-muted-foreground">{motivo.description}</p>}
+          <div className="mt-3 flex flex-wrap gap-2 border-t pt-3">
+            <OriginBadge motivo={motivo} />
+            <PuntualidadBadge excluded={motivo.affectsSla} />
+          </div>
+          <div className="mt-3 flex items-center justify-between border-t pt-3">
+            <StatusBadge active={motivo.active} />
+            <Switch checked={motivo.active} disabled={busy} onCheckedChange={() => onToggle(motivo)}
+              aria-label={`${motivo.active ? "Desactivar" : "Activar"} ${motivo.name}`} />
+          </div>
+        </article>
+      )}
+    />
   );
 }

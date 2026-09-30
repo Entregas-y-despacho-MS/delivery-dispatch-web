@@ -14,8 +14,10 @@ const server = await createServer({
 after(async () => server.close());
 
 const { PaginationControls } = await server.ssrLoadModule("/src/shared/components/common/pagination-controls.tsx");
+const { PagedTableControls } = await server.ssrLoadModule("/src/shared/components/common/paged-table-controls.tsx");
 const { SearchField } = await server.ssrLoadModule("/src/shared/components/common/search-field.tsx");
 const { ConfirmActionDialog } = await server.ssrLoadModule("/src/shared/components/common/confirm-action-dialog.tsx");
+const { ResponsiveList } = await server.ssrLoadModule("/src/shared/components/common/responsive-list.tsx");
 
 test("la paginación nunca solicita páginas fuera del rango", () => {
   const requested = [];
@@ -60,4 +62,46 @@ test("la confirmación no se cierra mientras la acción sigue pendiente", () => 
   assert.deepEqual(changes, []);
   ConfirmActionDialog({ ...props, busy: false }).props.onOpenChange(false);
   assert.deepEqual(changes, [false]);
+});
+
+test("la lista adaptable conserva los estados de carga, filtro vacío y tarjetas", () => {
+  const props = {
+    columns: [{ header: "Nombre", cell: "name" }],
+    data: [],
+    emptyMessage: "Sin zonas coincidentes",
+    isFiltered: true,
+    mobileFilteredState: true,
+    onClearFilters: () => {},
+    renderCard: (item) => createElement("article", null, item.name),
+  };
+  const loading = renderToStaticMarkup(createElement(ResponsiveList, { ...props, loading: true, mobileSkeletonCount: 4 }));
+  assert.equal((loading.match(/aria-hidden="true"/g) ?? []).length, 4);
+  assert.doesNotMatch(loading, /Sin zonas coincidentes/);
+
+  const empty = renderToStaticMarkup(createElement(ResponsiveList, props));
+  assert.match(empty, /Sin zonas coincidentes/);
+  assert.match(empty, /Limpiar filtros/);
+
+  const populated = renderToStaticMarkup(createElement(ResponsiveList, {
+    ...props,
+    data: [{ id: 1, name: "Zona Norte" }],
+  }));
+  assert.match(populated, /<article>Zona Norte<\/article>/);
+  assert.doesNotMatch(populated, /Sin zonas coincidentes/);
+});
+
+test("la paginación compacta muestra el rango real y los límites", () => {
+  const html = renderToStaticMarkup(createElement(PagedTableControls, {
+    page: 3,
+    totalPages: 3,
+    total: 23,
+    pageSize: 10,
+    onPageSizeChange: () => {},
+    onPageChange: () => {},
+    itemLabel: "usuarios",
+  }));
+  assert.match(html, /Mostrando/);
+  assert.match(html, /21/);
+  assert.match(html, /23/);
+  assert.match(html, /Página siguiente/);
 });

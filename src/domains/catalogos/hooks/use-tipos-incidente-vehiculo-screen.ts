@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
 import { useListFilters } from "@/shared/hooks/use-list-filters";
+import { useEditorDialog } from "@/shared/hooks/use-editor-dialog";
 import type { TipoIncidenteVehiculoFormValues } from "../catalogos.schemas";
 import type {
   SeveridadIncidenteVehiculo,
@@ -22,9 +23,6 @@ export function useTiposIncidenteVehiculoScreen() {
   const { search, debouncedSearch, page, setPage, clearFilters, hasFilters } = list;
   const severityFilter = list.filters.severity;
   const blockingFilter = list.filters.blocking;
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingTipo, setEditingTipo] = useState<TipoIncidenteVehiculo>();
-  const [formDirty, setFormDirty] = useState(false);
 
   const params = useMemo<TipoIncidenteVehiculoListParams>(() => ({
     page,
@@ -35,34 +33,15 @@ export function useTiposIncidenteVehiculoScreen() {
   }), [page, debouncedSearch, severityFilter, blockingFilter]);
   const tipos = useTiposIncidenteVehiculo(params);
   const totalPages = Math.max(tipos.pages ?? 0, 1);
-
-  const openCreate = () => {
-    setEditingTipo(undefined);
-    setFormDirty(false);
-    setDialogOpen(true);
-  };
-
-  const openEdit = (tipo: TipoIncidenteVehiculo) => {
-    setEditingTipo(tipo);
-    setFormDirty(false);
-    setDialogOpen(true);
-  };
-
-  const closeDialog = (open: boolean) => {
-    if (tipos.isSaving) return;
-    if (!open && formDirty && !window.confirm("¿Descartar los cambios sin guardar?")) return;
-    setDialogOpen(open);
-    if (!open) {
-      setEditingTipo(undefined);
-      setFormDirty(false);
-    }
-  };
+  const editor = useEditorDialog<TipoIncidenteVehiculo>({
+    busy: tipos.isSaving,
+    confirmDiscardMessage: "¿Descartar los cambios sin guardar?",
+  });
+  const editingTipo = editor.editingItem;
 
   const saveTipo = async (values: TipoIncidenteVehiculoFormValues) => {
     await tipos.saveItem(values, editingTipo?.id);
-    setDialogOpen(false);
-    setEditingTipo(undefined);
-    setFormDirty(false);
+    editor.finish();
     if (!editingTipo) setPage(1);
   };
 
@@ -79,12 +58,12 @@ export function useTiposIncidenteVehiculoScreen() {
     totalPages,
     hasFilters,
     clearFilters,
-    dialogOpen,
+    dialogOpen: editor.open,
     editingTipo,
-    setFormDirty,
-    openCreate,
-    openEdit,
-    closeDialog,
+    setFormDirty: editor.setDirty,
+    openCreate: editor.openCreate,
+    openEdit: editor.openEdit,
+    closeDialog: editor.onOpenChange,
     saveTipo,
   };
 }

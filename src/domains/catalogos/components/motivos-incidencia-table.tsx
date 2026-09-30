@@ -10,7 +10,7 @@ import type { MotivoIncidencia } from "../catalogos.types";
 /** Indicador visual del requisito de foto que la app móvil aplica al reportar la incidencia. */
 function EvidenciaBadge({ requiresEvidence }: { requiresEvidence: boolean }) {
   return requiresEvidence ? (
-    <Badge variant="outline" className="border-primary/20 bg-primary/10 text-primary">
+    <Badge variant="outline" className="border-brand-turquoise/30 bg-brand-soft text-brand-blue">
       <Camera aria-hidden /> Foto obligatoria
     </Badge>
   ) : (

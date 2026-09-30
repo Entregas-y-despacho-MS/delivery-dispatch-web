@@ -8,11 +8,13 @@ import { Button } from "@/shared/components/ui/button";
 export function PublicLayout() {
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-40 h-14 border-b bg-background/95 backdrop-blur">
+      <header className="sticky top-0 z-40 h-14 border-b border-sidebar-border bg-sidebar text-sidebar-foreground">
         <div className="mx-auto flex h-full max-w-7xl items-center justify-between px-4">
-          <Link to="/" className="text-lg font-semibold tracking-tight">delivery-dispatch-web</Link>
+          <Link to="/" className="text-lg font-semibold tracking-tight">Delivery Dispatch</Link>
           <div className="flex items-center gap-2">
-            <ThemeToggle />
+            <span className="[&_button]:text-sidebar-foreground [&_button]:hover:bg-sidebar-accent [&_button]:hover:text-sidebar-accent-foreground">
+              <ThemeToggle />
+            </span>
             <Button asChild size="sm"><Link to="/login">Iniciar sesión</Link></Button>
           </div>
         </div>

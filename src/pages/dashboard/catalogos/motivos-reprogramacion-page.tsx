@@ -36,7 +36,7 @@ export default function MotivosReprogramacionPage() {
         <div className="flex flex-col gap-4 border-b pb-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <ListFilter className="size-4 text-primary" aria-hidden />
+              <ListFilter className="size-4 text-brand-turquoise" aria-hidden />
               <h2 className="font-semibold">Causales operativas</h2>
             </div>
             <p className="text-sm text-muted-foreground">

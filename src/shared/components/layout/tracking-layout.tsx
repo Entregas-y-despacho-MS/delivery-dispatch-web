@@ -13,13 +13,15 @@ import { ThemeToggle } from "@/shared/components/theme-toggle";
 export function TrackingLayout() {
   return (
     <div className="flex min-h-screen flex-col bg-muted/30">
-      <header className="sticky top-0 z-40 h-14 border-b bg-background/95 backdrop-blur">
+      <header className="sticky top-0 z-40 h-14 border-b border-sidebar-border bg-sidebar text-sidebar-foreground">
         <div className="mx-auto flex h-full max-w-3xl items-center justify-between px-4">
           <Link to="/seguimiento" className="flex items-center gap-2">
-            <PackageSearch className="h-5 w-5 text-primary" />
+            <PackageSearch className="h-5 w-5 text-sidebar-primary" />
             <span className="font-semibold tracking-tight">Seguimiento de pedido</span>
           </Link>
-          <ThemeToggle />
+          <span className="[&_button]:text-sidebar-foreground [&_button]:hover:bg-sidebar-accent [&_button]:hover:text-sidebar-accent-foreground">
+            <ThemeToggle />
+          </span>
         </div>
       </header>
 

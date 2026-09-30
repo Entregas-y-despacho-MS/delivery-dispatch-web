@@ -199,7 +199,7 @@ export function UsuariosTable({ onEditar, onDesactivar }: UsuariosTableProps) {
                   <button
                     type="button"
                     onClick={() => handleSort("nombre")}
-                    className="flex items-center font-semibold text-foreground hover:text-primary transition-colors cursor-pointer select-none"
+                    className="flex items-center font-semibold text-foreground hover:text-brand-blue transition-colors cursor-pointer select-none"
                     aria-label="Ordenar por nombre"
                   >
                     Nombre
@@ -224,7 +224,7 @@ export function UsuariosTable({ onEditar, onDesactivar }: UsuariosTableProps) {
                   <button
                     type="button"
                     onClick={() => handleSort("ultimoAcceso")}
-                    className="flex items-center font-semibold text-foreground hover:text-primary transition-colors cursor-pointer select-none"
+                    className="flex items-center font-semibold text-foreground hover:text-brand-blue transition-colors cursor-pointer select-none"
                     aria-label="Ordenar por último acceso"
                   >
                     Último Acceso

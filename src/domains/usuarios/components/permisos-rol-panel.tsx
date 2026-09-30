@@ -41,10 +41,10 @@ export function PermisosRolPanel({ rolNombre }: PermisosRolPanelProps) {
         className="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <span className="flex items-center gap-2">
-          <ShieldCheck className="h-4 w-4 text-primary" aria-hidden />
+          <ShieldCheck className="h-4 w-4 text-brand-turquoise" aria-hidden />
           Módulos a los que tendrá acceso
           {entraAlPortal && (
-            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary tabular-nums">{total}</span>
+            <span className="rounded-full bg-brand-soft px-2 py-0.5 text-xs text-brand-blue tabular-nums">{total}</span>
           )}
         </span>
         <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", abierto && "rotate-180")} aria-hidden />

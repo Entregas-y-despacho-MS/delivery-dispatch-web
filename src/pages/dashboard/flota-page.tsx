@@ -63,7 +63,7 @@ export default function FlotaPage() {
         <div className="flex flex-col gap-4 border-b pb-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <Truck className="size-4 text-primary" aria-hidden />
+              <Truck className="size-4 text-brand-turquoise" aria-hidden />
               <h2 className="font-semibold">Flota registrada</h2>
             </div>
             <p className="text-sm text-muted-foreground">

@@ -2,6 +2,7 @@ import axios, { isAxiosError } from "axios";
 import { toast } from "sonner";
 import { env } from "@/config/env";
 import { useAuthStore } from "@/shared/store/use-auth-store";
+import { closeSession } from "./session-lifecycle";
 
 declare module "axios" {
   interface AxiosRequestConfig {
@@ -68,7 +69,7 @@ function cerrarSesionExpirada(refreshError?: unknown) {
     code === "SESSION_EXPIRED"
       ? "Tu sesión se cerró por inactividad. Inicia sesión de nuevo."
       : "Sesión expirada. Inicia sesión de nuevo.";
-  useAuthStore.getState().logout();
+  if (!closeSession()) return;
   // Mismo id: si varias peticiones caen a la vez, se muestra un solo aviso.
   toast.error(message, { id: "sesion-expirada" });
 }

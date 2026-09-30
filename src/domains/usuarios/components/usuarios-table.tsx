@@ -10,9 +10,9 @@ import {
 } from "lucide-react";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
+import { AsyncState } from "@/shared/components/feedback/async-state";
 import { EmptyState, NoResultsState } from "@/shared/components/feedback/empty-state";
-import { ErrorAlert } from "@/shared/components/feedback/error-alert";
-import { TableSkeletonRows, type SkeletonColumnDef } from "@/shared/components/feedback/table-skeleton";
+import { TableSkeleton, type SkeletonColumnDef } from "@/shared/components/feedback/table-skeleton";
 import {
   Select,
   SelectContent,
@@ -163,12 +163,12 @@ export function UsuariosTable({ onEditar, onDesactivar }: UsuariosTableProps) {
   };
 
   const SKELETON_COLUMNS: SkeletonColumnDef[] = [
-    { type: "subtitle" },
-    { type: "text", className: "hidden md:table-cell" },
-    { type: "text" },
-    { type: "badge" },
-    { type: "text", className: "hidden lg:table-cell" },
-    { type: "actions", className: "w-24 text-right pr-4" },
+    { header: "Nombre", type: "subtitle" },
+    { header: "Correo", type: "text", className: "hidden md:table-cell" },
+    { header: "Rol", type: "text" },
+    { header: "Estado", type: "badge" },
+    { header: "Último Acceso", type: "text", className: "hidden lg:table-cell" },
+    { header: "Acciones", type: "actions", className: "w-24 text-right pr-4" },
   ];
 
   // Manejo de cambio de ordenamiento por cabecera
@@ -222,16 +222,16 @@ export function UsuariosTable({ onEditar, onDesactivar }: UsuariosTableProps) {
         loadingRoles={loadingRoles}
       />
 
-      {/* La consulta agotó sus reintentos; queda el reintento manual. */}
-      {isError && (
-        <ErrorAlert
-          error={error}
-          onRetry={() => refetch()}
-        />
-      )}
-
-      {/* Tabla responsiva */}
-      {!isError && (
+      <AsyncState
+        loading={isPending}
+        error={isError ? error : undefined}
+        empty={items.length === 0}
+        loadingFallback={<TableSkeleton columns={SKELETON_COLUMNS} rows={Math.min(limit, 10)} />}
+        emptyFallback={isFiltered
+          ? <NoResultsState onClearFilters={handleClearFilters} bordered />
+          : <EmptyState title="Sin usuarios registrados" description="Aún no hay usuarios dados de alta en el sistema." />}
+        onRetry={() => refetch()}
+      >
         <div className="rounded-lg border bg-card overflow-hidden">
           <Table>
             <TableHeader>
@@ -282,33 +282,8 @@ export function UsuariosTable({ onEditar, onDesactivar }: UsuariosTableProps) {
             </TableHeader>
 
             <TableBody>
-              {/* Estado de carga con Skeleton anatómico */}
-              {isPending && (
-                <TableSkeletonRows
-                  columns={SKELETON_COLUMNS}
-                  rows={Math.min(limit, 10)}
-                />
-              )}
-
-              {/* Sin resultados / Filtros sin coincidencias */}
-              {!isPending && items.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={6} className="h-56 text-center">
-                    {isFiltered ? (
-                      <NoResultsState onClearFilters={handleClearFilters} />
-                    ) : (
-                      <EmptyState
-                        title="Sin usuarios registrados"
-                        description="Aún no hay usuarios dados de alta en el sistema."
-                      />
-                    )}
-                  </TableCell>
-                </TableRow>
-              )}
-
               {/* Filas de usuarios */}
-              {!isPending &&
-                items.map((u) => {
+              {items.map((u) => {
                   const esRoot = u.rol.nombre === "root";
                   return (
                     <TableRow key={u.id} className="hover:bg-muted/40 transition-colors">
@@ -367,11 +342,11 @@ export function UsuariosTable({ onEditar, onDesactivar }: UsuariosTableProps) {
                       </TableCell>
                     </TableRow>
                   );
-                })}
+              })}
             </TableBody>
           </Table>
         </div>
-      )}
+      </AsyncState>
 
       {/* Pie de tabla con controles de paginación */}
       {!isError && (

@@ -1,4 +1,6 @@
+import { Suspense } from "react";
 import { Link } from "react-router-dom";
+import { LoadingScreen } from "@/shared/components/feedback/loading-screen";
 import { PageErrorBoundary } from "@/shared/components/feedback/page-error-boundary";
 import { ThemeToggle } from "@/shared/components/theme-toggle";
 import { Button } from "@/shared/components/ui/button";
@@ -16,7 +18,11 @@ export function PublicLayout() {
         </div>
       </header>
 
-      <main className="flex-1"><PageErrorBoundary /></main>
+      <main className="flex-1">
+        <Suspense fallback={<LoadingScreen />}>
+          <PageErrorBoundary />
+        </Suspense>
+      </main>
 
       <footer className="border-t py-6 text-center text-sm text-muted-foreground">
         © {new Date().getFullYear()} delivery-dispatch-web

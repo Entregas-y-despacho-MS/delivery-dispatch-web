@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
-import { Skeleton } from "@/shared/components/ui/skeleton";
+import { CardSkeletonList } from "@/shared/components/feedback/card-skeleton-list";
 import { Switch } from "@/shared/components/ui/switch";
 import type { NivelServicio } from "../catalogos.types";
 
@@ -134,13 +134,7 @@ export function NivelesServicioTable({
       </div>
 
       <div className="space-y-3 md:hidden">
-        {loading && Array.from({ length: 3 }).map((_, index) => (
-          <div key={index} className="space-y-3 rounded-lg border p-4">
-            <Skeleton className="h-5 w-2/3" />
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-9 w-full" />
-          </div>
-        ))}
+        {loading && <CardSkeletonList />}
 
         {!loading && data.length === 0 && (
           <EmptyState

@@ -4,7 +4,7 @@ import { DataTable, type Column } from "@/shared/components/common/data-table";
 import { EmptyState } from "@/shared/components/feedback/empty-state";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
-import { Skeleton } from "@/shared/components/ui/skeleton";
+import { CardSkeletonList } from "@/shared/components/feedback/card-skeleton-list";
 import type { EstadoVehiculo, Vehiculo } from "../flota.types";
 
 /**
@@ -103,13 +103,7 @@ export function VehiculosTable({
       </div>
 
       <div className="space-y-3 md:hidden">
-        {loading && Array.from({ length: 4 }).map((_, index) => (
-          <div key={index} className="space-y-3 rounded-lg border p-4">
-            <Skeleton className="h-5 w-2/3" />
-            <Skeleton className="h-4 w-1/2" />
-            <Skeleton className="h-9 w-full" />
-          </div>
-        ))}
+        {loading && <CardSkeletonList count={4} />}
 
         {!loading && data.length === 0 && (
           <EmptyState

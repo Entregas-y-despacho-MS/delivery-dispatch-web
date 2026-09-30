@@ -52,85 +52,91 @@ const MotivosReprogramacionPage = lazy(() => import("@/pages/dashboard/catalogos
 const TiposIncidenteVehiculoPage = lazy(() => import("@/pages/dashboard/catalogos/tipos-incidente-vehiculo-page"));
 // LAZY_ANCHOR — no borres esta línea
 
+function StandalonePage() {
+  return (
+    <Suspense fallback={<LoadingScreen />}>
+      <PageErrorBoundary />
+    </Suspense>
+  );
+}
+
 export function AppRouter() {
   return (
     <BrowserRouter>
-      <Suspense fallback={<LoadingScreen />}>
-        <Routes>
-          {/* ─── Sitio público ─── */}
-          <Route element={<PublicLayout />}>
-            <Route path="/" element={<HomePage />} />
-          </Route>
+      <Routes>
+        {/* ─── Sitio público ─── */}
+        <Route element={<PublicLayout />}>
+          <Route path="/" element={<HomePage />} />
+        </Route>
 
-          {/* ─── Portal del cliente final: sin login, con token (RF-U14) ─── */}
-          <Route element={<TrackingLayout />}>
-            <Route path="/seguimiento" element={<SeguimientoBuscarPage />} />
-            <Route path="/seguimiento/:token" element={<SeguimientoDetallePage />} />
-          </Route>
+        {/* ─── Portal del cliente final: sin login, con token (RF-U14) ─── */}
+        <Route element={<TrackingLayout />}>
+          <Route path="/seguimiento" element={<SeguimientoBuscarPage />} />
+          <Route path="/seguimiento/:token" element={<SeguimientoDetallePage />} />
+        </Route>
 
-          {/* ─── Autenticación ─── */}
-          <Route element={<PageErrorBoundary />}>
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/recuperar-password" element={<RecuperarPasswordPage />} />
-            <Route path="/forgot-password" element={<RecuperarPasswordPage />} />
-            <Route path="/restablecer-password" element={<RestablecerPasswordPage />} />
-            <Route path="/restablecer-password/:token" element={<RestablecerPasswordPage />} />
-            <Route path="/reset-password" element={<RestablecerPasswordPage />} />
-            <Route path="/reset-password/:token" element={<RestablecerPasswordPage />} />
-            <Route path="/acceso-denegado" element={<AccesoDenegado />} />
-          </Route>
+        {/* ─── Autenticación ─── */}
+        <Route element={<StandalonePage />}>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/recuperar-password" element={<RecuperarPasswordPage />} />
+          <Route path="/forgot-password" element={<RecuperarPasswordPage />} />
+          <Route path="/restablecer-password" element={<RestablecerPasswordPage />} />
+          <Route path="/restablecer-password/:token" element={<RestablecerPasswordPage />} />
+          <Route path="/reset-password" element={<RestablecerPasswordPage />} />
+          <Route path="/reset-password/:token" element={<RestablecerPasswordPage />} />
+          <Route path="/acceso-denegado" element={<AccesoDenegado />} />
+        </Route>
 
-          {/* El cambio obligatorio tiene una ruta autenticada fuera del panel. */}
-          <Route element={<ProtectedRoute passwordChangeOnly />}>
-            <Route element={<PageErrorBoundary />}>
-              <Route path="/cambiar-password" element={<CambiarPasswordPage />} />
+        {/* El cambio obligatorio tiene una ruta autenticada fuera del panel. */}
+        <Route element={<ProtectedRoute passwordChangeOnly />}>
+          <Route element={<StandalonePage />}>
+            <Route path="/cambiar-password" element={<CambiarPasswordPage />} />
+          </Route>
+        </Route>
+
+
+        {/* ─── Panel interno: el repartidor usa la app móvil, no entra aquí ─── */}
+        <Route element={<ProtectedRoute roles={ROLES_WEB} />}>
+          <Route path="/app" element={<DashboardLayout />}>
+            <Route index element={<Navigate to="/app/tablero" replace />} />
+
+            {/* Coordinador y supervisor */}
+            <Route path="tablero" element={<TableroPage />} />
+            <Route path="despachos" element={<DespachosPage />} />
+            <Route path="despachos/:id" element={<DespachoDetallePage />} />
+            <Route path="mapa" element={<MapaFlotaPage />} />
+            <Route path="repartidores" element={<RepartidoresPage />} />
+            <Route path="incidencias" element={<IncidenciasPage />} />
+            <Route path="reportes" element={<ReportesPage />} />
+            <Route path="catalogos/tipos-incidente-vehiculo" element={<TiposIncidenteVehiculoPage />} />
+
+            {/* Solo coordinador */}
+            <Route element={<ProtectedRoute roles={[ROLES.COORDINADOR]} />}>
+              <Route path="planificacion" element={<PlanificacionPage />} />
+              <Route path="recojos" element={<RecojosPage />} />
+              <Route path="usuarios" element={<UsuariosPage />} />
+              <Route path="auditoria" element={<AuditoriaPage />} />
+              <Route path="configuracion" element={<ConfiguracionPage />} />
+              <Route path="catalogos/zonas" element={<ZonasPage />} />
+              <Route path="catalogos/niveles-servicio" element={<NivelesServicioPage />} />
+              <Route path="catalogos/motivos-incidencia" element={<MotivosIncidenciaPage />} />
+              <Route path="catalogos/motivos-reprogramacion" element={<MotivosReprogramacionPage />} />
             </Route>
-          </Route>
 
-
-          {/* ─── Panel interno: el repartidor usa la app móvil, no entra aquí ─── */}
-          <Route element={<ProtectedRoute roles={ROLES_WEB} />}>
-            <Route path="/app" element={<DashboardLayout />}>
-              <Route index element={<Navigate to="/app/tablero" replace />} />
-
-              {/* Coordinador y supervisor */}
-              <Route path="tablero" element={<TableroPage />} />
-              <Route path="despachos" element={<DespachosPage />} />
-              <Route path="despachos/:id" element={<DespachoDetallePage />} />
-              <Route path="mapa" element={<MapaFlotaPage />} />
-              <Route path="repartidores" element={<RepartidoresPage />} />
-              <Route path="incidencias" element={<IncidenciasPage />} />
-              <Route path="reportes" element={<ReportesPage />} />
-              <Route path="catalogos/tipos-incidente-vehiculo" element={<TiposIncidenteVehiculoPage />} />
-
-              {/* Solo coordinador */}
-              <Route element={<ProtectedRoute roles={[ROLES.COORDINADOR]} />}>
-                <Route path="planificacion" element={<PlanificacionPage />} />
-                <Route path="recojos" element={<RecojosPage />} />
-                <Route path="usuarios" element={<UsuariosPage />} />
-                <Route path="auditoria" element={<AuditoriaPage />} />
-                <Route path="configuracion" element={<ConfiguracionPage />} />
-                <Route path="catalogos/zonas" element={<ZonasPage />} />
-                <Route path="catalogos/niveles-servicio" element={<NivelesServicioPage />} />
-                <Route path="catalogos/motivos-incidencia" element={<MotivosIncidenciaPage />} />
-                <Route path="catalogos/motivos-reprogramacion" element={<MotivosReprogramacionPage />} />
-              </Route>
-
-              {/* Solo supervisor de flota */}
-              <Route element={<ProtectedRoute roles={[ROLES.SUPERVISOR]} />}>
-                <Route path="flota" element={<FlotaPage />} />
-                <Route path="flota/:id/mantenimiento" element={<FlotaMantenimientoPage />} />
-              </Route>
-
-              {/* ROUTE_ANCHOR — no borres esta línea */}
+            {/* Solo supervisor de flota */}
+            <Route element={<ProtectedRoute roles={[ROLES.SUPERVISOR]} />}>
+              <Route path="flota" element={<FlotaPage />} />
+              <Route path="flota/:id/mantenimiento" element={<FlotaMantenimientoPage />} />
             </Route>
-          </Route>
 
-          <Route element={<PageErrorBoundary />}>
-            <Route path="*" element={<NotFound />} />
+            {/* ROUTE_ANCHOR — no borres esta línea */}
           </Route>
-        </Routes>
-      </Suspense>
+        </Route>
+
+        <Route element={<StandalonePage />}>
+          <Route path="*" element={<NotFound />} />
+        </Route>
+      </Routes>
     </BrowserRouter>
   );
 }

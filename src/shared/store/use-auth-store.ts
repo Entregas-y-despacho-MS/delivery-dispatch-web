@@ -1,6 +1,12 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+// No se persiste: tras recargar la página ya no quedan peticiones de la sesión anterior.
+let sessionGeneration = 0;
+export function getSessionGeneration() {
+  return sessionGeneration;
+}
+
 // Forma con la que el front guarda al usuario. El adaptador que la construye a partir
 // de la respuesta del backend vive en domains/auth/services/auth.service.ts.
 export interface AuthUser {
@@ -32,11 +38,16 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       access_token: null,
       refresh_token: null,
-      setLogin: (user, access_token, refresh_token) =>
-        set({ user, access_token, refresh_token: refresh_token ?? null }),
+      setLogin: (user, access_token, refresh_token) => {
+        sessionGeneration += 1;
+        set({ user, access_token, refresh_token: refresh_token ?? null });
+      },
       updateUser: (partial) =>
         set((state) => ({ user: state.user ? { ...state.user, ...partial } : null })),
-      logout: () => set({ user: null, access_token: null, refresh_token: null }),
+      logout: () => {
+        sessionGeneration += 1;
+        set({ user: null, access_token: null, refresh_token: null });
+      },
     }),
     { name: "delivery-dispatch-web-auth" }
   )

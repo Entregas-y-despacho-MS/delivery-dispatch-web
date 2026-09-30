@@ -1,7 +1,7 @@
-import axios, { isAxiosError } from "axios";
+import axios, { CanceledError, isAxiosError } from "axios";
 import { toast } from "sonner";
 import { env } from "@/config/env";
-import { useAuthStore } from "@/shared/store/use-auth-store";
+import { getSessionGeneration, useAuthStore } from "@/shared/store/use-auth-store";
 import { closeSession } from "./session-lifecycle";
 
 declare module "axios" {
@@ -14,6 +14,8 @@ declare module "axios" {
     skipErrorToast?: boolean;
     /** Uso interno (ST-16.3): la petición ya se reintentó una vez tras renovar el token. */
     _retry?: boolean;
+    /** Generación de sesión que inició la petición; las respuestas antiguas se descartan. */
+    _sessionGeneration?: number;
   }
 }
 
@@ -40,26 +42,28 @@ interface RefreshResponse {
 // sesiones del usuario. Por eso nunca puede haber dos refresh en paralelo: la primera
 // petición que recibe el 401 lanza la renovación y las demás esperan esa misma promesa
 // (la "cola"). Cuando termina, cada una se reintenta con el token nuevo.
-let refreshEnCurso: Promise<string> | null = null;
+let refreshEnCurso: { generation: number; promise: Promise<string> } | null = null;
 
 function renovarAccessToken(): Promise<string> {
-  if (!refreshEnCurso) {
-    const refreshToken = useAuthStore.getState().refresh_token;
-    refreshEnCurso = (
-      refreshToken
-        ? refreshClient
-            .post<RefreshResponse>("/auth/refresh", { refreshToken })
-            .then(({ data }) => {
-              // Siempre se guarda el par nuevo: el refresh token anterior ya no sirve.
-              useAuthStore.setState({ access_token: data.accessToken, refresh_token: data.refreshToken });
-              return data.accessToken;
-            })
-        : Promise.reject(new Error("No hay refresh token guardado"))
-    ).finally(() => {
-      refreshEnCurso = null;
+  const generation = getSessionGeneration();
+  if (refreshEnCurso?.generation === generation) return refreshEnCurso.promise;
+
+  const refreshToken = useAuthStore.getState().refresh_token;
+  if (!refreshToken) return Promise.reject(new Error("No hay refresh token guardado"));
+
+  const promise = refreshClient.post<RefreshResponse>("/auth/refresh", { refreshToken })
+    .then(({ data }) => {
+      if (getSessionGeneration() !== generation || useAuthStore.getState().refresh_token !== refreshToken) {
+        throw new CanceledError("La sesión cambió durante la renovación");
+      }
+      useAuthStore.setState({ access_token: data.accessToken, refresh_token: data.refreshToken });
+      return data.accessToken;
+    })
+    .finally(() => {
+      if (refreshEnCurso?.promise === promise) refreshEnCurso = null;
     });
-  }
-  return refreshEnCurso;
+  refreshEnCurso = { generation, promise };
+  return promise;
 }
 
 /** Limpia la sesión; el ProtectedRoute redirige solo a /login al quedar `user` en null. */
@@ -76,15 +80,26 @@ function cerrarSesionExpirada(refreshError?: unknown) {
 
 // Request: inyecta el token vigente en cada llamada.
 api.interceptors.request.use((config) => {
+  config._sessionGeneration = getSessionGeneration();
   const token = useAuthStore.getState().access_token;
-  if (token) config.headers.Authorization = `Bearer ${token}`;
+  // El logout pasa explícitamente el token de la sesión que se está cerrando.
+  if (token && !config.headers.Authorization) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
 // Response: renueva el token si venció y traduce los errores HTTP a un toast legible.
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    if (response.config._sessionGeneration !== getSessionGeneration()) {
+      return Promise.reject(new CanceledError("La sesión cambió durante la petición", response.config));
+    }
+    return response;
+  },
   async (error) => {
+    if (error.config?._sessionGeneration !== undefined &&
+        error.config._sessionGeneration !== getSessionGeneration()) {
+      return Promise.reject(error);
+    }
     const url: string = error.config?.url ?? "";
 
     // El login muestra sus errores dentro del formulario (credenciales, bloqueo, 2FA…).
@@ -105,9 +120,11 @@ api.interceptors.response.use(
       error.config._retry = true;
       try {
         const nuevoToken = await renovarAccessToken();
+        if (error.config._sessionGeneration !== getSessionGeneration()) return Promise.reject(error);
         error.config.headers.Authorization = `Bearer ${nuevoToken}`;
         return api(error.config);
       } catch (refreshError) {
+        if (error.config._sessionGeneration !== getSessionGeneration()) return Promise.reject(error);
         cerrarSesionExpirada(refreshError);
         return Promise.reject(error);
       }

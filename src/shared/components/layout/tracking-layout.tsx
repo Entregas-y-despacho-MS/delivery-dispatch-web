@@ -1,5 +1,6 @@
-import { Link, Outlet } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { PackageSearch } from "lucide-react";
+import { PageErrorBoundary } from "@/shared/components/feedback/page-error-boundary";
 import { ThemeToggle } from "@/shared/components/theme-toggle";
 
 /**
@@ -21,7 +22,7 @@ export function TrackingLayout() {
       </header>
 
       <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-6">
-        <Outlet />
+        <PageErrorBoundary />
       </main>
 
       <footer className="border-t py-6 text-center text-xs text-muted-foreground">

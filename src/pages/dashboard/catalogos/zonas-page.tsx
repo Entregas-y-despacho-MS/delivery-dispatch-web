@@ -11,6 +11,8 @@ import {
 import { PageHeader } from "@/shared/components/common/page-header";
 import { ErrorAlert } from "@/shared/components/feedback/error-alert";
 import { Button } from "@/shared/components/ui/button";
+import { toast } from "sonner";
+import { parseApiError } from "@/shared/lib/api-error";
 import {
   Dialog,
   DialogContent,
@@ -64,8 +66,12 @@ export default function ZonasPage() {
   // La API actual solo expone eliminación lógica; la reactivación requerirá un endpoint adicional.
   const deactivateZona = async () => {
     if (!zonaToDeactivate) return;
-    await zonas.deleteItem(zonaToDeactivate.id);
-    setZonaToDeactivate(undefined);
+    try {
+      await zonas.deleteItem(zonaToDeactivate.id);
+      setZonaToDeactivate(undefined);
+    } catch (error) {
+      toast.error(parseApiError(error).message);
+    }
   };
 
   return (
@@ -103,7 +109,6 @@ export default function ZonasPage() {
           <ErrorAlert
             error={zonas.error}
             onRetry={() => zonas.refetch()}
-            autoRetry={5}
             className="mt-4"
           />
         ) : (

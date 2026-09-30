@@ -55,13 +55,9 @@ export function MotivoIncidenciaForm({
       }
 
       setError("root", {
-        message: apiError.status === 400
-          ? `El servidor rechazó los datos: ${apiError.message}`
-          : apiError.status === 403
-            ? "No tienes permiso para gestionar motivos de incidencia."
-            : apiError.status === 404
-              ? "Este motivo ya no existe. Actualiza la lista."
-              : "No se pudo guardar el motivo. Revisa tu conexión e inténtalo de nuevo.",
+        message: apiError.status === 404
+          ? "Este motivo ya no existe. Actualiza la lista."
+          : apiError.message,
       });
     }
   });

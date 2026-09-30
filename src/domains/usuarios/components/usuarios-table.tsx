@@ -255,12 +255,11 @@ export function UsuariosTable({ onEditar, onDesactivar }: UsuariosTableProps) {
         loadingRoles={loadingRoles}
       />
 
-      {/* Manejo de error con reintento automático y manual */}
+      {/* La consulta agotó sus reintentos; queda el reintento manual. */}
       {isError && (
         <ErrorAlert
           error={error}
           onRetry={() => refetch()}
-          autoRetry={5}
         />
       )}
 

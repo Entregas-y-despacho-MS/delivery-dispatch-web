@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ComponentProps } from "react";
-import { Gauge, ListFilter, Plus, RotateCw, Search, TriangleAlert } from "lucide-react";
+import { Gauge, ListFilter, Plus, Search, TriangleAlert } from "lucide-react";
 
 import {
   NivelServicioForm,
@@ -8,7 +8,8 @@ import {
   type NivelServicio,
 } from "@/domains/catalogos";
 import { PageHeader } from "@/shared/components/common/page-header";
-import { Alert, AlertDescription, AlertTitle } from "@/shared/components/ui/alert";
+import { ErrorAlert } from "@/shared/components/feedback/error-alert";
+import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 import { Button } from "@/shared/components/ui/button";
 import {
   Dialog,
@@ -88,7 +89,7 @@ export default function NivelesServicioPage() {
       const apiError = parseApiError(error);
       setListActionError(apiError.status === 404
         ? "Este nivel ya no existe. Actualiza la lista."
-        : "No pudimos activar el nivel. Revisa tu conexión e inténtalo de nuevo.");
+        : apiError.message);
     }
   };
 
@@ -107,10 +108,10 @@ export default function NivelesServicioPage() {
     } catch (error) {
       const apiError = parseApiError(error);
       setActionError(apiError.code === "SERVICE_LEVEL_IN_USE"
-        ? "Este nivel tiene despachos en curso. Desactívalo para impedir nuevas asignaciones."
+          ? "Este nivel tiene despachos en curso. Desactívalo para impedir nuevas asignaciones."
         : apiError.status === 404
           ? "Este nivel ya no existe. Actualiza la lista."
-          : "No pudimos completar la acción. Revisa tu conexión e inténtalo de nuevo.");
+          : apiError.message);
     }
   };
 
@@ -169,16 +170,7 @@ export default function NivelesServicioPage() {
         </div>
 
         {niveles.isError ? (
-          <Alert variant="destructive" className="mt-4">
-            <RotateCw aria-hidden />
-            <AlertTitle>No pudimos cargar los niveles</AlertTitle>
-            <AlertDescription>
-              Revisa tu conexión y vuelve a intentarlo.
-              <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => niveles.refetch()}>
-                Reintentar
-              </Button>
-            </AlertDescription>
-          </Alert>
+          <ErrorAlert error={niveles.error} onRetry={() => niveles.refetch()} className="mt-4" />
         ) : (
           <div className="mt-4" aria-busy={niveles.isFetching}>
             {niveles.isFetching && !niveles.isLoading && (

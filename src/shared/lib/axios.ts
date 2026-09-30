@@ -3,12 +3,12 @@ import { toast } from "sonner";
 import { env } from "@/config/env";
 import { getSessionGeneration, useAuthStore } from "@/shared/store/use-auth-store";
 import { closeSession } from "./session-lifecycle";
+import { parseApiError } from "./api-error";
 
 declare module "axios" {
   interface AxiosRequestConfig {
     /**
-     * La pantalla que hace la llamada muestra el error por su cuenta (dentro de un formulario
-     * o de un aviso en la página). Evita el toast global para no repetir el mismo mensaje.
+     * El flujo que hace la llamada presenta el error por su cuenta. Evita avisos duplicados.
      * La sesión expirada nunca se silencia: siempre se avisa y se cierra.
      */
     skipErrorToast?: boolean;
@@ -101,6 +101,8 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
     const url: string = error.config?.url ?? "";
+    const parsed = parseApiError(error);
+    if (parsed.kind === "cancelled") return Promise.reject(error);
 
     // El login muestra sus errores dentro del formulario (credenciales, bloqueo, 2FA…).
     // Sin este corte, un 401 por contraseña incorrecta se leería como "Sesión expirada"
@@ -108,13 +110,9 @@ api.interceptors.response.use(
     // local antes de que llegue la respuesta, así que tampoco hay nada que avisar.
     if (url.startsWith("/auth/login") || url.startsWith("/auth/logout")) return Promise.reject(error);
 
-    const status: number | undefined = error.response?.status;
-    // El backend manda el código de dominio en `error` (ver HttpExceptionFilter).
-    const code: string | undefined = error.response?.data?.error;
-
     // 401 INVALID_TOKEN = access token vencido o inválido. Otros 401 (INVALID_CREDENTIALS en
     // change-password, INVALID_RESET_TOKEN…) son errores del formulario, no de la sesión.
-    const tokenVencido = status === 401 && code === "INVALID_TOKEN";
+    const tokenVencido = parsed.status === 401 && parsed.code === "INVALID_TOKEN";
 
     if (tokenVencido && error.config && !error.config._retry && useAuthStore.getState().refresh_token) {
       error.config._retry = true;
@@ -136,25 +134,12 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    let message = "Ocurrió un error inesperado";
-
-    if (error.response) {
-      // El backend manda un mensaje propio: úsalo si existe.
-      const apiMessage = error.response.data?.message;
-      switch (status) {
-        case 400: message = apiMessage ?? "Petición inválida."; break;
-        case 401: message = apiMessage ?? "No autorizado."; break;
-        case 403: message = "No tienes permisos para esta acción."; break;
-        case 404: message = "El recurso solicitado no existe."; break;
-        case 422: message = apiMessage ?? "Los datos enviados son incorrectos."; break;
-        case 500: message = "Error interno del servidor. Reintenta más tarde."; break;
-        default: message = apiMessage ?? message;
-      }
-    } else if (error.request) {
-      message = "No se pudo conectar con el servidor. Revisa tu internet.";
+    // Las consultas muestran su error junto al contenido; las acciones sin vista propia
+    // usan toast, salvo cuando su flujo ya maneja la presentación.
+    const method = error.config?.method?.toLowerCase();
+    if (!error.config?.skipErrorToast && method !== "get" && method !== "head") {
+      toast.error(parsed.message);
     }
-
-    if (!error.config?.skipErrorToast) toast.error(message);
     return Promise.reject(error);
   }
 );

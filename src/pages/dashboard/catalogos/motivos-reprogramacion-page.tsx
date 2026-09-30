@@ -1,4 +1,4 @@
-import { ListFilter, Plus, RotateCw, Search, TriangleAlert } from "lucide-react";
+import { ListFilter, Plus, Search, TriangleAlert } from "lucide-react";
 
 import {
   MOTIVO_REPROGRAMACION_CATEGORIAS,
@@ -9,7 +9,8 @@ import {
   type StatusFilter,
 } from "@/domains/catalogos";
 import { PageHeader } from "@/shared/components/common/page-header";
-import { Alert, AlertDescription, AlertTitle } from "@/shared/components/ui/alert";
+import { ErrorAlert } from "@/shared/components/feedback/error-alert";
+import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 import { Button } from "@/shared/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/shared/components/ui/dialog";
 import { Input } from "@/shared/components/ui/input";
@@ -70,16 +71,7 @@ export default function MotivosReprogramacionPage() {
         </div>
 
         {motivos.isError ? (
-          <Alert variant="destructive" className="mt-4">
-            <RotateCw aria-hidden />
-            <AlertTitle>No pudimos cargar los motivos</AlertTitle>
-            <AlertDescription>
-              Vuelve a intentarlo. Si el problema continúa, verifica que el catálogo esté disponible.
-              <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => motivos.refetch()}>
-                Reintentar
-              </Button>
-            </AlertDescription>
-          </Alert>
+          <ErrorAlert error={motivos.error} onRetry={() => motivos.refetch()} className="mt-4" />
         ) : (
           <div className="mt-4" aria-busy={motivos.isFetching}>
             {motivos.isFetching && !motivos.isLoading && (

@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
+import { parseApiError } from "@/shared/lib/api-error";
 import { vehiculoSchema, type VehiculoFormValues } from "../flota.schemas";
 import type { Vehiculo } from "../flota.types";
 
@@ -24,6 +25,8 @@ export function VehiculoForm({
   const {
     register,
     handleSubmit,
+    setError,
+    setFocus,
     formState: { errors },
   } = useForm<VehiculoFormValues>({
     resolver: zodResolver(vehiculoSchema),
@@ -38,8 +41,23 @@ export function VehiculoForm({
     reValidateMode: "onChange",
   });
 
+  const submit = handleSubmit(async (values) => {
+    try {
+      await onSubmit(values);
+    } catch (error) {
+      const parsed = parseApiError(error);
+      if (parsed.code === "VEHICLE_PLATE_ALREADY_EXISTS") {
+        setError("plate", { message: "Ya existe un vehículo con esta placa." });
+        setFocus("plate");
+        return;
+      }
+      setError("root", { message: parsed.message });
+    }
+  });
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
+    <form onSubmit={submit} className="space-y-5" noValidate>
+      {errors.root?.message && <p role="alert" className="text-sm text-destructive">{errors.root.message}</p>}
       <div className="grid gap-5 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="vehiculo-type">Tipo</Label>

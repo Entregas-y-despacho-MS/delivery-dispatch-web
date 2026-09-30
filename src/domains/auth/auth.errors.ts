@@ -58,11 +58,9 @@ export function describeLoginError(error: unknown): LoginErrorInfo {
     };
   }
 
-  const { status, code, message } = parseApiError(error);
+  const { kind, code, message } = parseApiError(error);
 
-  // El criterio de Jira habla de HTTP 423, pero el backend responde 401 + ACCOUNT_LOCKED.
-  // Se aceptan ambos para no depender de cuál de los dos quede como definitivo.
-  if (code === AUTH_ERROR.ACCOUNT_LOCKED || status === 423) {
+  if (code === AUTH_ERROR.ACCOUNT_LOCKED) {
     return {
       kind: "locked",
       message:
@@ -81,13 +79,13 @@ export function describeLoginError(error: unknown): LoginErrorInfo {
   if (code === AUTH_ERROR.INVALID_CREDENTIALS) {
     return { kind: "credentials", message: "Usuario o contraseña incorrectos." };
   }
-  if (status === 429) {
-    return { kind: "throttled", message: "Demasiados intentos. Espera un momento e inténtalo de nuevo." };
+  if (kind === "rate-limit") {
+    return { kind: "throttled", message };
   }
-  if (status === undefined) {
-    return { kind: "network", message: "No se pudo conectar con el servidor. Revisa tu conexión." };
+  if (kind === "network") {
+    return { kind: "network", message };
   }
-  return { kind: "unknown", message: message || "No se pudo iniciar sesión. Inténtalo de nuevo." };
+  return { kind: "unknown", message };
 }
 
 export type ResetPasswordErrorKind =
@@ -107,9 +105,9 @@ export interface ResetPasswordErrorInfo {
 
 /** Traduce fallos al restablecer contraseña para mostrar feedback contextual al usuario. */
 export function describeResetPasswordError(error: unknown): ResetPasswordErrorInfo {
-  const { status, code, message } = parseApiError(error);
+  const { kind, code, message } = parseApiError(error);
 
-  if (code === AUTH_ERROR.INVALID_RESET_TOKEN || (status === 401 && /token/i.test(message))) {
+  if (code === AUTH_ERROR.INVALID_RESET_TOKEN) {
     return {
       kind: "invalid-token",
       title: "Enlace inválido o expirado",
@@ -136,26 +134,25 @@ export function describeResetPasswordError(error: unknown): ResetPasswordErrorIn
     };
   }
 
-  if (status === 429) {
+  if (kind === "rate-limit") {
     return {
       kind: "throttled",
       title: "Demasiados intentos",
-      message: "Demasiados intentos en poco tiempo. Espera un momento antes de volver a intentar.",
+      message,
     };
   }
 
-  if (status === undefined) {
+  if (kind === "network") {
     return {
       kind: "network",
       title: "Sin conexión con el servidor",
-      message: "No se pudo conectar con el servidor. Revisa tu conexión a internet.",
+      message,
     };
   }
 
   return {
     kind: "unknown",
     title: "Error al restablecer contraseña",
-    message: message || "Ocurrió un error inesperado. Por favor, inténtalo de nuevo.",
+    message,
   };
 }
-

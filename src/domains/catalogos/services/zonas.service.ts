@@ -15,6 +15,7 @@ export const zonasService = createCrudService<
   DeliveryZonesResponse
 >({
   endpoint: "/delivery-zones",
+  requestConfig: { skipErrorToast: true },
   updateMethod: "put",
   mapListResponse: ({ data, meta }) => ({
     items: data,

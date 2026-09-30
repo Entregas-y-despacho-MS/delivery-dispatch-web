@@ -43,15 +43,11 @@ export function MotivoReprogramacionForm({ motivo, onSubmit, onCancel, onDirtyCh
     } catch (error) {
       const apiError = parseApiError(error);
       setError("root", {
-        message: apiError.status === 409
+        message: apiError.code === "RESCHEDULE_REASON_CODE_ALREADY_EXISTS"
           ? "Ya existe un motivo con este nombre o código. Revisa ambos datos."
-          : apiError.status === 400
-            ? `El servidor rechazó los datos: ${apiError.message}`
-            : apiError.status === 403
-              ? "No tienes permiso para gestionar estos motivos."
-              : apiError.status === 404
-                ? "Este motivo ya no existe. Actualiza la lista."
-                : "No se pudo guardar el motivo. Revisa tu conexión e inténtalo de nuevo.",
+          : apiError.status === 404
+            ? "Este motivo ya no existe. Actualiza la lista."
+            : apiError.message,
       });
     }
   });

@@ -1,6 +1,5 @@
-import { useEffect, useState, useTransition } from "react";
-import { isAxiosError } from "axios";
-import { Pause, Play, RefreshCw, ServerCrash, TriangleAlert, WifiOff } from "lucide-react";
+import { useState } from "react";
+import { RefreshCw, ServerCrash, TriangleAlert, WifiOff } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/components/ui/alert";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
@@ -18,11 +17,6 @@ export interface ErrorAlertProps {
   onRetry?: () => void | Promise<unknown>;
   /** Estado de carga durante el reintento. */
   isRetrying?: boolean;
-  /**
-   * Habilita reintento automático con cuenta regresiva.
-   * Si es true, usa 5 segundos por defecto. Si es un número, usa esa cantidad de segundos.
-   */
-  autoRetry?: boolean | number;
   className?: string;
 }
 
@@ -39,31 +33,20 @@ function classifyError(error: unknown, fallbackDesc?: string): ErrorClassificati
   const parsed = parseApiError(error);
   const isOffline = typeof navigator !== "undefined" && !navigator.onLine;
 
-  const isNetwork =
-    isOffline ||
-    !parsed.status ||
-    parsed.code === "ERR_NETWORK" ||
-    (isAxiosError(error) && !error.response);
-
-  if (isNetwork) {
+  if (parsed.kind === "network") {
     return {
       kind: "network",
       title: "Sin conexión con el servidor",
-      description:
-        fallbackDesc ??
-        "No fue posible comunicarse con el servicio. Comprueba tu conexión a internet o verifica si el servidor está activo.",
+      description: fallbackDesc ?? parsed.message,
       badgeLabel: isOffline ? "Desconectado" : "Falla de red",
     };
   }
 
-  const isServer = Boolean(parsed.status && parsed.status >= 500);
-  if (isServer) {
+  if (parsed.kind === "server") {
     return {
       kind: "server",
       title: "Error interno del servidor",
-      description:
-        fallbackDesc ??
-        "El servidor encontró un error temporal (código 500). Por favor reintenta en unos instantes.",
+      description: fallbackDesc ?? parsed.message,
       badgeLabel: `HTTP ${parsed.status}`,
     };
   }
@@ -77,8 +60,8 @@ function classifyError(error: unknown, fallbackDesc?: string): ErrorClassificati
 }
 
 /**
- * Alerta contextual para fallas de red, errores HTTP 500 o fallos generales.
- * Incluye botón de reintento manual y cuenta regresiva de reintento automático opcional.
+ * Alerta contextual. TanStack Query controla los reintentos automáticos; aquí solo
+ * se ofrece un reintento manual después de que la consulta haya fallado.
  */
 export function ErrorAlert({
   error,
@@ -86,61 +69,25 @@ export function ErrorAlert({
   description,
   onRetry,
   isRetrying = false,
-  autoRetry = false,
   className,
 }: ErrorAlertProps) {
   const classification = classifyError(error, description);
   const finalTitle = title ?? classification.title;
   const finalDescription = classification.description;
 
-  const initialSeconds = typeof autoRetry === "number" ? autoRetry : autoRetry ? 5 : 0;
-  const [countdown, setCountdown] = useState<number | null>(initialSeconds > 0 ? initialSeconds : null);
-  const [isPaused, setIsPaused] = useState(false);
-  const [isPendingLocal, startTransition] = useTransition();
-
+  const [isPendingLocal, setIsPendingLocal] = useState(false);
   const activeLoading = isRetrying || isPendingLocal;
 
-  // Manejo de la cuenta regresiva para reintento automático
-  useEffect(() => {
-    if (!onRetry || countdown === null || countdown <= 0 || isPaused) return;
-
-    const timer = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev === null || prev <= 1) {
-          clearInterval(timer);
-          // Ejecutar reintento
-          startTransition(() => {
-            void onRetry();
-          });
-          return null;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [countdown, isPaused, onRetry]);
-
-  // Si vuelve la conexión a internet y estamos desconectados, reintentar automáticamente
-  useEffect(() => {
-    if (!onRetry) return;
-
-    const handleOnline = () => {
-      startTransition(() => {
-        void onRetry();
-      });
-    };
-
-    window.addEventListener("online", handleOnline);
-    return () => window.removeEventListener("online", handleOnline);
-  }, [onRetry]);
-
-  const handleManualRetry = () => {
-    setCountdown(null);
-    if (!onRetry) return;
-    startTransition(() => {
-      void onRetry();
-    });
+  const handleManualRetry = async () => {
+    if (!onRetry || activeLoading) return;
+    setIsPendingLocal(true);
+    try {
+      await onRetry();
+    } catch {
+      // La consulta actualiza su propio estado de error y la alerta permanece visible.
+    } finally {
+      setIsPendingLocal(false);
+    }
   };
 
   const getIcon = () => {
@@ -188,21 +135,6 @@ export function ErrorAlert({
             {finalDescription}
           </AlertDescription>
 
-          {countdown !== null && countdown > 0 && (
-            <p className="text-xs text-muted-foreground pt-1 flex items-center gap-1.5">
-              <span>Reintento automático en</span>
-              <span className="font-semibold tabular-nums text-foreground">{countdown}s</span>
-              <button
-                type="button"
-                onClick={() => setIsPaused((prev) => !prev)}
-                className="ml-2 inline-flex items-center gap-1 text-[11px] underline hover:text-foreground cursor-pointer"
-                title={isPaused ? "Reanudar reintento automático" : "Pausar reintento automático"}
-              >
-                {isPaused ? <Play className="size-3" /> : <Pause className="size-3" />}
-                {isPaused ? "Reanudar" : "Pausar"}
-              </button>
-            </p>
-          )}
         </div>
       </div>
 

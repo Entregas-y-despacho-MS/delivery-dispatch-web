@@ -172,7 +172,7 @@ export function UsuarioForm({ usuario, onGuardado, onCancelar }: UsuarioFormProp
               const cumple = regla.cumple(password);
               return (
                 <li key={regla.id} className="flex items-center gap-2">
-                  {cumple ? <Check className="h-3 w-3 text-primary" aria-hidden /> : <Circle className="h-3 w-3" aria-hidden />}
+                  {cumple ? <Check className="h-3 w-3 text-brand-turquoise" aria-hidden /> : <Circle className="h-3 w-3" aria-hidden />}
                   <span>{regla.etiqueta}</span>
                   <span className="sr-only">{cumple ? "(cumplido)" : "(pendiente)"}</span>
                 </li>

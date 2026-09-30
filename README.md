@@ -26,6 +26,19 @@ npm run dev
 
 Abre <http://localhost:3000>.
 
+### Referencia de API
+
+La [guía de todos los endpoints](docs/API.md) incluye rutas, permisos, campos de
+solicitud y respuesta (también los anidados), ejemplos y errores. La
+[especificación OpenAPI](docs/openapi.json) se puede usar como contexto estructurado
+en otro chat de este proyecto. Para el catálogo de motivos de incidencia, consulta
+la [guía detallada de Incident Reasons](docs/INCIDENT_REASONS.md), con filtros,
+validaciones, ejemplos completos y el campo `active` de actualización. Para los
+motivos de reprogramación, consulta la [guía de Reschedule Reasons](docs/RESCHEDULE_REASONS.md),
+actualizada con `code`, `affectsSla` y las reglas de duplicados.
+Los cinco endpoints nuevos de tipos de incidente vehicular y registro de mantenimiento
+están en la [guía de incidentes vehiculares](docs/VEHICLE_INCIDENTS.md).
+
 ### Comandos
 
 | Comando | Qué hace |
@@ -38,8 +51,8 @@ Abre <http://localhost:3000>.
 
 ### Cómo probar el panel sin backend
 
-Todavía no hay API, así que no puedes loguearte de verdad. Para entrar, abre la
-consola del navegador y simula la sesión:
+Si el backend no está ejecutándose, no puedes loguearte de verdad. Para previsualizar
+el panel, abre la consola del navegador y simula la sesión:
 
 ```js
 localStorage.setItem('delivery-dispatch-web-auth', JSON.stringify({

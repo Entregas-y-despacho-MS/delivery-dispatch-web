@@ -43,7 +43,7 @@ export function DashboardLayout() {
   return (
     <SidebarProvider>
       <Sidebar variant="inset" className="border-r">
-        <SidebarHeader className="border-b px-3 py-3">
+        <SidebarHeader className="border-b border-sidebar-border px-3 py-3">
           <Link
             to={portalHref("tablero")}
             className="group/brand flex items-center gap-3 rounded-lg px-2 py-1.5 outline-none transition-colors hover:bg-sidebar-accent focus-visible:ring-2 focus-visible:ring-sidebar-ring"
@@ -55,7 +55,7 @@ export function DashboardLayout() {
               <span className="block truncate text-sm font-semibold tracking-tight">
                 Delivery Dispatch
               </span>
-              <span className="block truncate text-[11px] text-sidebar-foreground/60">
+              <span className="block truncate text-[11px] text-sidebar-foreground/75">
                 Centro de operaciones
               </span>
             </span>
@@ -69,7 +69,7 @@ export function DashboardLayout() {
 
             return (
               <SidebarGroup key={group.label} className="p-0">
-                <SidebarGroupLabel className="h-7 px-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-sidebar-foreground/50">
+                <SidebarGroupLabel className="h-7 px-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-sidebar-foreground/75">
                   {group.label}
                 </SidebarGroupLabel>
                 <SidebarGroupContent>
@@ -99,51 +99,53 @@ export function DashboardLayout() {
         <SidebarFooter />
       </Sidebar>
 
-      <div className="flex min-h-screen w-full flex-1 flex-col">
-        <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/70">
+      <div className="flex min-h-screen w-full flex-1 flex-col bg-background">
+        <header className="sticky top-0 z-40 border-b border-sidebar-border bg-sidebar text-sidebar-foreground">
           <div className="flex min-h-16 items-center gap-3 px-4 lg:px-8">
             <SidebarTrigger
-              className="size-9 rounded-lg border bg-background shadow-none"
+              className="size-9 rounded-lg border border-sidebar-border bg-sidebar text-sidebar-foreground shadow-none hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
               aria-label="Abrir navegación"
             />
-            <Separator orientation="vertical" className="hidden h-6 sm:block" />
+            <Separator orientation="vertical" className="hidden h-6 bg-sidebar-border sm:block" />
 
             <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1.5 text-xs text-sidebar-foreground/75">
                 <span className="hidden font-medium sm:inline">
                   {currentNavItem?.groupLabel ?? "Panel operativo"}
                 </span>
                 {currentNavItem && <ChevronRight className="size-3.5" aria-hidden="true" />}
-                <span className="truncate font-medium text-foreground">
+                <span className="truncate font-medium text-sidebar-foreground">
                   {currentNavItem?.title ?? "Panel operativo"}
                 </span>
               </div>
-              <p className="mt-0.5 truncate text-xs text-muted-foreground">
+              <p className="mt-0.5 truncate text-xs text-sidebar-foreground/75">
                 Información de tu operación en un solo lugar
               </p>
             </div>
 
             <div className="flex items-center gap-1 sm:gap-2">
-              <ThemeToggle />
-              <Separator orientation="vertical" className="hidden h-6 sm:block" />
+              <span className="[&_button]:text-sidebar-foreground [&_button]:hover:bg-sidebar-accent [&_button]:hover:text-sidebar-accent-foreground">
+                <ThemeToggle />
+              </span>
+              <Separator orientation="vertical" className="hidden h-6 bg-sidebar-border sm:block" />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button
                     type="button"
-                    className="flex h-10 items-center gap-2 rounded-lg px-1.5 outline-none transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring sm:px-2"
+                    className="flex h-10 items-center gap-2 rounded-lg px-1.5 outline-none transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring sm:px-2"
                     aria-label={`Abrir menú de ${user.nombres}`}
                   >
-                    <Avatar size="sm" className="ring-1 ring-border">
+                    <Avatar size="sm" className="ring-1 ring-sidebar-border">
                       {user.avatar_url && <AvatarImage src={user.avatar_url} alt={user.nombres} />}
-                      <AvatarFallback className="bg-primary/10 text-xs font-medium text-primary">
+                      <AvatarFallback className="bg-brand-soft text-xs font-medium text-brand-blue">
                         {initials}
                       </AvatarFallback>
                     </Avatar>
                     <span className="hidden max-w-36 flex-col items-start text-left lg:flex">
                       <span className="truncate text-sm font-medium">{user.nombres}</span>
-                      <span className="truncate text-xs text-muted-foreground">{roleLabel}</span>
+                      <span className="truncate text-xs text-sidebar-foreground/75">{roleLabel}</span>
                     </span>
-                    <ChevronDown className="hidden size-4 text-muted-foreground sm:block" aria-hidden="true" />
+                    <ChevronDown className="hidden size-4 text-sidebar-foreground/75 sm:block" aria-hidden="true" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" sideOffset={8} className="w-64">
@@ -151,7 +153,7 @@ export function DashboardLayout() {
                     <div className="flex items-center gap-3">
                       <Avatar size="sm" className="ring-1 ring-border">
                         {user.avatar_url && <AvatarImage src={user.avatar_url} alt={user.nombres} />}
-                        <AvatarFallback className="bg-primary/10 text-xs font-medium text-primary">
+                        <AvatarFallback className="bg-brand-soft text-xs font-medium text-brand-blue">
                           {initials}
                         </AvatarFallback>
                       </Avatar>

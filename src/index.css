@@ -4,6 +4,7 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -38,6 +39,10 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-brand-blue: var(--brand-blue);
+  --color-brand-turquoise: var(--brand-turquoise);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-orange: var(--brand-orange);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -47,24 +52,27 @@
 :root {
   --radius: 0.625rem;
 
-  /* Base: stone (gris cálido, hermana el naranja) */
-  --background: oklch(0.985 0.001 106.423);
-  --foreground: oklch(0.216 0.006 56.043);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.216 0.006 56.043);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.216 0.006 56.043);
+  --brand-blue: #265c7f;
+  --brand-turquoise: #469db0;
+  --brand-soft: #ddf3fe;
+  --brand-orange: #e18641;
 
-  /* MARCA — orange-500 con texto oscuro encima: 7.3:1 */
-  --primary: oklch(0.705 0.213 47.604);
-  --primary-foreground: oklch(0.216 0.006 56.043);
+  --background: #f5fafc;
+  --foreground: #1f2730;
+  --card: #ffffff;
+  --card-foreground: #1f2730;
+  --popover: #ffffff;
+  --popover-foreground: #1f2730;
 
-  --secondary: oklch(0.97 0.001 106.424);
-  --secondary-foreground: oklch(0.216 0.006 56.043);
-  --muted: oklch(0.97 0.001 106.424);
-  --muted-foreground: oklch(0.553 0.013 58.071);
-  --accent: oklch(0.98 0.016 73.684);
-  --accent-foreground: oklch(0.408 0.123 38.172);
+  --primary: #469db0;
+  --primary-foreground: #1f2730;
+
+  --secondary: #eaf4f8;
+  --secondary-foreground: #265c7f;
+  --muted: #edf5f8;
+  --muted-foreground: #526472;
+  --accent: #ddf3fe;
+  --accent-foreground: #265c7f;
 
   --destructive: oklch(0.577 0.245 27.325);
   /* Estados fuera de las graficas: se usan como texto/icono sobre fondo suave
@@ -72,70 +80,75 @@
   --warning: oklch(0.550 0.130 70.000);
   --success: oklch(0.520 0.130 155.000);
   --info: oklch(0.550 0.130 240.000);
-  --border: oklch(0.923 0.003 48.717);
-  --input: oklch(0.923 0.003 48.717);
-  --ring: oklch(0.705 0.213 47.604);
+  --border: #d4e3ea;
+  --input: #c7dae4;
+  --ring: #265c7f;
 
-  /* Series de gráficas: marca, azul, verde, rojo, neutro */
-  --chart-1: oklch(0.705 0.213 47.604);
-  --chart-2: oklch(0.600 0.130 240.000);
+  /* Series de gráficas */
+  --chart-1: #265c7f;
+  --chart-2: #469db0;
   --chart-3: oklch(0.650 0.150 155.000);
-  --chart-4: oklch(0.577 0.245 27.325);
-  --chart-5: oklch(0.553 0.013 58.071);
+  --chart-4: #e18641;
+  --chart-5: #526472;
 
-  --sidebar: oklch(1 0 0);
-  --sidebar-foreground: oklch(0.216 0.006 56.043);
-  --sidebar-primary: oklch(0.705 0.213 47.604);
-  --sidebar-primary-foreground: oklch(0.216 0.006 56.043);
-  --sidebar-accent: oklch(0.98 0.016 73.684);
-  --sidebar-accent-foreground: oklch(0.408 0.123 38.172);
-  --sidebar-border: oklch(0.923 0.003 48.717);
-  --sidebar-ring: oklch(0.705 0.213 47.604);
+  --sidebar: #265c7f;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #ddf3fe;
+  --sidebar-primary-foreground: #265c7f;
+  --sidebar-accent: #ddf3fe;
+  --sidebar-accent-foreground: #265c7f;
+  --sidebar-border: #4e809e;
+  --sidebar-ring: #ddf3fe;
 }
 
 .dark {
-  --background: oklch(0.147 0.004 49.25);
-  --foreground: oklch(0.97 0.001 106.424);
-  --card: oklch(0.216 0.006 56.043);
-  --card-foreground: oklch(0.97 0.001 106.424);
-  --popover: oklch(0.216 0.006 56.043);
-  --popover-foreground: oklch(0.97 0.001 106.424);
+  --brand-blue: #9bcde8;
+  --brand-turquoise: #7acddd;
+  --brand-soft: #23465b;
+  --brand-orange: #e18641;
 
-  --primary: oklch(0.705 0.213 47.604);
-  --primary-foreground: oklch(0.147 0.004 49.25);
+  --background: #10212d;
+  --foreground: #eaf4fa;
+  --card: #19303f;
+  --card-foreground: #eaf4fa;
+  --popover: #19303f;
+  --popover-foreground: #eaf4fa;
 
-  --secondary: oklch(0.268 0.007 34.298);
-  --secondary-foreground: oklch(0.97 0.001 106.424);
-  --muted: oklch(0.268 0.007 34.298);
-  --muted-foreground: oklch(0.709 0.01 56.259);
-  --accent: oklch(0.268 0.007 34.298);
-  --accent-foreground: oklch(0.837 0.128 66.29);
+  --primary: #7acddd;
+  --primary-foreground: #1f2730;
+
+  --secondary: #223c4c;
+  --secondary-foreground: #eaf4fa;
+  --muted: #223c4c;
+  --muted-foreground: #b3c5d0;
+  --accent: #23465b;
+  --accent-foreground: #eaf4fa;
 
   --destructive: oklch(0.704 0.191 22.216);
   --warning: oklch(0.800 0.150 70.000);
   --success: oklch(0.750 0.150 155.000);
   --info: oklch(0.720 0.130 240.000);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.705 0.213 47.604);
+  --border: #385464;
+  --input: #456272;
+  --ring: #9bcde8;
 
-  --chart-1: oklch(0.750 0.183 55.934);
-  --chart-2: oklch(0.680 0.130 240.000);
+  --chart-1: #9bcde8;
+  --chart-2: #7acddd;
   --chart-3: oklch(0.720 0.150 155.000);
-  --chart-4: oklch(0.704 0.191 22.216);
-  --chart-5: oklch(0.709 0.01 56.259);
+  --chart-4: #e18641;
+  --chart-5: #b3c5d0;
 
-  --sidebar: oklch(0.216 0.006 56.043);
-  --sidebar-foreground: oklch(0.97 0.001 106.424);
-  --sidebar-primary: oklch(0.705 0.213 47.604);
-  --sidebar-primary-foreground: oklch(0.147 0.004 49.25);
-  --sidebar-accent: oklch(0.268 0.007 34.298);
-  --sidebar-accent-foreground: oklch(0.837 0.128 66.29);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.705 0.213 47.604);
+  --sidebar: #17394f;
+  --sidebar-foreground: #eaf4fa;
+  --sidebar-primary: #7acddd;
+  --sidebar-primary-foreground: #10212d;
+  --sidebar-accent: #2b566f;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #446981;
+  --sidebar-ring: #9bcde8;
 }
 
 @layer base {
   * { @apply border-border outline-ring/50; }
-  body { @apply bg-background text-foreground antialiased; }
+  body { @apply bg-background font-sans text-foreground antialiased; }
 }

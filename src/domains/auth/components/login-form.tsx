@@ -48,14 +48,14 @@ export function LoginForm() {
   return (
     <div className="w-full max-w-sm space-y-8">
       <div className="flex items-center gap-3 lg:hidden">
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-brand-blue text-white dark:text-background">
           <Truck className="size-5" aria-hidden />
         </span>
-        <span className="text-base font-semibold tracking-tight">Delivery Dispatch</span>
+        <span className="text-base font-semibold tracking-tight text-brand-blue">Delivery Dispatch</span>
       </div>
 
       <div className="space-y-2">
-        <h1 className="text-2xl font-semibold tracking-tight">Iniciar sesión</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-brand-blue">Iniciar sesión</h1>
         <p className="text-sm text-muted-foreground">
           Ingresa con tu usuario y contraseña del sistema.
         </p>

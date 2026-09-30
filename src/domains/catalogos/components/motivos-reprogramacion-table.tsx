@@ -4,7 +4,7 @@ import { DataTable, type Column } from "@/shared/components/common/data-table";
 import { EmptyState, NoResultsState } from "@/shared/components/feedback/empty-state";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
-import { Skeleton } from "@/shared/components/ui/skeleton";
+import { CardSkeletonList } from "@/shared/components/feedback/card-skeleton-list";
 import { Switch } from "@/shared/components/ui/switch";
 import type { MotivoReprogramacion } from "../catalogos.types";
 import { getMotivoReprogramacionCategoria } from "../motivos-reprogramacion.constants";
@@ -101,13 +101,7 @@ export function MotivosReprogramacionTable({ data, loading = false, searchActive
           isFiltered={searchActive} onClearFilters={onClearFilters} />
       </div>
       <div className="space-y-3 md:hidden">
-        {loading && Array.from({ length: 3 }).map((_, index) => (
-          <div key={index} className="space-y-3 rounded-lg border p-4">
-            <Skeleton className="h-5 w-2/3" />
-            <Skeleton className="h-4 w-1/3" />
-            <Skeleton className="h-9 w-full" />
-          </div>
-        ))}
+        {loading && <CardSkeletonList />}
         {!loading && data.length === 0 && (searchActive
           ? <NoResultsState description={emptyMessage} onClearFilters={onClearFilters} bordered />
           : <EmptyState title="Sin motivos todavía" description={emptyMessage} />)}

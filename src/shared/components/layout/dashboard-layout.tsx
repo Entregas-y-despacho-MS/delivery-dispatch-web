@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ChevronDown, ChevronRight, LogOut, Package } from "lucide-react";
 
@@ -7,6 +8,7 @@ import { IdleWarningDialog, useLogout } from "@/domains/auth";
 import { useAuthStore } from "@/shared/store/use-auth-store";
 import { ThemeToggle } from "@/shared/components/theme-toggle";
 import { PageErrorBoundary } from "@/shared/components/feedback/page-error-boundary";
+import { PageSkeleton } from "@/shared/components/feedback/page-skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/components/ui/avatar";
 import { Separator } from "@/shared/components/ui/separator";
 import {
@@ -174,7 +176,11 @@ export function DashboardLayout() {
         </header>
 
         <main className="flex-1 p-4 sm:p-6 lg:p-8">
-          <div className="mx-auto max-w-7xl"><PageErrorBoundary /></div>
+          <div className="mx-auto max-w-7xl">
+            <Suspense fallback={<PageSkeleton />}>
+              <PageErrorBoundary />
+            </Suspense>
+          </div>
         </main>
       </div>
       {/* RF-A24: aviso y cierre de sesión por inactividad. */}

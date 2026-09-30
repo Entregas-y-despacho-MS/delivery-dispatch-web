@@ -1,4 +1,5 @@
 import mapBackground from "@/assets/login-map-background.webp";
+import darkMapBackground from "@/assets/login-map-background-dark.webp";
 
 const brandClaims = [
   "Rutas eficientes",
@@ -13,7 +14,13 @@ export function LoginBrandPanel() {
         src={mapBackground}
         alt=""
         aria-hidden="true"
-        className="absolute inset-0 size-full object-cover object-center"
+        className="absolute inset-0 size-full object-cover object-center transition-opacity duration-500 dark:opacity-0"
+      />
+      <img
+        src={darkMapBackground}
+        alt=""
+        aria-hidden="true"
+        className="absolute inset-0 size-full object-cover object-center opacity-0 transition-opacity duration-500 dark:opacity-100"
       />
 
       <div

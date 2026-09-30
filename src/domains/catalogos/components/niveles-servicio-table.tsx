@@ -1,7 +1,7 @@
 import { MoreHorizontal, Pencil, Power, Timer, Trash2 } from "lucide-react";
 
-import { DataTable, type Column } from "@/shared/components/common/data-table";
-import { EmptyState } from "@/shared/components/feedback/empty-state";
+import type { Column } from "@/shared/components/common/data-table";
+import { ResponsiveList } from "@/shared/components/common/responsive-list";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -11,7 +11,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
-import { CardSkeletonList } from "@/shared/components/feedback/card-skeleton-list";
 import { Switch } from "@/shared/components/ui/switch";
 import type { NivelServicio } from "../catalogos.types";
 
@@ -123,52 +122,34 @@ export function NivelesServicioTable({
   ];
 
   return (
-    <>
-      <div className="hidden md:block">
-        <DataTable
-          columns={columns}
-          data={data}
-          loading={loading}
-          emptyMessage={searchActive ? "No encontramos niveles con ese criterio." : "Crea el primer nivel para comenzar a priorizar tus despachos."}
-        />
-      </div>
-
-      <div className="space-y-3 md:hidden">
-        {loading && <CardSkeletonList />}
-
-        {!loading && data.length === 0 && (
-          <EmptyState
-            title="Sin resultados"
-            description={searchActive ? "No encontramos niveles con ese criterio." : "Crea el primer nivel para comenzar a priorizar tus despachos."}
-          />
-        )}
-
-        {!loading && data.map((nivel) => (
-          <article key={nivel.id} className="rounded-lg border bg-card p-4 shadow-sm">
-            <div className="flex items-start justify-between gap-4">
-              <div className="min-w-0 space-y-1">
-                <h3 className="truncate font-semibold">{nivel.name}</h3>
-                <p className="line-clamp-2 text-sm text-muted-foreground">{nivel.description || "Sin descripción"}</p>
-              </div>
-              <NivelActions nivel={nivel} onEdit={onEdit} onDelete={onDelete} busy={busy} />
+    <ResponsiveList
+      columns={columns} data={data} loading={loading}
+      emptyMessage={searchActive ? "No encontramos niveles con ese criterio." : "Crea el primer nivel para comenzar a priorizar tus despachos."}
+      renderCard={(nivel) => (
+        <article className="rounded-lg border bg-card p-4 shadow-sm">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0 space-y-1">
+              <h3 className="truncate font-semibold">{nivel.name}</h3>
+              <p className="line-clamp-2 text-sm text-muted-foreground">{nivel.description || "Sin descripción"}</p>
             </div>
-            <div className="mt-4 grid grid-cols-2 gap-3 border-t pt-3">
-              <div>
-                <p className="text-xs text-muted-foreground">Tiempo objetivo</p>
-                <p className="mt-1 inline-flex items-center gap-1.5 font-medium tabular-nums"><Timer className="size-4 text-muted-foreground" aria-hidden />{nivel.targetTimeMin} min</p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Prioridad</p>
-                <div className="mt-1"><PriorityBadge priorityLevel={nivel.priorityLevel} /></div>
-              </div>
+            <NivelActions nivel={nivel} onEdit={onEdit} onDelete={onDelete} busy={busy} />
+          </div>
+          <div className="mt-4 grid grid-cols-2 gap-3 border-t pt-3">
+            <div>
+              <p className="text-xs text-muted-foreground">Tiempo objetivo</p>
+              <p className="mt-1 inline-flex items-center gap-1.5 font-medium tabular-nums"><Timer className="size-4 text-muted-foreground" aria-hidden />{nivel.targetTimeMin} min</p>
             </div>
-            <div className="mt-3 flex items-center justify-between border-t pt-3">
-              <StatusBadge active={nivel.active} />
-              <Switch checked={nivel.active} disabled={busy} onCheckedChange={() => onToggle(nivel)} aria-label={`${nivel.active ? "Desactivar" : "Activar"} ${nivel.name}`} />
+            <div>
+              <p className="text-xs text-muted-foreground">Prioridad</p>
+              <div className="mt-1"><PriorityBadge priorityLevel={nivel.priorityLevel} /></div>
             </div>
-          </article>
-        ))}
-      </div>
-    </>
+          </div>
+          <div className="mt-3 flex items-center justify-between border-t pt-3">
+            <StatusBadge active={nivel.active} />
+            <Switch checked={nivel.active} disabled={busy} onCheckedChange={() => onToggle(nivel)} aria-label={`${nivel.active ? "Desactivar" : "Activar"} ${nivel.name}`} />
+          </div>
+        </article>
+      )}
+    />
   );
 }

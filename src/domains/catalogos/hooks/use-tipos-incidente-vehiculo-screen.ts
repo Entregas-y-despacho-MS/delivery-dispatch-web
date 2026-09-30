@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
-import { useDebounce } from "@/shared/hooks/use-debounce";
+import { useListFilters } from "@/shared/hooks/use-list-filters";
+import { useEditorDialog } from "@/shared/hooks/use-editor-dialog";
 import type { TipoIncidenteVehiculoFormValues } from "../catalogos.schemas";
 import type {
   SeveridadIncidenteVehiculo,
@@ -15,14 +16,13 @@ export type SeveridadFilter = "all" | SeveridadIncidenteVehiculo;
 export type BloqueoFilter = "all" | "blocking" | "nonblocking";
 
 export function useTiposIncidenteVehiculoScreen() {
-  const [search, setSearch] = useState("");
-  const [severityFilter, setSeverityFilter] = useState<SeveridadFilter>("all");
-  const [blockingFilter, setBlockingFilter] = useState<BloqueoFilter>("all");
-  const [page, setPage] = useState(1);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingTipo, setEditingTipo] = useState<TipoIncidenteVehiculo>();
-  const [formDirty, setFormDirty] = useState(false);
-  const debouncedSearch = useDebounce(search.trim(), 300);
+  const list = useListFilters<{ severity: SeveridadFilter; blocking: BloqueoFilter }>({
+    severity: "all",
+    blocking: "all",
+  });
+  const { search, debouncedSearch, page, setPage, clearFilters, hasFilters } = list;
+  const severityFilter = list.filters.severity;
+  const blockingFilter = list.filters.blocking;
 
   const params = useMemo<TipoIncidenteVehiculoListParams>(() => ({
     page,
@@ -32,65 +32,38 @@ export function useTiposIncidenteVehiculoScreen() {
     disablesVehicle: blockingFilter === "all" ? undefined : blockingFilter === "blocking",
   }), [page, debouncedSearch, severityFilter, blockingFilter]);
   const tipos = useTiposIncidenteVehiculo(params);
-  const hasFilters = Boolean(search.trim()) || severityFilter !== "all" || blockingFilter !== "all";
   const totalPages = Math.max(tipos.pages ?? 0, 1);
-
-  const openCreate = () => {
-    setEditingTipo(undefined);
-    setFormDirty(false);
-    setDialogOpen(true);
-  };
-
-  const openEdit = (tipo: TipoIncidenteVehiculo) => {
-    setEditingTipo(tipo);
-    setFormDirty(false);
-    setDialogOpen(true);
-  };
-
-  const closeDialog = (open: boolean) => {
-    if (tipos.isSaving) return;
-    if (!open && formDirty && !window.confirm("¿Descartar los cambios sin guardar?")) return;
-    setDialogOpen(open);
-    if (!open) {
-      setEditingTipo(undefined);
-      setFormDirty(false);
-    }
-  };
+  const editor = useEditorDialog<TipoIncidenteVehiculo>({
+    busy: tipos.isSaving,
+    confirmDiscardMessage: "¿Descartar los cambios sin guardar?",
+  });
+  const editingTipo = editor.editingItem;
 
   const saveTipo = async (values: TipoIncidenteVehiculoFormValues) => {
     await tipos.saveItem(values, editingTipo?.id);
-    setDialogOpen(false);
-    setEditingTipo(undefined);
-    setFormDirty(false);
+    editor.finish();
     if (!editingTipo) setPage(1);
-  };
-
-  const clearFilters = () => {
-    setSearch("");
-    setSeverityFilter("all");
-    setBlockingFilter("all");
-    setPage(1);
   };
 
   return {
     tipos,
     search,
-    setSearch: (value: string) => { setSearch(value); setPage(1); },
+    setSearch: list.setSearch,
     severityFilter,
-    setSeverityFilter: (value: SeveridadFilter) => { setSeverityFilter(value); setPage(1); },
+    setSeverityFilter: (value: SeveridadFilter) => list.setFilter("severity", value),
     blockingFilter,
-    setBlockingFilter: (value: BloqueoFilter) => { setBlockingFilter(value); setPage(1); },
+    setBlockingFilter: (value: BloqueoFilter) => list.setFilter("blocking", value),
     page,
     setPage,
     totalPages,
     hasFilters,
     clearFilters,
-    dialogOpen,
+    dialogOpen: editor.open,
     editingTipo,
-    setFormDirty,
-    openCreate,
-    openEdit,
-    closeDialog,
+    setFormDirty: editor.setDirty,
+    openCreate: editor.openCreate,
+    openEdit: editor.openEdit,
+    closeDialog: editor.onOpenChange,
     saveTipo,
   };
 }

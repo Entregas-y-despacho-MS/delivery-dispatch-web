@@ -1,8 +1,6 @@
 import { useMemo, useState } from "react";
 import {
   ChevronDown,
-  ChevronLeft,
-  ChevronRight,
   ChevronsUpDown,
   ChevronUp,
   Pencil,
@@ -14,13 +12,6 @@ import { AsyncState } from "@/shared/components/feedback/async-state";
 import { EmptyState, NoResultsState } from "@/shared/components/feedback/empty-state";
 import { TableSkeleton, type SkeletonColumnDef } from "@/shared/components/feedback/table-skeleton";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/components/ui/select";
-import {
   Table,
   TableBody,
   TableCell,
@@ -28,7 +19,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/components/ui/table";
-import { useDebounce } from "@/shared/hooks/use-debounce";
+import { useListFilters } from "@/shared/hooks/use-list-filters";
+import { PagedTableControls } from "@/shared/components/common/paged-table-controls";
 import { useRoles } from "../hooks/use-roles";
 import { useUsuarios } from "../hooks/use-usuarios";
 import type { Usuario, UsuarioEstado, UsuariosFiltrosParams } from "../usuarios.types";
@@ -106,21 +98,16 @@ function SortIcon({ active, order }: { active: boolean; order?: "asc" | "desc" }
 }
 
 export function UsuariosTable({ onEditar, onDesactivar }: UsuariosTableProps) {
-  // Filtros reactivos
-  const [search, setSearch] = useState("");
-  const [rolId, setRolId] = useState("todos");
-  const [estado, setEstado] = useState("todos");
+  const list = useListFilters<{ role: string; status: string }>({ role: "todos", status: "todos" });
+  const { search, debouncedSearch, page, setPage, clearFilters, hasFilters } = list;
+  const rolId = list.filters.role;
+  const estado = list.filters.status;
 
   // Ordenamiento interactivo
   const [sortCol, setSortCol] = useState<SortCol>("nombre");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
-  // Paginación server-side
-  const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
-
-  // Debounce de 300ms en el campo de búsqueda
-  const debouncedSearch = useDebounce(search, 300);
 
   // Carga de catálogo de roles para selector
   const { data: roles, isPending: loadingRoles } = useRoles();
@@ -152,16 +139,6 @@ export function UsuariosTable({ onEditar, onDesactivar }: UsuariosTableProps) {
 
   const { data, isPending, isError, error, refetch } = useUsuarios(queryParams);
 
-  // Detección de filtros activos y callback para reseteo rápido
-  const isFiltered = Boolean(search.trim() || rolId !== "todos" || estado !== "todos");
-
-  const handleClearFilters = () => {
-    setSearch("");
-    setRolId("todos");
-    setEstado("todos");
-    setPage(1);
-  };
-
   const SKELETON_COLUMNS: SkeletonColumnDef[] = [
     { header: "Nombre", type: "subtitle" },
     { header: "Correo", type: "text", className: "hidden md:table-cell" },
@@ -182,42 +159,21 @@ export function UsuariosTable({ onEditar, onDesactivar }: UsuariosTableProps) {
     setPage(1);
   };
 
-  // Manejo de búsqueda con reinicio a página 1
-  const handleSearchChange = (value: string) => {
-    setSearch(value);
-    setPage(1);
-  };
-
-  // Manejo de rol con reinicio a página 1
-  const handleRolChange = (value: string) => {
-    setRolId(value);
-    setPage(1);
-  };
-
-  // Manejo de estado con reinicio a página 1
-  const handleEstadoChange = (value: string) => {
-    setEstado(value);
-    setPage(1);
-  };
-
   const items = data?.items ?? [];
 
-  // Cálculos de rango para texto de paginación
   const total = data?.total ?? 0;
   const totalPages = data?.pages ?? Math.max(1, Math.ceil(total / limit));
-  const desde = total > 0 ? (page - 1) * limit + 1 : 0;
-  const hasta = total > 0 ? Math.min(page * limit, total) : 0;
 
   return (
     <div className="space-y-4">
       {/* Controles de búsqueda y filtros */}
       <UsuariosTableFilters
         search={search}
-        onSearchChange={handleSearchChange}
+        onSearchChange={list.setSearch}
         rolId={rolId}
-        onRolIdChange={handleRolChange}
+        onRolIdChange={(value) => list.setFilter("role", value)}
         estado={estado}
-        onEstadoChange={handleEstadoChange}
+        onEstadoChange={(value) => list.setFilter("status", value)}
         roles={roles}
         loadingRoles={loadingRoles}
       />
@@ -227,8 +183,8 @@ export function UsuariosTable({ onEditar, onDesactivar }: UsuariosTableProps) {
         error={isError ? error : undefined}
         empty={items.length === 0}
         loadingFallback={<TableSkeleton columns={SKELETON_COLUMNS} rows={Math.min(limit, 10)} />}
-        emptyFallback={isFiltered
-          ? <NoResultsState onClearFilters={handleClearFilters} bordered />
+        emptyFallback={hasFilters
+          ? <NoResultsState onClearFilters={clearFilters} bordered />
           : <EmptyState title="Sin usuarios registrados" description="Aún no hay usuarios dados de alta en el sistema." />}
         onRetry={() => refetch()}
       >
@@ -348,72 +304,17 @@ export function UsuariosTable({ onEditar, onDesactivar }: UsuariosTableProps) {
         </div>
       </AsyncState>
 
-      {/* Pie de tabla con controles de paginación */}
       {!isError && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-muted-foreground px-1">
-          <div>
-            {total > 0 ? (
-              <span>
-                Mostrando <span className="font-medium text-foreground">{desde}</span>–
-                <span className="font-medium text-foreground">{hasta}</span> de{" "}
-                <span className="font-medium text-foreground">{total}</span> usuarios
-              </span>
-            ) : (
-              <span>0 usuarios</span>
-            )}
-          </div>
-
-          <div className="flex items-center gap-4">
-            {/* Selector de registros por página */}
-            <div className="flex items-center gap-2">
-              <span className="text-xs">Filas:</span>
-              <Select
-                value={String(limit)}
-                onValueChange={(val) => {
-                  setLimit(Number(val));
-                  setPage(1);
-                }}
-              >
-                <SelectTrigger className="h-8 w-[72px]" aria-label="Cantidad de filas por página">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="10">10</SelectItem>
-                  <SelectItem value="20">20</SelectItem>
-                  <SelectItem value="50">50</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Navegación de páginas */}
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs">
-                Pág. <span className="font-medium text-foreground">{page}</span> de{" "}
-                <span className="font-medium text-foreground">{totalPages || 1}</span>
-              </span>
-              <Button
-                variant="outline"
-                size="icon"
-                className="size-8"
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page <= 1 || isPending}
-                aria-label="Página anterior"
-              >
-                <ChevronLeft className="size-4" aria-hidden />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                className="size-8"
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={page >= totalPages || isPending}
-                aria-label="Página siguiente"
-              >
-                <ChevronRight className="size-4" aria-hidden />
-              </Button>
-            </div>
-          </div>
-        </div>
+        <PagedTableControls
+          page={page}
+          totalPages={totalPages}
+          total={total}
+          onPageChange={setPage}
+          pageSize={limit}
+          onPageSizeChange={(size) => { setLimit(size); setPage(1); }}
+          itemLabel="usuarios"
+          busy={isPending}
+        />
       )}
     </div>
   );

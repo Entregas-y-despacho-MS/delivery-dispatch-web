@@ -7,6 +7,7 @@ import {
   useTiposIncidenteVehiculoScreen,
 } from "@/domains/catalogos";
 import { PageHeader } from "@/shared/components/common/page-header";
+import { PaginationControls } from "@/shared/components/common/pagination-controls";
 import { ErrorAlert } from "@/shared/components/feedback/error-alert";
 import { Button } from "@/shared/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/shared/components/ui/dialog";
@@ -55,16 +56,8 @@ export default function TiposIncidenteVehiculoPage() {
         )}
 
         {!tipos.isError && !tipos.isLoading && tipos.total > 0 && (
-          <div className="mt-4 flex flex-col gap-3 border-t pt-4 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-            <p>Página <span className="font-medium text-foreground">{tipos.page ?? screen.page}</span> de {screen.totalPages}
-              <span className="ml-2">· {tipos.total} en total</span></p>
-            <div className="flex gap-2">
-              <Button type="button" variant="outline" size="sm" disabled={screen.page <= 1 || tipos.isFetching}
-                onClick={() => screen.setPage((current) => Math.max(1, current - 1))}>Anterior</Button>
-              <Button type="button" variant="outline" size="sm" disabled={screen.page >= screen.totalPages || tipos.isFetching}
-                onClick={() => screen.setPage((current) => Math.min(screen.totalPages, current + 1))}>Siguiente</Button>
-            </div>
-          </div>
+          <PaginationControls page={screen.page} totalPages={screen.totalPages} reportedPage={tipos.page}
+            total={tipos.total} busy={tipos.isFetching} onPageChange={screen.setPage} />
         )}
       </section>
 

@@ -1,4 +1,4 @@
-import { ListFilter, Plus, Search, TriangleAlert } from "lucide-react";
+import { ListFilter, Plus, TriangleAlert } from "lucide-react";
 
 import {
   MOTIVO_REPROGRAMACION_CATEGORIAS,
@@ -6,14 +6,16 @@ import {
   MotivosReprogramacionTable,
   useMotivosReprogramacionScreen,
   type CategoryFilter,
-  type StatusFilter,
 } from "@/domains/catalogos";
 import { PageHeader } from "@/shared/components/common/page-header";
+import { ConfirmActionDialog } from "@/shared/components/common/confirm-action-dialog";
+import { ActiveStatusFilter } from "@/shared/components/common/active-status-filter";
+import { SearchField } from "@/shared/components/common/search-field";
+import { PaginationControls } from "@/shared/components/common/pagination-controls";
 import { ErrorAlert } from "@/shared/components/feedback/error-alert";
 import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 import { Button } from "@/shared/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/shared/components/ui/dialog";
-import { Input } from "@/shared/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 
 export default function MotivosReprogramacionPage() {
@@ -43,13 +45,9 @@ export default function MotivosReprogramacionPage() {
           </div>
 
           <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap lg:w-auto">
-            <div className="relative w-full sm:min-w-56 sm:flex-1 lg:w-64 lg:flex-none">
-              <label htmlFor="reprogramacion-search" className="sr-only">Buscar motivos</label>
-              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
-              <Input id="reprogramacion-search" type="search" value={screen.search}
-                onChange={(event) => screen.setSearch(event.target.value)}
-                placeholder="Solicitud del cliente" maxLength={100} className="h-10 pl-10" />
-            </div>
+            <SearchField id="reprogramacion-search" label="Buscar motivos" value={screen.search}
+              onChange={screen.setSearch} placeholder="Solicitud del cliente" maxLength={100}
+              className="sm:min-w-56 sm:flex-1 lg:w-64 lg:flex-none" />
             <Select value={screen.categoryFilter} onValueChange={(value: CategoryFilter) => screen.setCategoryFilter(value)}>
               <SelectTrigger className="h-10 w-full sm:w-44" aria-label="Filtrar por origen"><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -59,14 +57,7 @@ export default function MotivosReprogramacionPage() {
                 ))}
               </SelectContent>
             </Select>
-            <Select value={screen.statusFilter} onValueChange={(value: StatusFilter) => screen.setStatusFilter(value)}>
-              <SelectTrigger className="h-10 w-full sm:w-40" aria-label="Filtrar por estado"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los estados</SelectItem>
-                <SelectItem value="active">Activos</SelectItem>
-                <SelectItem value="inactive">Inactivos</SelectItem>
-              </SelectContent>
-            </Select>
+            <ActiveStatusFilter value={screen.statusFilter} onChange={screen.setStatusFilter} />
           </div>
         </div>
 
@@ -89,16 +80,8 @@ export default function MotivosReprogramacionPage() {
         )}
 
         {!motivos.isError && !motivos.isLoading && motivos.total > 0 && (
-          <div className="mt-4 flex flex-col gap-3 border-t pt-4 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-            <p>Página <span className="font-medium text-foreground">{motivos.page ?? screen.page}</span> de {screen.totalPages}
-              <span className="ml-2">· {motivos.total} en total</span></p>
-            <div className="flex gap-2">
-              <Button type="button" variant="outline" size="sm" disabled={screen.page <= 1 || motivos.isFetching}
-                onClick={() => screen.setPage((current) => Math.max(1, current - 1))}>Anterior</Button>
-              <Button type="button" variant="outline" size="sm" disabled={screen.page >= screen.totalPages || motivos.isFetching}
-                onClick={() => screen.setPage((current) => Math.min(screen.totalPages, current + 1))}>Siguiente</Button>
-            </div>
-          </div>
+          <PaginationControls page={screen.page} totalPages={screen.totalPages} reportedPage={motivos.page}
+            total={motivos.total} busy={motivos.isFetching} onPageChange={screen.setPage} />
         )}
       </section>
 
@@ -119,28 +102,12 @@ export default function MotivosReprogramacionPage() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={!!screen.pendingDeactivate} onOpenChange={(open) => {
-        if (!open && !motivos.isSaving) { screen.setPendingDeactivate(undefined); screen.setActionError(""); }
-      }}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Desactivar motivo</DialogTitle>
-            <DialogDescription>
-              {`El motivo ${screen.pendingDeactivate?.name ?? ""} ya no estará disponible para nuevos cambios. Los registros anteriores se conservarán.`}
-            </DialogDescription>
-          </DialogHeader>
-          {screen.actionError && (
-            <Alert variant="destructive"><TriangleAlert aria-hidden /><AlertDescription>{screen.actionError}</AlertDescription></Alert>
-          )}
-          <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
-            <Button type="button" variant="outline" disabled={motivos.isSaving}
-              onClick={() => { screen.setPendingDeactivate(undefined); screen.setActionError(""); }}>Cancelar</Button>
-            <Button type="button" variant="destructive" disabled={motivos.isSaving} onClick={screen.confirmDeactivate}>
-              {motivos.isSaving ? "Procesando…" : "Desactivar motivo"}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <ConfirmActionDialog open={!!screen.pendingDeactivate}
+        onOpenChange={(open) => { if (!open) { screen.setPendingDeactivate(undefined); screen.setActionError(""); } }}
+        title="Desactivar motivo"
+        description={`El motivo ${screen.pendingDeactivate?.name ?? ""} ya no estará disponible para nuevos cambios. Los registros anteriores se conservarán.`}
+        confirmLabel="Desactivar motivo" busy={motivos.isSaving} error={screen.actionError}
+        onConfirm={screen.confirmDeactivate} />
     </div>
   );
 }

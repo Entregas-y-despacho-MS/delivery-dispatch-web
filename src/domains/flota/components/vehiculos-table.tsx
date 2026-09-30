@@ -1,10 +1,8 @@
-import { Pencil, Search } from "lucide-react";
+import { Pencil } from "lucide-react";
 
-import { DataTable, type Column } from "@/shared/components/common/data-table";
-import { EmptyState } from "@/shared/components/feedback/empty-state";
+import type { Column } from "@/shared/components/common/data-table";
+import { ResponsiveList } from "@/shared/components/common/responsive-list";
 import { Button } from "@/shared/components/ui/button";
-import { Input } from "@/shared/components/ui/input";
-import { CardSkeletonList } from "@/shared/components/feedback/card-skeleton-list";
 import type { EstadoVehiculo, Vehiculo } from "../flota.types";
 
 /**
@@ -88,86 +86,43 @@ export function VehiculosTable({
   ];
 
   return (
-    <>
-      <div className="hidden md:block">
-        <DataTable
-          columns={columns}
-          data={data}
-          loading={loading}
-          emptyMessage={
-            searchActive
-              ? "No encontramos vehículos con ese criterio."
-              : "Registra el primer vehículo para comenzar a gestionar la flota."
-          }
-        />
-      </div>
-
-      <div className="space-y-3 md:hidden">
-        {loading && <CardSkeletonList count={4} />}
-
-        {!loading && data.length === 0 && (
-          <EmptyState
-            title="Sin resultados"
-            description={
-              searchActive
-                ? "No encontramos vehículos con ese criterio."
-                : "Registra el primer vehículo para comenzar a gestionar la flota."
-            }
-          />
-        )}
-
-        {!loading && data.map((vehiculo) => (
-          <article key={vehiculo.id} className="rounded-lg border bg-card p-4 shadow-sm">
-            <div className="flex items-start justify-between gap-4">
-              <div className="min-w-0 space-y-1">
-                <p className="font-mono text-sm font-semibold tracking-tight">{vehiculo.plate}</p>
-                <h3 className="truncate font-medium">{vehiculo.type} · {vehiculo.model}</h3>
-              </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                onClick={() => onEdit(vehiculo)}
-                aria-label={`Editar ${vehiculo.plate}`}
-                title="Editar vehículo"
-              >
-                <Pencil aria-hidden />
-              </Button>
+    <ResponsiveList
+      columns={columns} data={data} loading={loading}
+      emptyMessage={searchActive ? "No encontramos vehículos con ese criterio." : "Registra el primer vehículo para comenzar a gestionar la flota."}
+      mobileSkeletonCount={4}
+      renderCard={(vehiculo) => (
+        <article className="rounded-lg border bg-card p-4 shadow-sm">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0 space-y-1">
+              <p className="font-mono text-sm font-semibold tracking-tight">{vehiculo.plate}</p>
+              <h3 className="truncate font-medium">{vehiculo.type} · {vehiculo.model}</h3>
             </div>
-            <div className="mt-4 flex items-center justify-between gap-4 border-t pt-3">
-              <div className="flex gap-4 text-xs text-muted-foreground">
-                <div>
-                  <p>Peso</p>
-                  <p className="tabular-nums font-medium text-foreground">{vehiculo.capacityKg} kg</p>
-                </div>
-                <div>
-                  <p>Volumen</p>
-                  <p className="tabular-nums font-medium text-foreground">{vehiculo.capacityM3} m³</p>
-                </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => onEdit(vehiculo)}
+              aria-label={`Editar ${vehiculo.plate}`}
+              title="Editar vehículo"
+            >
+              <Pencil aria-hidden />
+            </Button>
+          </div>
+          <div className="mt-4 flex items-center justify-between gap-4 border-t pt-3">
+            <div className="flex gap-4 text-xs text-muted-foreground">
+              <div>
+                <p>Peso</p>
+                <p className="tabular-nums font-medium text-foreground">{vehiculo.capacityKg} kg</p>
               </div>
-              <EstadoBadge estado={vehiculo.vehicleStatus} />
+              <div>
+                <p>Volumen</p>
+                <p className="tabular-nums font-medium text-foreground">{vehiculo.capacityM3} m³</p>
+              </div>
             </div>
-          </article>
-        ))}
-      </div>
-    </>
-  );
-}
-
-export function VehiculosSearch({ value, onChange }: { value: string; onChange: (value: string) => void }) {
-  return (
-    <div className="relative w-full md:max-w-sm">
-      <label htmlFor="vehiculos-search" className="sr-only">Buscar vehículos</label>
-      <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
-      <Input
-        id="vehiculos-search"
-        type="search"
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        placeholder="Placa, modelo o tipo"
-        className="h-10 pl-10"
-        aria-label="Buscar por placa, modelo o tipo"
-      />
-    </div>
+            <EstadoBadge estado={vehiculo.vehicleStatus} />
+          </div>
+        </article>
+      )}
+    />
   );
 }

@@ -1,10 +1,9 @@
 import { Ban, CircleCheck, Pencil } from "lucide-react";
 
-import { DataTable, type Column } from "@/shared/components/common/data-table";
-import { EmptyState, NoResultsState } from "@/shared/components/feedback/empty-state";
+import type { Column } from "@/shared/components/common/data-table";
+import { ResponsiveList } from "@/shared/components/common/responsive-list";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
-import { CardSkeletonList } from "@/shared/components/feedback/card-skeleton-list";
 import type { TipoIncidenteVehiculo } from "../catalogos.types";
 import { getSeveridadIncidenteVehiculo } from "../tipos-incidente-vehiculo.constants";
 
@@ -75,34 +74,26 @@ export function TiposIncidenteVehiculoTable({
   ];
 
   return (
-    <>
-      <div className="hidden md:block">
-        <DataTable columns={columns} data={data} loading={loading}
-          emptyTitle={searchActive ? "Sin resultados" : "Sin tipos de falla"}
-          emptyMessage={emptyMessage} isFiltered={searchActive} onClearFilters={onClearFilters} />
-      </div>
-
-      <div className="space-y-3 md:hidden">
-        {loading && <CardSkeletonList variant="incident" />}
-        {!loading && data.length === 0 && (searchActive
-          ? <NoResultsState description={emptyMessage} onClearFilters={onClearFilters} bordered />
-          : <EmptyState title="Sin tipos de falla" description={emptyMessage} />)}
-        {!loading && data.map((tipo) => (
-          <article key={tipo.id} className="rounded-lg border bg-card p-4">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0 space-y-1">
-                <p className="font-mono text-xs text-muted-foreground">{tipo.code}</p>
-                <h3 className="font-semibold">{tipo.name}</h3>
-              </div>
-              <EditButton tipo={tipo} onEdit={onEdit} busy={busy} />
+    <ResponsiveList
+      columns={columns} data={data} loading={loading}
+      emptyTitle={searchActive ? "Sin resultados" : "Sin tipos de falla"}
+      emptyMessage={emptyMessage} isFiltered={searchActive} onClearFilters={onClearFilters}
+      mobileFilteredState mobileEmptyTitle="Sin tipos de falla" mobileSkeletonVariant="incident"
+      renderCard={(tipo) => (
+        <article className="rounded-lg border bg-card p-4">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 space-y-1">
+              <p className="font-mono text-xs text-muted-foreground">{tipo.code}</p>
+              <h3 className="font-semibold">{tipo.name}</h3>
             </div>
-            <div className="mt-4 flex flex-wrap gap-2 border-t pt-3">
-              <SeveridadBadge tipo={tipo} />
-              <BloqueoBadge disabled={tipo.disablesVehicle} />
-            </div>
-          </article>
-        ))}
-      </div>
-    </>
+            <EditButton tipo={tipo} onEdit={onEdit} busy={busy} />
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2 border-t pt-3">
+            <SeveridadBadge tipo={tipo} />
+            <BloqueoBadge disabled={tipo.disablesVehicle} />
+          </div>
+        </article>
+      )}
+    />
   );
 }

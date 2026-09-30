@@ -1,5 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
+import { useListFilters } from "@/shared/hooks/use-list-filters";
+import { useEditorDialog } from "@/shared/hooks/use-editor-dialog";
 import { parseApiError } from "@/shared/lib/api-error";
 import type { MotivoReprogramacionFormValues } from "../catalogos.schemas";
 import type { MotivoReprogramacion, MotivoReprogramacionCategoria } from "../catalogos.types";
@@ -10,22 +12,16 @@ export type StatusFilter = "all" | "active" | "inactive";
 export type CategoryFilter = "all" | MotivoReprogramacionCategoria;
 
 export function useMotivosReprogramacionScreen() {
-  const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
-  const [page, setPage] = useState(1);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingMotivo, setEditingMotivo] = useState<MotivoReprogramacion>();
+  const list = useListFilters<{ status: StatusFilter; category: CategoryFilter }>({
+    status: "all",
+    category: "all",
+  });
+  const { search, debouncedSearch, page, setPage, clearFilters, hasFilters } = list;
+  const statusFilter = list.filters.status;
+  const categoryFilter = list.filters.category;
   const [pendingDeactivate, setPendingDeactivate] = useState<MotivoReprogramacion>();
   const [actionError, setActionError] = useState("");
   const [listActionError, setListActionError] = useState("");
-  const [formDirty, setFormDirty] = useState(false);
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => setDebouncedSearch(search.trim()), 300);
-    return () => window.clearTimeout(timer);
-  }, [search]);
 
   const params = useMemo(() => ({
     page,
@@ -35,33 +31,16 @@ export function useMotivosReprogramacionScreen() {
     active: statusFilter === "all" ? undefined : statusFilter === "active",
   }), [page, debouncedSearch, categoryFilter, statusFilter]);
   const motivos = useMotivosReprogramacion(params);
-  const hasFilters = !!search || categoryFilter !== "all" || statusFilter !== "all";
   const totalPages = Math.max(motivos.pages ?? 0, 1);
-
-  const openCreate = () => {
-    setEditingMotivo(undefined);
-    setFormDirty(false);
-    setDialogOpen(true);
-  };
-
-  const openEdit = (motivo: MotivoReprogramacion) => {
-    setEditingMotivo(motivo);
-    setFormDirty(false);
-    setDialogOpen(true);
-  };
-
-  const closeDialog = (open: boolean) => {
-    if (motivos.isSaving) return;
-    if (!open && formDirty && !window.confirm("¿Descartar los cambios sin guardar?")) return;
-    setDialogOpen(open);
-    if (!open) setEditingMotivo(undefined);
-  };
+  const editor = useEditorDialog<MotivoReprogramacion>({
+    busy: motivos.isSaving,
+    confirmDiscardMessage: "¿Descartar los cambios sin guardar?",
+  });
+  const editingMotivo = editor.editingItem;
 
   const saveMotivo = async (values: MotivoReprogramacionFormValues) => {
     await motivos.saveItem(values, editingMotivo?.id);
-    setDialogOpen(false);
-    setEditingMotivo(undefined);
-    setFormDirty(false);
+    editor.finish();
     if (!editingMotivo) setPage(1);
   };
 
@@ -96,32 +75,24 @@ export function useMotivosReprogramacionScreen() {
     }
   };
 
-  const clearFilters = () => {
-    setSearch("");
-    setDebouncedSearch("");
-    setCategoryFilter("all");
-    setStatusFilter("all");
-    setPage(1);
-  };
-
   return {
     motivos,
     search,
-    setSearch: (value: string) => { setSearch(value); setPage(1); },
+    setSearch: list.setSearch,
     statusFilter,
-    setStatusFilter: (value: StatusFilter) => { setStatusFilter(value); setPage(1); },
+    setStatusFilter: (value: StatusFilter) => list.setFilter("status", value),
     categoryFilter,
-    setCategoryFilter: (value: CategoryFilter) => { setCategoryFilter(value); setPage(1); },
+    setCategoryFilter: (value: CategoryFilter) => list.setFilter("category", value),
     page,
     setPage,
     hasFilters,
     totalPages,
-    dialogOpen,
+    dialogOpen: editor.open,
     editingMotivo,
-    setFormDirty,
-    openCreate,
-    openEdit,
-    closeDialog,
+    setFormDirty: editor.setDirty,
+    openCreate: editor.openCreate,
+    openEdit: editor.openEdit,
+    closeDialog: editor.onOpenChange,
     saveMotivo,
     pendingDeactivate,
     setPendingDeactivate,

@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState, type ComponentProps } from "react";
-import { ListFilter, ListX, Plus, Search, TriangleAlert } from "lucide-react";
+import { useMemo, useState, type ComponentProps } from "react";
+import { ListFilter, ListX, Plus, TriangleAlert } from "lucide-react";
 
 import {
   MotivoIncidenciaForm,
@@ -8,6 +8,11 @@ import {
   type MotivoIncidencia,
 } from "@/domains/catalogos";
 import { PageHeader } from "@/shared/components/common/page-header";
+import { ConfirmActionDialog } from "@/shared/components/common/confirm-action-dialog";
+import { ActiveStatusFilter, type ActiveStatusFilterValue } from "@/shared/components/common/active-status-filter";
+import { SearchField } from "@/shared/components/common/search-field";
+import { PaginationControls } from "@/shared/components/common/pagination-controls";
+import { useListFilters } from "@/shared/hooks/use-list-filters";
 import { ErrorAlert } from "@/shared/components/feedback/error-alert";
 import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 import { Button } from "@/shared/components/ui/button";
@@ -18,28 +23,20 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/components/ui/dialog";
-import { Input } from "@/shared/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 import { parseApiError } from "@/shared/lib/api-error";
 
 const PAGE_SIZE = 10;
-type StatusFilter = "all" | "active" | "inactive";
+type StatusFilter = ActiveStatusFilterValue;
 
 export default function MotivosIncidenciaPage() {
-  const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-  const [page, setPage] = useState(1);
+  const list = useListFilters<{ status: StatusFilter }>({ status: "all" });
+  const { search, debouncedSearch, page, setPage, clearFilters, hasFilters } = list;
+  const statusFilter = list.filters.status;
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingMotivo, setEditingMotivo] = useState<MotivoIncidencia>();
   const [pendingDeactivate, setPendingDeactivate] = useState<MotivoIncidencia>();
   const [actionError, setActionError] = useState("");
   const [listActionError, setListActionError] = useState("");
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => setDebouncedSearch(search.trim()), 300);
-    return () => window.clearTimeout(timer);
-  }, [search]);
 
   const params = useMemo(() => ({
     page,
@@ -48,7 +45,6 @@ export default function MotivosIncidenciaPage() {
     active: statusFilter === "all" ? undefined : statusFilter === "active",
   }), [page, debouncedSearch, statusFilter]);
   const motivos = useMotivosIncidencia(params);
-  const hasFilters = !!debouncedSearch || statusFilter !== "all";
   const totalPages = Math.max(motivos.pages ?? 0, 1);
 
   const openCreate = () => {
@@ -108,13 +104,6 @@ export default function MotivosIncidenciaPage() {
     }
   };
 
-  const clearFilters = () => {
-    setSearch("");
-    setDebouncedSearch("");
-    setStatusFilter("all");
-    setPage(1);
-  };
-
   return (
     <div className="space-y-6">
       <PageHeader
@@ -138,27 +127,11 @@ export default function MotivosIncidenciaPage() {
           </div>
 
           <div className="flex w-full flex-col gap-2 sm:flex-row lg:w-auto">
-            <div className="relative w-full sm:min-w-64 lg:w-72">
-              <label htmlFor="motivos-incidencia-search" className="sr-only">Buscar motivos de incidencia</label>
-              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
-              <Input
-                id="motivos-incidencia-search"
-                type="search"
-                value={search}
-                onChange={(event) => { setSearch(event.target.value); setPage(1); }}
-                placeholder="Cliente ausente o INC-CLI"
-                maxLength={100}
-                className="h-10 pl-10"
-              />
-            </div>
-            <Select value={statusFilter} onValueChange={(value: StatusFilter) => { setStatusFilter(value); setPage(1); }}>
-              <SelectTrigger className="h-10 w-full sm:w-40" aria-label="Filtrar por estado"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los estados</SelectItem>
-                <SelectItem value="active">Activos</SelectItem>
-                <SelectItem value="inactive">Inactivos</SelectItem>
-              </SelectContent>
-            </Select>
+            <SearchField id="motivos-incidencia-search" label="Buscar motivos de incidencia"
+              value={search} onChange={list.setSearch}
+              placeholder="Cliente ausente o INC-CLI" maxLength={100} className="sm:min-w-64 lg:w-72" />
+            <ActiveStatusFilter value={statusFilter}
+              onChange={(value) => list.setFilter("status", value)} />
           </div>
         </div>
 
@@ -193,16 +166,8 @@ export default function MotivosIncidenciaPage() {
         )}
 
         {!motivos.isError && !motivos.isLoading && motivos.total > 0 && (
-          <div className="mt-4 flex flex-col gap-3 border-t pt-4 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-            <p>
-              Página <span className="font-medium text-foreground">{motivos.page ?? page}</span> de {totalPages}
-              <span className="ml-2">· {motivos.total} en total</span>
-            </p>
-            <div className="flex gap-2">
-              <Button type="button" variant="outline" size="sm" disabled={page <= 1 || motivos.isFetching} onClick={() => setPage((current) => Math.max(1, current - 1))}>Anterior</Button>
-              <Button type="button" variant="outline" size="sm" disabled={page >= totalPages || motivos.isFetching} onClick={() => setPage((current) => Math.min(totalPages, current + 1))}>Siguiente</Button>
-            </div>
-          </div>
+          <PaginationControls page={page} totalPages={totalPages} reportedPage={motivos.page}
+            total={motivos.total} busy={motivos.isFetching} onPageChange={setPage} />
         )}
       </section>
 
@@ -226,28 +191,12 @@ export default function MotivosIncidenciaPage() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={!!pendingDeactivate} onOpenChange={(open) => { if (!open && !motivos.isSaving) { setPendingDeactivate(undefined); setActionError(""); } }}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Desactivar motivo de incidencia</DialogTitle>
-            <DialogDescription>
-              {`El motivo ${pendingDeactivate?.name ?? ""} dejará de ofrecerse a los repartidores. Las incidencias ya registradas y su evidencia no cambian.`}
-            </DialogDescription>
-          </DialogHeader>
-          {actionError && (
-            <Alert variant="destructive">
-              <TriangleAlert aria-hidden />
-              <AlertDescription>{actionError}</AlertDescription>
-            </Alert>
-          )}
-          <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
-            <Button type="button" variant="outline" disabled={motivos.isSaving} onClick={() => { setPendingDeactivate(undefined); setActionError(""); }}>Cancelar</Button>
-            <Button type="button" variant="destructive" disabled={motivos.isSaving} onClick={confirmDeactivate}>
-              {motivos.isSaving ? "Procesando…" : "Desactivar motivo"}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <ConfirmActionDialog open={!!pendingDeactivate}
+        onOpenChange={(open) => { if (!open) { setPendingDeactivate(undefined); setActionError(""); } }}
+        title="Desactivar motivo de incidencia"
+        description={`El motivo ${pendingDeactivate?.name ?? ""} dejará de ofrecerse a los repartidores. Las incidencias ya registradas y su evidencia no cambian.`}
+        confirmLabel="Desactivar motivo" busy={motivos.isSaving} error={actionError}
+        onConfirm={confirmDeactivate} />
     </div>
   );
 }

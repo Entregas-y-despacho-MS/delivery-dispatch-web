@@ -1,8 +1,7 @@
-import { useDeferredValue, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Plus, Truck } from "lucide-react";
 
 import {
-  VehiculosSearch,
   VehiculosTable,
   VehiculoForm,
   useVehiculos,
@@ -10,8 +9,12 @@ import {
   type VehiculoFormValues,
 } from "@/domains/flota";
 import { PageHeader } from "@/shared/components/common/page-header";
+import { PaginationControls } from "@/shared/components/common/pagination-controls";
+import { SearchField } from "@/shared/components/common/search-field";
 import { ErrorAlert } from "@/shared/components/feedback/error-alert";
 import { Button } from "@/shared/components/ui/button";
+import { useEditorDialog } from "@/shared/hooks/use-editor-dialog";
+import { useListFilters } from "@/shared/hooks/use-list-filters";
 import {
   Dialog,
   DialogContent,
@@ -23,42 +26,23 @@ import {
 const PAGE_SIZE = 10;
 
 export default function FlotaPage() {
-  const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingVehiculo, setEditingVehiculo] = useState<Vehiculo>();
-  const deferredSearch = useDeferredValue(search);
+  const { search, debouncedSearch, page, setPage, setSearch, hasFilters } = useListFilters({});
+  const editor = useEditorDialog<Vehiculo>();
   const params = useMemo(() => ({
     page,
     limit: PAGE_SIZE,
-    search: deferredSearch.trim() || undefined,
-  }), [deferredSearch, page]);
+    search: debouncedSearch || undefined,
+  }), [debouncedSearch, page]);
   const flota = useVehiculos(params);
-  const hasSearch = deferredSearch.trim().length > 0;
   const totalPages = flota.pages ?? 1;
 
-  const openCreate = () => {
-    setEditingVehiculo(undefined);
-    setDialogOpen(true);
-  };
-
-  const openEdit = (vehiculo: Vehiculo) => {
-    setEditingVehiculo(vehiculo);
-    setDialogOpen(true);
-  };
-
-  const closeDialog = (open: boolean) => {
-    setDialogOpen(open);
-    if (!open) setEditingVehiculo(undefined);
-  };
-
   const saveVehiculo = async (values: VehiculoFormValues) => {
-    if (editingVehiculo) {
-      await flota.updateItem({ id: editingVehiculo.id, data: values });
+    if (editor.editingItem) {
+      await flota.updateItem({ id: editor.editingItem.id, data: values });
     } else {
       await flota.createItem(values);
     }
-    closeDialog(false);
+    editor.onOpenChange(false);
   };
 
   return (
@@ -69,7 +53,7 @@ export default function FlotaPage() {
         icon={Truck}
         description="Gestiona los vehículos disponibles y su capacidad de carga."
         action={(
-          <Button onClick={openCreate}>
+          <Button onClick={editor.openCreate}>
             <Plus aria-hidden /> Nuevo vehículo
           </Button>
         )}
@@ -86,9 +70,13 @@ export default function FlotaPage() {
               {flota.total} {flota.total === 1 ? "vehículo registrado" : "vehículos registrados"}
             </p>
           </div>
-          <VehiculosSearch
+          <SearchField
+            id="vehiculos-search"
+            label="Buscar por placa, modelo o tipo"
             value={search}
-            onChange={(value) => { setSearch(value); setPage(1); }}
+            onChange={setSearch}
+            placeholder="Placa, modelo o tipo"
+            className="md:max-w-sm"
           />
         </div>
 
@@ -99,56 +87,33 @@ export default function FlotaPage() {
             <VehiculosTable
               data={flota.data}
               loading={flota.isLoading}
-              searchActive={hasSearch}
-              onEdit={openEdit}
+              searchActive={hasFilters}
+              onEdit={editor.openEdit}
             />
           </div>
         )}
 
         {!flota.isError && !flota.isLoading && flota.total > 0 && (
-          <div className="mt-4 flex flex-col gap-3 border-t pt-4 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-            <p>
-              Página <span className="font-medium text-foreground">{flota.page ?? page}</span> de {totalPages}
-            </p>
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={page <= 1 || flota.isFetching}
-                onClick={() => setPage((current) => Math.max(1, current - 1))}
-              >
-                Anterior
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={page >= totalPages || flota.isFetching}
-                onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
-              >
-                Siguiente
-              </Button>
-            </div>
-          </div>
+          <PaginationControls page={page} totalPages={totalPages} reportedPage={flota.page}
+            onPageChange={setPage} busy={flota.isFetching} />
         )}
       </section>
 
-      <Dialog open={dialogOpen} onOpenChange={closeDialog}>
+      <Dialog open={editor.open} onOpenChange={editor.onOpenChange}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>{editingVehiculo ? "Editar vehículo" : "Nuevo vehículo"}</DialogTitle>
+            <DialogTitle>{editor.editingItem ? "Editar vehículo" : "Nuevo vehículo"}</DialogTitle>
             <DialogDescription>
-              {editingVehiculo
+              {editor.editingItem
                 ? "Actualiza los datos del vehículo."
                 : "Registra un vehículo para incluirlo en la flota."}
             </DialogDescription>
           </DialogHeader>
           <VehiculoForm
-            key={editingVehiculo?.id ?? "new"}
-            vehiculo={editingVehiculo}
+            key={editor.editingItem?.id ?? "new"}
+            vehiculo={editor.editingItem}
             onSubmit={saveVehiculo}
-            onCancel={() => closeDialog(false)}
+            onCancel={() => editor.onOpenChange(false)}
             guardando={flota.isSaving}
           />
         </DialogContent>

@@ -23,8 +23,60 @@
   },
   "overrides": [
     {
-      "files": ["src/app/router.tsx"],
-      "rules": { "no-restricted-imports": "off" }
+      "files": ["src/app/router.tsx", "src/app/page-routes.ts"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [{
+              "group": ["@/domains/*/**"],
+              "message": "Importa desde el barrel del dominio: @/domains/<dominio>"
+            }]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/shared/**/*", "src/config/**/*"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [{
+              "group": ["@/app/**", "@/domains/**", "@/pages/**", "**/app/**", "**/domains/**", "**/pages/**"],
+              "message": "shared/ y config/ no pueden depender de app/, domains/ ni pages/."
+            }]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/domains/**/*"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [{
+              "group": ["@/app/**", "@/pages/**", "@/domains/*/**", "**/app/**", "**/pages/**", "**/domains/*/**"],
+              "message": "domains/ depende de shared/ y config/; usa el barrel de otros dominios."
+            }]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/pages/**/*"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [{
+              "group": ["@/app/**", "@/pages/**", "@/domains/*/**", "**/app/**", "**/pages/**", "**/domains/*/**"],
+              "message": "pages/ puede depender de dominios públicos, shared/ y config/, no de app/ ni de archivos internos."
+            }]
+          }
+        ]
+      }
     }
   ]
 }

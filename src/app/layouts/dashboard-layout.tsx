@@ -2,7 +2,8 @@ import { Suspense } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ChevronDown, ChevronRight, LogOut, Package } from "lucide-react";
 
-import { NAV_GROUPS } from "@/app/navigation";
+import { NAV_GROUPS } from "@/config/navigation";
+import { portalHref } from "@/config/portal-routes";
 import { hasRole, ROLE_LABELS } from "@/config/roles";
 import { IdleWarningDialog, useLogout } from "@/domains/auth";
 import { useAuthStore } from "@/shared/store/use-auth-store";
@@ -44,7 +45,7 @@ export function DashboardLayout() {
       <Sidebar variant="inset" className="border-r">
         <SidebarHeader className="border-b px-3 py-3">
           <Link
-            to="/app/tablero"
+            to={portalHref("tablero")}
             className="group/brand flex items-center gap-3 rounded-lg px-2 py-1.5 outline-none transition-colors hover:bg-sidebar-accent focus-visible:ring-2 focus-visible:ring-sidebar-ring"
           >
             <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground shadow-sm">

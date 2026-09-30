@@ -31,7 +31,7 @@ export interface IdleTimeoutState {
  * timers se congelan, pero la hora no.
  */
 export function useIdleTimeout({ timeoutMs, warningMs, onTimeout, enabled = true }: UseIdleTimeoutOptions): IdleTimeoutState {
-  const ultimaActividad = useRef(Date.now());
+  const ultimaActividad = useRef(0);
   const enAviso = useRef(false);
   const [isWarning, setIsWarning] = useState(false);
   const [remainingMs, setRemainingMs] = useState(timeoutMs - warningMs);
@@ -56,11 +56,14 @@ export function useIdleTimeout({ timeoutMs, warningMs, onTimeout, enabled = true
     registrarActividad();
     enAviso.current = false;
     setIsWarning(false);
-  }, [registrarActividad]);
+    setRemainingMs(timeoutMs - warningMs);
+  }, [registrarActividad, timeoutMs, warningMs]);
 
   useEffect(() => {
     if (!enabled) return;
-    reset();
+    let active = true;
+    // Reiniciar después de suscribir los eventos evita una actualización síncrona en el efecto.
+    queueMicrotask(() => { if (active) reset(); });
 
     let ultimoRegistro = 0;
     const onActividad = () => {
@@ -100,6 +103,7 @@ export function useIdleTimeout({ timeoutMs, warningMs, onTimeout, enabled = true
     }, 1000);
 
     return () => {
+      active = false;
       EVENTOS_ACTIVIDAD.forEach((ev) => window.removeEventListener(ev, onActividad, { capture: true }));
       window.removeEventListener("storage", onStorage);
       window.clearInterval(intervalo);

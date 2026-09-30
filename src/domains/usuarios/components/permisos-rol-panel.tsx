@@ -1,8 +1,8 @@
 import { useId, useState } from "react";
 import { ChevronDown, ShieldCheck, Smartphone } from "lucide-react";
 
-import { NAV_GROUPS } from "@/app/navigation";
-import { ROLE_BY_BACKEND_NAME, ROLES, ROLES_WEB } from "@/config/roles";
+import { NAV_GROUPS } from "@/config/navigation";
+import { hasRole, ROLE_BY_BACKEND_NAME, ROLES, ROLES_WEB } from "@/config/roles";
 import { cn } from "@/shared/lib/utils";
 
 interface PermisosRolPanelProps {
@@ -25,11 +25,11 @@ export function PermisosRolPanel({ rolNombre }: PermisosRolPanelProps) {
   const grupos = NAV_GROUPS
     .map((grupo) => ({
       label: grupo.label,
-      items: grupo.items.filter((item) => rolId !== undefined && (rolId === ROLES.ROOT || item.roles.includes(rolId))),
+      items: grupo.items.filter((item) => hasRole(rolId, item.roles)),
     }))
     .filter((grupo) => grupo.items.length > 0);
   const total = grupos.reduce((suma, grupo) => suma + grupo.items.length, 0);
-  const entraAlPortal = rolId !== undefined && (ROLES_WEB as readonly number[]).includes(rolId);
+  const entraAlPortal = hasRole(rolId, ROLES_WEB);
 
   return (
     <div className="rounded-lg border bg-muted/30">

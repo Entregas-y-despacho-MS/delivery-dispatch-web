@@ -16,7 +16,7 @@ export function useMotivosIncidencia(params: MotivoIncidenciaListParams) {
     MotivoIncidenciaCreate,
     MotivoIncidenciaUpdate,
     MotivoIncidenciaListParams
-  >(motivosIncidenciaService, "incident-reasons", { params });
+  >(motivosIncidenciaService, "incident-reasons", { params, policy: "catalog" });
 
   const saveItem = async ({ active, ...values }: MotivoIncidenciaFormValues, id?: number) => {
     if (id === undefined) {

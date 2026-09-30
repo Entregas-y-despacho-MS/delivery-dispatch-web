@@ -16,7 +16,7 @@ export function useMotivosReprogramacion(params: MotivoReprogramacionListParams)
     MotivoReprogramacionCreate,
     MotivoReprogramacionUpdate,
     MotivoReprogramacionListParams
-  >(motivosReprogramacionService, "reschedule-reasons", { params });
+  >(motivosReprogramacionService, "reschedule-reasons", { params, policy: "catalog" });
 
   const saveItem = async (values: MotivoReprogramacionFormValues, id?: number) => {
     if (id === undefined) {

@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LoaderCircle, MapPin, Timer } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -15,11 +16,13 @@ export function ZonaForm({
   zona,
   onSubmit,
   onCancel,
+  onDirtyChange,
   guardando = false,
 }: {
   zona?: Zona;
   onSubmit: (values: ZonaFormValues) => Promise<void>;
   onCancel: () => void;
+  onDirtyChange?: (dirty: boolean) => void;
   guardando?: boolean;
 }) {
   const {
@@ -27,7 +30,7 @@ export function ZonaForm({
     handleSubmit,
     setError,
     setFocus,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<ZonaFormValues>({
     resolver: zodResolver(zonaSchema),
     defaultValues: {
@@ -38,6 +41,8 @@ export function ZonaForm({
     mode: "onTouched",
     reValidateMode: "onChange",
   });
+
+  useEffect(() => onDirtyChange?.(isDirty), [isDirty, onDirtyChange]);
 
   const submit = handleSubmit(async (values) => {
     try {

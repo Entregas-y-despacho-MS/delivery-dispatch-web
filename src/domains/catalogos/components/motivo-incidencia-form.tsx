@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Camera, Hash, ListX, LoaderCircle, Power, TriangleAlert } from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
@@ -17,11 +18,13 @@ export function MotivoIncidenciaForm({
   motivo,
   onSubmit,
   onCancel,
+  onDirtyChange,
   guardando = false,
 }: {
   motivo?: MotivoIncidencia;
   onSubmit: (values: MotivoIncidenciaFormValues) => Promise<void>;
   onCancel: () => void;
+  onDirtyChange?: (dirty: boolean) => void;
   guardando?: boolean;
 }) {
   const {
@@ -30,7 +33,7 @@ export function MotivoIncidenciaForm({
     handleSubmit,
     setError,
     setFocus,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<MotivoIncidenciaFormValues>({
     resolver: zodResolver(motivoIncidenciaSchema),
     defaultValues: {
@@ -42,6 +45,8 @@ export function MotivoIncidenciaForm({
     mode: "onTouched",
     reValidateMode: "onChange",
   });
+
+  useEffect(() => onDirtyChange?.(isDirty), [isDirty, onDirtyChange]);
 
   const submit = handleSubmit(async (values) => {
     try {

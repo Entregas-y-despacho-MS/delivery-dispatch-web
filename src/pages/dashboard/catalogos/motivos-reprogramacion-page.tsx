@@ -103,7 +103,7 @@ export default function MotivosReprogramacionPage() {
       </Dialog>
 
       <ConfirmActionDialog open={!!screen.pendingDeactivate}
-        onOpenChange={(open) => { if (!open) { screen.setPendingDeactivate(undefined); screen.setActionError(""); } }}
+        onOpenChange={screen.onConfirmationOpenChange}
         title="Desactivar motivo"
         description={`El motivo ${screen.pendingDeactivate?.name ?? ""} ya no estará disponible para nuevos cambios. Los registros anteriores se conservarán.`}
         confirmLabel="Desactivar motivo" busy={motivos.isSaving} error={screen.actionError}

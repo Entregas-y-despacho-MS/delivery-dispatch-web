@@ -13,6 +13,8 @@ import { ActiveStatusFilter, type ActiveStatusFilterValue } from "@/shared/compo
 import { SearchField } from "@/shared/components/common/search-field";
 import { PaginationControls } from "@/shared/components/common/pagination-controls";
 import { useListFilters } from "@/shared/hooks/use-list-filters";
+import { useEditorDialog } from "@/shared/hooks/use-editor-dialog";
+import { useConfirmAction } from "@/shared/hooks/use-confirm-action";
 import { ErrorAlert } from "@/shared/components/feedback/error-alert";
 import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 import { Button } from "@/shared/components/ui/button";
@@ -33,10 +35,6 @@ export default function NivelesServicioPage() {
   const list = useListFilters<{ status: StatusFilter }>({ status: "all" });
   const { search, debouncedSearch, page, setPage, clearFilters, hasFilters } = list;
   const statusFilter = list.filters.status;
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingNivel, setEditingNivel] = useState<NivelServicio>();
-  const [pendingAction, setPendingAction] = useState<PendingAction>();
-  const [actionError, setActionError] = useState("");
   const [listActionError, setListActionError] = useState("");
 
   const params = useMemo(() => ({
@@ -47,35 +45,23 @@ export default function NivelesServicioPage() {
   }), [page, debouncedSearch, statusFilter]);
   const niveles = useNivelesServicio(params);
   const totalPages = Math.max(niveles.pages ?? 0, 1);
-
-  const openCreate = () => {
-    setEditingNivel(undefined);
-    setDialogOpen(true);
-  };
-
-  const openEdit = (nivel: NivelServicio) => {
-    setEditingNivel(nivel);
-    setDialogOpen(true);
-  };
-
-  const closeDialog = (open: boolean) => {
-    if (niveles.isSaving) return;
-    setDialogOpen(open);
-    if (!open) setEditingNivel(undefined);
-  };
+  const editor = useEditorDialog<NivelServicio>({
+    busy: niveles.isSaving,
+    confirmDiscardMessage: "¿Descartar los cambios sin guardar?",
+  });
+  const confirmation = useConfirmAction<PendingAction>();
+  const editingNivel = editor.editingItem;
 
   const saveNivel: ComponentProps<typeof NivelServicioForm>["onSubmit"] = async (values) => {
     await niveles.saveItem(values, editingNivel?.id);
-    setDialogOpen(false);
-    setEditingNivel(undefined);
+    editor.finish();
     if (!editingNivel) setPage(1);
   };
 
   const requestToggle = async (nivel: NivelServicio) => {
     setListActionError("");
     if (nivel.active) {
-      setActionError("");
-      setPendingAction({ kind: "deactivate", nivel });
+      confirmation.request({ kind: "deactivate", nivel });
       return;
     }
 
@@ -90,8 +76,9 @@ export default function NivelesServicioPage() {
   };
 
   const confirmAction = async () => {
+    const pendingAction = confirmation.item;
     if (!pendingAction) return;
-    setActionError("");
+    confirmation.setError("");
 
     try {
       if (pendingAction.kind === "deactivate") {
@@ -100,10 +87,10 @@ export default function NivelesServicioPage() {
         await niveles.removeItem(pendingAction.nivel.id);
         if (page > 1 && niveles.data.length === 1) setPage(page - 1);
       }
-      setPendingAction(undefined);
+      confirmation.close();
     } catch (error) {
       const apiError = parseApiError(error);
-      setActionError(apiError.code === "SERVICE_LEVEL_IN_USE"
+      confirmation.setError(apiError.code === "SERVICE_LEVEL_IN_USE"
           ? "Este nivel tiene despachos en curso. Desactívalo para impedir nuevas asignaciones."
         : apiError.status === 404
           ? "Este nivel ya no existe. Actualiza la lista."
@@ -118,7 +105,7 @@ export default function NivelesServicioPage() {
         title="Niveles de servicio"
         icon={Gauge}
         description="Define los compromisos de entrega que orientan la prioridad de cada despacho."
-        action={<Button onClick={openCreate}><Plus aria-hidden /> Nuevo nivel</Button>}
+        action={<Button onClick={editor.openCreate}><Plus aria-hidden /> Nuevo nivel</Button>}
       />
 
       <section className="rounded-xl border bg-card p-4 shadow-sm sm:p-5" aria-label="Catálogo de niveles de servicio">
@@ -160,9 +147,9 @@ export default function NivelesServicioPage() {
               loading={niveles.isLoading}
               searchActive={hasFilters}
               busy={niveles.isSaving}
-              onEdit={openEdit}
+              onEdit={editor.openEdit}
               onToggle={requestToggle}
-              onDelete={(nivel) => { setActionError(""); setPendingAction({ kind: "delete", nivel }); }}
+              onDelete={(nivel) => confirmation.request({ kind: "delete", nivel })}
             />
           </div>
         )}
@@ -179,7 +166,7 @@ export default function NivelesServicioPage() {
         )}
       </section>
 
-      <Dialog open={dialogOpen} onOpenChange={closeDialog}>
+      <Dialog open={editor.open} onOpenChange={editor.onOpenChange}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>{editingNivel ? "Editar nivel de servicio" : "Nuevo nivel de servicio"}</DialogTitle>
@@ -193,20 +180,21 @@ export default function NivelesServicioPage() {
             key={editingNivel?.id ?? "new"}
             nivel={editingNivel}
             onSubmit={saveNivel}
-            onCancel={() => closeDialog(false)}
+            onCancel={() => editor.onOpenChange(false)}
+            onDirtyChange={editor.setDirty}
             guardando={niveles.isSaving}
           />
         </DialogContent>
       </Dialog>
 
-      <ConfirmActionDialog open={!!pendingAction}
-        onOpenChange={(open) => { if (!open) { setPendingAction(undefined); setActionError(""); } }}
-        title={pendingAction?.kind === "delete" ? "Eliminar nivel de servicio" : "Desactivar nivel de servicio"}
-        description={pendingAction?.kind === "delete"
-          ? `El nivel ${pendingAction.nivel.name} dejará de estar disponible. Los despachos finalizados conservarán su referencia.`
-          : `El nivel ${pendingAction?.nivel.name ?? ""} no estará disponible para nuevas órdenes. Los despachos actuales no cambiarán.`}
-        confirmLabel={pendingAction?.kind === "delete" ? "Eliminar nivel" : "Desactivar nivel"}
-        busy={niveles.isSaving} error={actionError} onConfirm={confirmAction} />
+      <ConfirmActionDialog open={!!confirmation.item}
+        onOpenChange={confirmation.onOpenChange}
+        title={confirmation.item?.kind === "delete" ? "Eliminar nivel de servicio" : "Desactivar nivel de servicio"}
+        description={confirmation.item?.kind === "delete"
+          ? `El nivel ${confirmation.item.nivel.name} dejará de estar disponible. Los despachos finalizados conservarán su referencia.`
+          : `El nivel ${confirmation.item?.nivel.name ?? ""} no estará disponible para nuevas órdenes. Los despachos actuales no cambiarán.`}
+        confirmLabel={confirmation.item?.kind === "delete" ? "Eliminar nivel" : "Desactivar nivel"}
+        busy={niveles.isSaving} error={confirmation.error} onConfirm={confirmAction} />
     </div>
   );
 }

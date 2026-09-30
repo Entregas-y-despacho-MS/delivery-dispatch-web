@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 
 import { useListFilters } from "@/shared/hooks/use-list-filters";
 import { useEditorDialog } from "@/shared/hooks/use-editor-dialog";
+import { useConfirmAction } from "@/shared/hooks/use-confirm-action";
 import { parseApiError } from "@/shared/lib/api-error";
 import type { MotivoReprogramacionFormValues } from "../catalogos.schemas";
 import type { MotivoReprogramacion, MotivoReprogramacionCategoria } from "../catalogos.types";
@@ -19,8 +20,6 @@ export function useMotivosReprogramacionScreen() {
   const { search, debouncedSearch, page, setPage, clearFilters, hasFilters } = list;
   const statusFilter = list.filters.status;
   const categoryFilter = list.filters.category;
-  const [pendingDeactivate, setPendingDeactivate] = useState<MotivoReprogramacion>();
-  const [actionError, setActionError] = useState("");
   const [listActionError, setListActionError] = useState("");
 
   const params = useMemo(() => ({
@@ -36,6 +35,7 @@ export function useMotivosReprogramacionScreen() {
     busy: motivos.isSaving,
     confirmDiscardMessage: "¿Descartar los cambios sin guardar?",
   });
+  const confirmation = useConfirmAction<MotivoReprogramacion>();
   const editingMotivo = editor.editingItem;
 
   const saveMotivo = async (values: MotivoReprogramacionFormValues) => {
@@ -47,8 +47,7 @@ export function useMotivosReprogramacionScreen() {
   const requestToggle = async (motivo: MotivoReprogramacion) => {
     setListActionError("");
     if (motivo.active) {
-      setActionError("");
-      setPendingDeactivate(motivo);
+      confirmation.request(motivo);
       return;
     }
     try {
@@ -62,14 +61,15 @@ export function useMotivosReprogramacionScreen() {
   };
 
   const confirmDeactivate = async () => {
+    const pendingDeactivate = confirmation.item;
     if (!pendingDeactivate) return;
-    setActionError("");
+    confirmation.setError("");
     try {
       await motivos.toggleActive(pendingDeactivate);
-      setPendingDeactivate(undefined);
+      confirmation.close();
     } catch (error) {
       const apiError = parseApiError(error);
-      setActionError(apiError.status === 404
+      confirmation.setError(apiError.status === 404
         ? "Este motivo ya no existe. Actualiza la lista."
         : apiError.message);
     }
@@ -94,10 +94,9 @@ export function useMotivosReprogramacionScreen() {
     openEdit: editor.openEdit,
     closeDialog: editor.onOpenChange,
     saveMotivo,
-    pendingDeactivate,
-    setPendingDeactivate,
-    actionError,
-    setActionError,
+    pendingDeactivate: confirmation.item,
+    onConfirmationOpenChange: confirmation.onOpenChange,
+    actionError: confirmation.error,
     listActionError,
     requestToggle,
     confirmDeactivate,

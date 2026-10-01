@@ -22,7 +22,7 @@ interface ConfirmActionDialogProps {
   error?: string;
   onConfirm: () => void | Promise<void>;
   icon?: ReactNode;
-  confirmVariant?: "default" | "destructive";
+  confirmVariant?: "default" | "destructive" | "brandBlue";
 }
 
 export function ConfirmActionDialog({

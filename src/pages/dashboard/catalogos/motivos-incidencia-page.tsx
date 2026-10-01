@@ -1,5 +1,5 @@
 import { useMemo, useState, type ComponentProps } from "react";
-import { ListFilter, ListX, Plus, TriangleAlert } from "lucide-react";
+import { ListX, Plus, TriangleAlert } from "lucide-react";
 
 import {
   MotivoIncidenciaForm,
@@ -8,6 +8,7 @@ import {
   type MotivoIncidencia,
 } from "@/domains/catalogos";
 import { PageHeader } from "@/shared/components/common/page-header";
+import { FormDialogHeader } from "@/shared/components/common/form-dialog-header";
 import { ConfirmActionDialog } from "@/shared/components/common/confirm-action-dialog";
 import { ActiveStatusFilter, type ActiveStatusFilterValue } from "@/shared/components/common/active-status-filter";
 import { SearchField } from "@/shared/components/common/search-field";
@@ -21,9 +22,6 @@ import { Button } from "@/shared/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
 } from "@/shared/components/ui/dialog";
 import { parseApiError } from "@/shared/lib/api-error";
 
@@ -46,7 +44,6 @@ export default function MotivosIncidenciaPage() {
   const totalPages = Math.max(motivos.pages ?? 0, 1);
   const editor = useEditorDialog<MotivoIncidencia>({
     busy: motivos.isSaving,
-    confirmDiscardMessage: "¿Descartar los cambios sin guardar?",
   });
   const confirmation = useConfirmAction<MotivoIncidencia>();
   const editingMotivo = editor.editingItem;
@@ -102,21 +99,12 @@ export default function MotivosIncidenciaPage() {
       />
 
       <section className="rounded-xl border bg-card p-4 shadow-sm sm:p-5" aria-label="Catálogo de motivos de incidencia">
-        <div className="flex flex-col gap-4 border-b pb-4 lg:flex-row lg:items-end lg:justify-between">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <ListFilter className="size-4 text-brand-turquoise" aria-hidden />
-              <h2 className="font-semibold">Catálogo operativo</h2>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              {motivos.total} {motivos.total === 1 ? "motivo encontrado" : "motivos encontrados"}
-            </p>
-          </div>
+        <div className="flex flex-col gap-4 border-b pb-4 lg:flex-row lg:items-center lg:justify-between">
+          <SearchField id="motivos-incidencia-search" label="Buscar motivos de incidencia"
+            value={search} onChange={list.setSearch}
+            placeholder="Cliente ausente o INC-CLI" maxLength={100} className="sm:min-w-64 sm:max-w-sm" />
 
-          <div className="flex w-full flex-col gap-2 sm:flex-row lg:w-auto">
-            <SearchField id="motivos-incidencia-search" label="Buscar motivos de incidencia"
-              value={search} onChange={list.setSearch}
-              placeholder="Cliente ausente o INC-CLI" maxLength={100} className="sm:min-w-64 lg:w-72" />
+          <div className="flex w-full flex-col gap-2 sm:flex-row lg:w-auto lg:justify-end">
             <ActiveStatusFilter value={statusFilter}
               onChange={(value) => list.setFilter("status", value)} />
           </div>
@@ -159,15 +147,12 @@ export default function MotivosIncidenciaPage() {
       </section>
 
       <Dialog open={editor.open} onOpenChange={editor.onOpenChange}>
-        <DialogContent className="sm:max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>{editingMotivo ? "Editar motivo de incidencia" : "Nuevo motivo de incidencia"}</DialogTitle>
-            <DialogDescription>
-              {editingMotivo
-                ? "Actualiza el motivo, su requisito de foto y su disponibilidad."
-                : "El motivo quedará activo y disponible para los repartidores al guardarlo."}
-            </DialogDescription>
-          </DialogHeader>
+        <DialogContent data-form-dialog className="form-dialog-content max-h-[90dvh] overflow-y-auto bg-card sm:max-w-2xl motion-reduce:animate-none">
+          <FormDialogHeader icon={ListX}
+            title={editingMotivo ? "Editar motivo de incidencia" : "Nuevo motivo de incidencia"}
+            description={editingMotivo
+              ? "Actualiza el motivo, su requisito de foto y su disponibilidad."
+              : "El motivo quedará activo y disponible para los repartidores al guardarlo."} />
           <MotivoIncidenciaForm
             key={editingMotivo?.id ?? "new"}
             motivo={editingMotivo}
@@ -183,7 +168,7 @@ export default function MotivosIncidenciaPage() {
         onOpenChange={confirmation.onOpenChange}
         title="Desactivar motivo de incidencia"
         description={`El motivo ${confirmation.item?.name ?? ""} dejará de ofrecerse a los repartidores. Las incidencias ya registradas y su evidencia no cambian.`}
-        confirmLabel="Desactivar motivo" busy={motivos.isSaving} error={confirmation.error}
+        confirmLabel="Desactivar motivo" confirmVariant="destructive" busy={motivos.isSaving} error={confirmation.error}
         onConfirm={confirmDeactivate} />
     </div>
   );

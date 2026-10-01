@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, UserCog } from "lucide-react";
 
 import { DesactivarUsuarioDialog, UsuarioDialog, UsuariosTable, type Usuario } from "@/domains/usuarios";
 import { PageHeader } from "@/shared/components/common/page-header";
@@ -23,14 +23,15 @@ export default function UsuariosPage() {
   return (
     <div className="space-y-6">
       <PageHeader
+        eyebrow="Administración"
         title="Usuarios"
+        icon={UserCog}
         description={puedeAdministrar ? "Administra las cuentas internas y sus roles." : "Consulta las cuentas internas y sus roles."}
-        action={puedeAdministrar &&
+        action={puedeAdministrar && (
           <Button onClick={() => setDialogo({ abierto: true, usuario: null })}>
-            <Plus className="mr-2 h-4 w-4" aria-hidden />
-            Nuevo usuario
+            <Plus aria-hidden /> Nuevo usuario
           </Button>
-        }
+        )}
       />
 
       <UsuariosTable

@@ -226,6 +226,32 @@
     .topbar-profile:active { transform: translateY(0) scale(0.98); }
     .topbar-theme-control { transition: transform 180ms ease, background-color 180ms ease; }
     .topbar-theme-control:hover { transform: translateY(-1px); }
+
+    .form-dialog-content[data-state="open"] {
+      animation-duration: 260ms;
+      animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .form-dialog-content[data-state="closed"] {
+      animation-duration: 180ms;
+      animation-timing-function: ease-in;
+    }
+    .form-dialog-content .relative > svg {
+      transition: color 160ms ease, transform 160ms ease;
+    }
+    .form-dialog-content .relative:focus-within > svg {
+      color: var(--brand-turquoise);
+      transform: scale(1.08);
+    }
+    .form-dialog-footer button {
+      transition: transform 160ms ease, box-shadow 160ms ease;
+    }
+    .form-dialog-footer button[type="submit"]:enabled:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px color-mix(in srgb, var(--brand-orange) 28%, transparent);
+    }
+    .form-dialog-footer button[type="submit"].bg-brand-blue:enabled:hover {
+      box-shadow: 0 4px 12px color-mix(in srgb, var(--brand-blue) 28%, transparent);
+    }
   }
 
   @keyframes topbar-arrive {
@@ -342,4 +368,3 @@
     color: var(--foreground) !important;
   }
 }
-

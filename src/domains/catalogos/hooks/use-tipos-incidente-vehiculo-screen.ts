@@ -35,7 +35,6 @@ export function useTiposIncidenteVehiculoScreen() {
   const totalPages = Math.max(tipos.pages ?? 0, 1);
   const editor = useEditorDialog<TipoIncidenteVehiculo>({
     busy: tipos.isSaving,
-    confirmDiscardMessage: "¿Descartar los cambios sin guardar?",
   });
   const editingTipo = editor.editingItem;
 

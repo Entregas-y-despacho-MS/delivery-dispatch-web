@@ -80,7 +80,7 @@ export function TiposIncidenteVehiculoTable({
       emptyMessage={emptyMessage} isFiltered={searchActive} onClearFilters={onClearFilters}
       mobileFilteredState mobileEmptyTitle="Sin tipos de falla" mobileSkeletonVariant="incident"
       renderCard={(tipo) => (
-        <article className="rounded-lg border bg-card p-4">
+        <article className="rounded-xl border border-border bg-card p-4 shadow-sm">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 space-y-1">
               <p className="font-mono text-xs text-muted-foreground">{tipo.code}</p>

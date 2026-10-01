@@ -10,6 +10,7 @@ import { Label } from "@/shared/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { parseApiError } from "@/shared/lib/api-error";
+import { useFormSubmitConfirmation } from "@/shared/hooks/use-form-submit-confirmation";
 import { motivoReprogramacionSchema, type MotivoReprogramacionFormValues } from "../catalogos.schemas";
 import type { MotivoReprogramacion, MotivoReprogramacionCategoria } from "../catalogos.types";
 import { MOTIVO_REPROGRAMACION_CATEGORIAS } from "../motivos-reprogramacion.constants";
@@ -36,8 +37,9 @@ export function MotivoReprogramacionForm({ motivo, onSubmit, onCancel, onDirtyCh
       reValidateMode: "onChange",
     });
   useEffect(() => onDirtyChange?.(isDirty), [isDirty, onDirtyChange]);
+  const confirmation = useFormSubmitConfirmation("motivo de reprogramación", !!motivo);
 
-  const submit = handleSubmit(async (values) => {
+  const save = async (values: MotivoReprogramacionFormValues) => {
     try {
       await onSubmit(values);
     } catch (error) {
@@ -50,9 +52,11 @@ export function MotivoReprogramacionForm({ motivo, onSubmit, onCancel, onDirtyCh
             : apiError.message,
       });
     }
-  });
+  };
+  const submit = handleSubmit((values) => confirmation.requestConfirmation(() => save(values)));
 
   return (
+    <>
     <form onSubmit={submit} className="space-y-5" noValidate>
       {errors.root?.message && (
         <Alert variant="destructive"><TriangleAlert aria-hidden /><AlertDescription>{errors.root.message}</AlertDescription></Alert>
@@ -118,13 +122,15 @@ export function MotivoReprogramacionForm({ motivo, onSubmit, onCancel, onDirtyCh
         {errors.category && <p id="reprogramacion-origin-error" className="text-sm text-destructive">{errors.category.message}</p>}
       </div>
 
-      <div className="flex flex-col-reverse gap-2 border-t pt-5 sm:flex-row sm:justify-end">
+      <div className="form-dialog-footer flex flex-col-reverse gap-2 border-t pt-5 sm:flex-row sm:justify-end">
         <Button type="button" variant="outline" onClick={onCancel} disabled={guardando}>Cancelar</Button>
-        <Button type="submit" disabled={guardando}>
+        <Button type="submit" variant={motivo ? "brandBlue" : "default"} disabled={guardando}>
           {guardando && <LoaderCircle className="size-4 animate-spin" aria-hidden />}
           {guardando ? "Guardando…" : motivo ? "Guardar cambios" : "Crear motivo"}
         </Button>
       </div>
     </form>
+    {confirmation.confirmationDialog}
+    </>
   );
 }

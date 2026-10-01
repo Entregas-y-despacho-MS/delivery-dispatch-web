@@ -6,6 +6,7 @@ export const buttonVariants = cva(
     variants: {
       variant: {
         default: "bg-brand-orange text-sidebar-foreground hover:bg-brand-orange/90",
+        brandBlue: "bg-brand-blue text-white hover:bg-brand-blue/90 dark:text-background",
         destructive:
           "bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:bg-destructive/60 dark:focus-visible:ring-destructive/40",
         outline:

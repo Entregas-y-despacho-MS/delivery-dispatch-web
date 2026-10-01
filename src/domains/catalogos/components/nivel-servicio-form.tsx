@@ -9,6 +9,7 @@ import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { parseApiError } from "@/shared/lib/api-error";
+import { useFormSubmitConfirmation } from "@/shared/hooks/use-form-submit-confirmation";
 import { nivelServicioSchema, type NivelServicioFormValues } from "../catalogos.schemas";
 import type { NivelServicio } from "../catalogos.types";
 
@@ -46,8 +47,9 @@ export function NivelServicioForm({
   });
 
   useEffect(() => onDirtyChange?.(isDirty), [isDirty, onDirtyChange]);
+  const confirmation = useFormSubmitConfirmation("nivel de servicio", !!nivel);
 
-  const submit = handleSubmit(async (values) => {
+  const save = async (values: NivelServicioFormValues) => {
     try {
       await onSubmit(values);
     } catch (error) {
@@ -64,9 +66,11 @@ export function NivelServicioForm({
           : apiError.message,
       });
     }
-  });
+  };
+  const submit = handleSubmit((values) => confirmation.requestConfirmation(() => save(values)));
 
   return (
+    <>
     <form onSubmit={submit} className="space-y-5" noValidate>
       {errors.root?.message && (
         <Alert variant="destructive">
@@ -159,13 +163,15 @@ export function NivelServicioForm({
         {errors.description && <p id="nivel-description-error" className="text-sm text-destructive">{errors.description.message}</p>}
       </div>
 
-      <div className="flex flex-col-reverse gap-2 border-t pt-5 sm:flex-row sm:justify-end">
+      <div className="form-dialog-footer flex flex-col-reverse gap-2 border-t pt-5 sm:flex-row sm:justify-end">
         <Button type="button" variant="outline" onClick={onCancel} disabled={guardando}>Cancelar</Button>
-        <Button type="submit" disabled={guardando}>
+        <Button type="submit" variant={nivel ? "brandBlue" : "default"} disabled={guardando}>
           {guardando && <LoaderCircle className="size-4 animate-spin" aria-hidden />}
           {guardando ? "Guardando…" : nivel ? "Guardar cambios" : "Crear nivel"}
         </Button>
       </div>
     </form>
+    {confirmation.confirmationDialog}
+    </>
   );
 }

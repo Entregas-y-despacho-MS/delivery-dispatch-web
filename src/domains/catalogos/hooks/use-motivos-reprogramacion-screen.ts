@@ -33,7 +33,6 @@ export function useMotivosReprogramacionScreen() {
   const totalPages = Math.max(motivos.pages ?? 0, 1);
   const editor = useEditorDialog<MotivoReprogramacion>({
     busy: motivos.isSaving,
-    confirmDiscardMessage: "¿Descartar los cambios sin guardar?",
   });
   const confirmation = useConfirmAction<MotivoReprogramacion>();
   const editingMotivo = editor.editingItem;

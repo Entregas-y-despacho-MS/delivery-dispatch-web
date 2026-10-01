@@ -9,6 +9,7 @@ import {
   type VehiculoFormValues,
 } from "@/domains/flota";
 import { PageHeader } from "@/shared/components/common/page-header";
+import { FormDialogHeader } from "@/shared/components/common/form-dialog-header";
 import { PaginationControls } from "@/shared/components/common/pagination-controls";
 import { SearchField } from "@/shared/components/common/search-field";
 import { ErrorAlert } from "@/shared/components/feedback/error-alert";
@@ -18,9 +19,6 @@ import { useListFilters } from "@/shared/hooks/use-list-filters";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
 } from "@/shared/components/ui/dialog";
 
 const PAGE_SIZE = 10;
@@ -60,16 +58,7 @@ export default function FlotaPage() {
       />
 
       <section className="rounded-xl border bg-card p-4 shadow-sm sm:p-5" aria-label="Catálogo de vehículos">
-        <div className="flex flex-col gap-4 border-b pb-4 sm:flex-row sm:items-end sm:justify-between">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <Truck className="size-4 text-brand-turquoise" aria-hidden />
-              <h2 className="font-semibold">Flota registrada</h2>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              {flota.total} {flota.total === 1 ? "vehículo registrado" : "vehículos registrados"}
-            </p>
-          </div>
+        <div className="border-b pb-4">
           <SearchField
             id="vehiculos-search"
             label="Buscar por placa, modelo o tipo"
@@ -100,15 +89,12 @@ export default function FlotaPage() {
       </section>
 
       <Dialog open={editor.open} onOpenChange={editor.onOpenChange}>
-        <DialogContent className="sm:max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>{editor.editingItem ? "Editar vehículo" : "Nuevo vehículo"}</DialogTitle>
-            <DialogDescription>
-              {editor.editingItem
-                ? "Actualiza los datos del vehículo."
-                : "Registra un vehículo para incluirlo en la flota."}
-            </DialogDescription>
-          </DialogHeader>
+        <DialogContent data-form-dialog className="form-dialog-content max-h-[90dvh] overflow-y-auto bg-card sm:max-w-2xl motion-reduce:animate-none">
+          <FormDialogHeader icon={Truck}
+            title={editor.editingItem ? "Editar vehículo" : "Nuevo vehículo"}
+            description={editor.editingItem
+              ? "Actualiza los datos del vehículo."
+              : "Registra un vehículo para incluirlo en la flota."} />
           <VehiculoForm
             key={editor.editingItem?.id ?? "new"}
             vehiculo={editor.editingItem}

@@ -73,23 +73,22 @@ export function MotivosReprogramacionTable({ data, loading = false, searchActive
       ),
       className: "w-[34%]",
     },
-    { header: "Origen", cell: (motivo) => <OriginBadge motivo={motivo} />, className: "w-[20%]" },
-    { header: "Puntualidad", cell: (motivo) => <PuntualidadBadge excluded={motivo.affectsSla} />, className: "w-[20%]" },
+    { header: "Origen", cell: (motivo) => <OriginBadge motivo={motivo} />, className: "w-[19%]" },
+    { header: "Puntualidad", cell: (motivo) => <PuntualidadBadge excluded={motivo.affectsSla} />, className: "w-[19%]" },
     {
       header: "Estado",
-      cell: (motivo) => (
-        <div className="flex items-center gap-3">
-          <Switch checked={motivo.active} disabled={busy} onCheckedChange={() => onToggle(motivo)}
-            aria-label={`${motivo.active ? "Desactivar" : "Activar"} ${motivo.name}`} />
-          <StatusBadge active={motivo.active} />
-        </div>
-      ),
-      className: "w-[20%]",
+      cell: (motivo) => <StatusBadge active={motivo.active} />,
+      className: "w-[16%]",
     },
     {
-      header: "",
-      cell: (motivo) => <EditButton motivo={motivo} onEdit={onEdit} busy={busy} />,
-      className: "w-12 text-right",
+      header: "Acciones",
+      cell: (motivo) => (
+        <div className="flex items-center justify-end gap-2">
+          <EditButton motivo={motivo} onEdit={onEdit} busy={busy} />
+          <Switch checked={motivo.active} disabled={busy} onCheckedChange={() => onToggle(motivo)} aria-label={`${motivo.active ? "Desactivar" : "Activar"} ${motivo.name}`} />
+        </div>
+      ),
+      className: "w-[12%] text-right",
     },
   ];
 
@@ -99,7 +98,7 @@ export function MotivosReprogramacionTable({ data, loading = false, searchActive
       isFiltered={searchActive} onClearFilters={onClearFilters}
       mobileFilteredState mobileEmptyTitle="Sin motivos todavía"
       renderCard={(motivo) => (
-        <article className="rounded-lg border bg-card p-4 shadow-sm">
+        <article className="rounded-xl border border-border bg-card p-4 shadow-sm">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0 space-y-1">
               <h3 className="font-semibold">{motivo.name}</h3>

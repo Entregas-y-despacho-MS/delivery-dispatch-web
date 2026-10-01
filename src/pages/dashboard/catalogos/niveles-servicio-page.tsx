@@ -1,5 +1,5 @@
 import { useMemo, useState, type ComponentProps } from "react";
-import { Gauge, ListFilter, Plus, TriangleAlert } from "lucide-react";
+import { Gauge, Plus, TriangleAlert } from "lucide-react";
 
 import {
   NivelServicioForm,
@@ -8,6 +8,7 @@ import {
   type NivelServicio,
 } from "@/domains/catalogos";
 import { PageHeader } from "@/shared/components/common/page-header";
+import { FormDialogHeader } from "@/shared/components/common/form-dialog-header";
 import { ConfirmActionDialog } from "@/shared/components/common/confirm-action-dialog";
 import { ActiveStatusFilter, type ActiveStatusFilterValue } from "@/shared/components/common/active-status-filter";
 import { SearchField } from "@/shared/components/common/search-field";
@@ -21,15 +22,12 @@ import { Button } from "@/shared/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
 } from "@/shared/components/ui/dialog";
 import { parseApiError } from "@/shared/lib/api-error";
 
 const PAGE_SIZE = 10;
 type StatusFilter = ActiveStatusFilterValue;
-type PendingAction = { kind: "deactivate" | "delete"; nivel: NivelServicio };
+type PendingAction = { nivel: NivelServicio };
 
 export default function NivelesServicioPage() {
   const list = useListFilters<{ status: StatusFilter }>({ status: "all" });
@@ -47,7 +45,6 @@ export default function NivelesServicioPage() {
   const totalPages = Math.max(niveles.pages ?? 0, 1);
   const editor = useEditorDialog<NivelServicio>({
     busy: niveles.isSaving,
-    confirmDiscardMessage: "¿Descartar los cambios sin guardar?",
   });
   const confirmation = useConfirmAction<PendingAction>();
   const editingNivel = editor.editingItem;
@@ -61,7 +58,7 @@ export default function NivelesServicioPage() {
   const requestToggle = async (nivel: NivelServicio) => {
     setListActionError("");
     if (nivel.active) {
-      confirmation.request({ kind: "deactivate", nivel });
+      confirmation.request({ nivel });
       return;
     }
 
@@ -81,12 +78,7 @@ export default function NivelesServicioPage() {
     confirmation.setError("");
 
     try {
-      if (pendingAction.kind === "deactivate") {
-        await niveles.toggleActive(pendingAction.nivel);
-      } else {
-        await niveles.removeItem(pendingAction.nivel.id);
-        if (page > 1 && niveles.data.length === 1) setPage(page - 1);
-      }
+      await niveles.toggleActive(pendingAction.nivel);
       confirmation.close();
     } catch (error) {
       const apiError = parseApiError(error);
@@ -109,21 +101,12 @@ export default function NivelesServicioPage() {
       />
 
       <section className="rounded-xl border bg-card p-4 shadow-sm sm:p-5" aria-label="Catálogo de niveles de servicio">
-        <div className="flex flex-col gap-4 border-b pb-4 lg:flex-row lg:items-end lg:justify-between">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <ListFilter className="size-4 text-brand-turquoise" aria-hidden />
-              <h2 className="font-semibold">Catálogo operativo</h2>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              {niveles.total} {niveles.total === 1 ? "nivel encontrado" : "niveles encontrados"}
-            </p>
-          </div>
+        <div className="flex flex-col gap-4 border-b pb-4 lg:flex-row lg:items-center lg:justify-between">
+          <SearchField id="niveles-servicio-search" label="Buscar niveles de servicio"
+            value={search} onChange={list.setSearch}
+            placeholder="Express o entrega prioritaria" maxLength={100} className="sm:min-w-64 sm:max-w-sm" />
 
-          <div className="flex w-full flex-col gap-2 sm:flex-row lg:w-auto">
-            <SearchField id="niveles-servicio-search" label="Buscar niveles de servicio"
-              value={search} onChange={list.setSearch}
-              placeholder="Express o entrega prioritaria" maxLength={100} className="sm:min-w-64 lg:w-72" />
+          <div className="flex w-full flex-col gap-2 sm:flex-row lg:w-auto lg:justify-end">
             <ActiveStatusFilter value={statusFilter}
               onChange={(value) => list.setFilter("status", value)} />
           </div>
@@ -149,7 +132,6 @@ export default function NivelesServicioPage() {
               busy={niveles.isSaving}
               onEdit={editor.openEdit}
               onToggle={requestToggle}
-              onDelete={(nivel) => confirmation.request({ kind: "delete", nivel })}
             />
           </div>
         )}
@@ -167,15 +149,12 @@ export default function NivelesServicioPage() {
       </section>
 
       <Dialog open={editor.open} onOpenChange={editor.onOpenChange}>
-        <DialogContent className="sm:max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>{editingNivel ? "Editar nivel de servicio" : "Nuevo nivel de servicio"}</DialogTitle>
-            <DialogDescription>
-              {editingNivel
-                ? "Actualiza el compromiso de entrega y la prioridad operativa."
-                : "Configura un compromiso de entrega para asociarlo a las órdenes."}
-            </DialogDescription>
-          </DialogHeader>
+        <DialogContent data-form-dialog className="form-dialog-content max-h-[90dvh] overflow-y-auto bg-card sm:max-w-2xl motion-reduce:animate-none">
+          <FormDialogHeader icon={Gauge}
+            title={editingNivel ? "Editar nivel de servicio" : "Nuevo nivel de servicio"}
+            description={editingNivel
+              ? "Actualiza el compromiso de entrega y la prioridad operativa."
+              : "Configura un compromiso de entrega para asociarlo a las órdenes."} />
           <NivelServicioForm
             key={editingNivel?.id ?? "new"}
             nivel={editingNivel}
@@ -189,11 +168,10 @@ export default function NivelesServicioPage() {
 
       <ConfirmActionDialog open={!!confirmation.item}
         onOpenChange={confirmation.onOpenChange}
-        title={confirmation.item?.kind === "delete" ? "Eliminar nivel de servicio" : "Desactivar nivel de servicio"}
-        description={confirmation.item?.kind === "delete"
-          ? `El nivel ${confirmation.item.nivel.name} dejará de estar disponible. Los despachos finalizados conservarán su referencia.`
-          : `El nivel ${confirmation.item?.nivel.name ?? ""} no estará disponible para nuevas órdenes. Los despachos actuales no cambiarán.`}
-        confirmLabel={confirmation.item?.kind === "delete" ? "Eliminar nivel" : "Desactivar nivel"}
+        title="Desactivar nivel de servicio"
+        description={`El nivel ${confirmation.item?.nivel.name ?? ""} no estará disponible para nuevas órdenes. Los despachos actuales no cambiarán.`}
+        confirmLabel="Desactivar nivel"
+        confirmVariant="destructive"
         busy={niveles.isSaving} error={confirmation.error} onConfirm={confirmAction} />
     </div>
   );

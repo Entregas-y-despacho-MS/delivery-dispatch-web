@@ -1,11 +1,8 @@
-import { SearchField } from "@/shared/components/common/search-field";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 import type { BloqueoFilter, SeveridadFilter } from "../hooks/use-tipos-incidente-vehiculo-screen";
 import { SEVERIDADES_INCIDENTE_VEHICULO } from "../tipos-incidente-vehiculo.constants";
 
 interface TiposIncidenteVehiculoFiltersProps {
-  search: string;
-  onSearchChange: (value: string) => void;
   severity: SeveridadFilter;
   onSeverityChange: (value: SeveridadFilter) => void;
   blocking: BloqueoFilter;
@@ -13,18 +10,13 @@ interface TiposIncidenteVehiculoFiltersProps {
 }
 
 export function TiposIncidenteVehiculoFilters({
-  search,
-  onSearchChange,
   severity,
   onSeverityChange,
   blocking,
   onBlockingChange,
 }: TiposIncidenteVehiculoFiltersProps) {
   return (
-    <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-      <SearchField id="fallas-search" label="Buscar tipos de falla" value={search}
-        onChange={onSearchChange} maxLength={100} placeholder="Frenos o MEC-FRE-01"
-        className="sm:min-w-56 sm:flex-1 lg:max-w-80" />
+    <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap lg:w-auto lg:justify-end">
       <Select value={severity} onValueChange={(value: SeveridadFilter) => onSeverityChange(value)}>
         <SelectTrigger className="h-10 w-full sm:w-44" aria-label="Filtrar por severidad">
           <SelectValue />

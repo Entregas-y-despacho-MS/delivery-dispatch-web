@@ -1,4 +1,4 @@
-import { ListFilter, Plus, TriangleAlert } from "lucide-react";
+import { CalendarClock, ListFilter, Plus, TriangleAlert } from "lucide-react";
 
 import {
   MOTIVO_REPROGRAMACION_CATEGORIAS,
@@ -8,6 +8,7 @@ import {
   type CategoryFilter,
 } from "@/domains/catalogos";
 import { PageHeader } from "@/shared/components/common/page-header";
+import { FormDialogHeader } from "@/shared/components/common/form-dialog-header";
 import { ConfirmActionDialog } from "@/shared/components/common/confirm-action-dialog";
 import { ActiveStatusFilter } from "@/shared/components/common/active-status-filter";
 import { SearchField } from "@/shared/components/common/search-field";
@@ -15,7 +16,7 @@ import { PaginationControls } from "@/shared/components/common/pagination-contro
 import { ErrorAlert } from "@/shared/components/feedback/error-alert";
 import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 import { Button } from "@/shared/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/shared/components/ui/dialog";
+import { Dialog, DialogContent } from "@/shared/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 
 export default function MotivosReprogramacionPage() {
@@ -33,21 +34,11 @@ export default function MotivosReprogramacionPage() {
       />
 
       <section className="rounded-xl border bg-card p-4 shadow-sm sm:p-5" aria-label="Catálogo de motivos de reprogramación">
-        <div className="flex flex-col gap-4 border-b pb-4 lg:flex-row lg:items-end lg:justify-between">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <ListFilter className="size-4 text-brand-turquoise" aria-hidden />
-              <h2 className="font-semibold">Causales operativas</h2>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              {motivos.isLoading ? "Cargando motivos…" : `${motivos.total} ${motivos.total === 1 ? "motivo encontrado" : "motivos encontrados"}`}
-            </p>
-          </div>
-
-          <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap lg:w-auto">
+        <div className="flex flex-col gap-4 border-b pb-4 lg:flex-row lg:items-center lg:justify-between">
             <SearchField id="reprogramacion-search" label="Buscar motivos" value={screen.search}
               onChange={screen.setSearch} placeholder="Solicitud del cliente" maxLength={100}
-              className="sm:min-w-56 sm:flex-1 lg:w-64 lg:flex-none" />
+              className="sm:min-w-56 sm:max-w-sm" />
+          <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap lg:w-auto lg:justify-end">
             <Select value={screen.categoryFilter} onValueChange={(value: CategoryFilter) => screen.setCategoryFilter(value)}>
               <SelectTrigger className="h-10 w-full sm:w-44" aria-label="Filtrar por origen"><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -86,15 +77,12 @@ export default function MotivosReprogramacionPage() {
       </section>
 
       <Dialog open={screen.dialogOpen} onOpenChange={screen.closeDialog}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>{screen.editingMotivo ? "Editar motivo" : "Nuevo motivo"}</DialogTitle>
-            <DialogDescription>
-              {screen.editingMotivo
-                ? "Actualiza los datos del motivo y su categoría."
-                : "El motivo quedará activo y disponible para justificar cambios operativos."}
-            </DialogDescription>
-          </DialogHeader>
+        <DialogContent data-form-dialog className="form-dialog-content max-h-[90dvh] overflow-y-auto bg-card sm:max-w-2xl motion-reduce:animate-none">
+          <FormDialogHeader icon={CalendarClock}
+            title={screen.editingMotivo ? "Editar motivo" : "Nuevo motivo"}
+            description={screen.editingMotivo
+              ? "Actualiza los datos del motivo y su categoría."
+              : "El motivo quedará activo y disponible para justificar cambios operativos."} />
           <MotivoReprogramacionForm key={screen.editingMotivo?.id ?? "new"}
             motivo={screen.editingMotivo} onSubmit={screen.saveMotivo}
             onCancel={() => screen.closeDialog(false)} onDirtyChange={screen.setFormDirty}
@@ -106,7 +94,7 @@ export default function MotivosReprogramacionPage() {
         onOpenChange={screen.onConfirmationOpenChange}
         title="Desactivar motivo"
         description={`El motivo ${screen.pendingDeactivate?.name ?? ""} ya no estará disponible para nuevos cambios. Los registros anteriores se conservarán.`}
-        confirmLabel="Desactivar motivo" busy={motivos.isSaving} error={screen.actionError}
+        confirmLabel="Desactivar motivo" confirmVariant="destructive" busy={motivos.isSaving} error={screen.actionError}
         onConfirm={screen.confirmDeactivate} />
     </div>
   );

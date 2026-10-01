@@ -1,5 +1,5 @@
 import { useMemo, type ComponentProps } from "react";
-import { MapPin, Plus, Timer } from "lucide-react";
+import { MapPin, Plus } from "lucide-react";
 
 import {
   ZonaForm,
@@ -8,6 +8,7 @@ import {
   type Zona,
 } from "@/domains/catalogos";
 import { PageHeader } from "@/shared/components/common/page-header";
+import { FormDialogHeader } from "@/shared/components/common/form-dialog-header";
 import { ConfirmActionDialog } from "@/shared/components/common/confirm-action-dialog";
 import { PaginationControls } from "@/shared/components/common/pagination-controls";
 import { SearchField } from "@/shared/components/common/search-field";
@@ -20,9 +21,6 @@ import { parseApiError } from "@/shared/lib/api-error";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
 } from "@/shared/components/ui/dialog";
 
 const PAGE_SIZE = 10;
@@ -38,7 +36,6 @@ export default function ZonasPage() {
   const totalPages = zonas.pages ?? 1;
   const editor = useEditorDialog<Zona>({
     busy: zonas.isSaving,
-    confirmDiscardMessage: "¿Descartar los cambios sin guardar?",
   });
   const confirmation = useConfirmAction<Zona>();
 
@@ -79,16 +76,7 @@ export default function ZonasPage() {
       />
 
       <section className="rounded-xl border bg-card p-4 shadow-sm sm:p-5" aria-label="Catálogo de zonas">
-        <div className="flex flex-col gap-4 border-b pb-4 sm:flex-row sm:items-end sm:justify-between">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <Timer className="size-4 text-brand-turquoise" aria-hidden />
-              <h2 className="font-semibold">Catálogo operativo</h2>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              {zonas.total} {zonas.total === 1 ? "zona registrada" : "zonas registradas"}
-            </p>
-          </div>
+        <div className="border-b pb-4">
           <SearchField
             id="zonas-search"
             label="Buscar por código o nombre"
@@ -126,15 +114,12 @@ export default function ZonasPage() {
       </section>
 
       <Dialog open={editor.open} onOpenChange={editor.onOpenChange}>
-        <DialogContent className="sm:max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>{editor.editingItem ? "Editar zona" : "Nueva zona"}</DialogTitle>
-            <DialogDescription>
-              {editor.editingItem
-                ? "Actualiza el código, nombre o tiempo base de la zona."
-                : "Registra una zona para incluirla en la planificación de entregas."}
-            </DialogDescription>
-          </DialogHeader>
+        <DialogContent data-form-dialog className="form-dialog-content max-h-[90dvh] overflow-y-auto bg-card sm:max-w-2xl motion-reduce:animate-none">
+          <FormDialogHeader icon={MapPin}
+            title={editor.editingItem ? "Editar zona" : "Nueva zona"}
+            description={editor.editingItem
+              ? "Actualiza el código, nombre o tiempo base de la zona."
+              : "Registra una zona para incluirla en la planificación de entregas."} />
           <ZonaForm
             key={editor.editingItem?.id ?? "new"}
             zona={editor.editingItem}
@@ -152,7 +137,7 @@ export default function ZonasPage() {
         description={confirmation.item
           ? `La zona ${confirmation.item.code} dejará de aparecer en el catálogo y no podrá asignarse a nuevas entregas.`
           : "La zona dejará de estar disponible para nuevas entregas."}
-        confirmLabel="Desactivar zona" busyLabel="Desactivando…"
+        confirmLabel="Desactivar zona" confirmVariant="destructive" busyLabel="Desactivando…"
         busy={zonas.deleteMutation.isPending} error={confirmation.error} onConfirm={deactivateZona} />
     </div>
   );

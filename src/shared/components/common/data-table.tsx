@@ -13,7 +13,9 @@ import { TableSkeleton } from "@/shared/components/feedback/table-skeleton";
 import { cn } from "@/shared/lib/utils";
 
 export interface Column<T> {
-  header: string;
+  id?: string;
+  header: React.ReactNode;
+  ariaSort?: React.AriaAttributes["aria-sort"];
   /** Clave del objeto o función de render. */
   cell: keyof T | ((row: T) => React.ReactNode);
   className?: string;
@@ -67,7 +69,7 @@ export function DataTable<T extends { id: string | number }>({
   // Carga anatómica reflejando las columnas reales de la tabla
   if (loading) {
     const skeletonCols = columns.map((col) => ({
-      header: col.header,
+      header: typeof col.header === "string" ? col.header : undefined,
       className: col.className,
     }));
 
@@ -105,12 +107,13 @@ export function DataTable<T extends { id: string | number }>({
 
   // Tabla poblada
   return (
-    <div className={cn("rounded-lg border bg-card overflow-hidden shadow-xs", className)}>
+    <div className={cn("overflow-hidden rounded-xl border border-border bg-card shadow-sm", className)}>
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent">
-            {columns.map((col) => (
-              <TableHead key={col.header} className={cn("font-semibold text-foreground/80", col.className)}>
+            {columns.map((col, index) => (
+              <TableHead key={col.id ?? (typeof col.header === "string" && col.header ? col.header : `column-${index}`)} aria-sort={col.ariaSort}
+                className={cn("font-semibold", col.className)}>
                 {col.header}
               </TableHead>
             ))}
@@ -119,8 +122,8 @@ export function DataTable<T extends { id: string | number }>({
         <TableBody>
           {data.map((row) => (
             <TableRow key={row.id} className="hover:bg-muted/40 transition-colors">
-              {columns.map((col) => (
-                <TableCell key={col.header} className={cn(col.className)}>
+              {columns.map((col, index) => (
+                <TableCell key={col.id ?? (typeof col.header === "string" && col.header ? col.header : `column-${index}`)} className={cn(col.className)}>
                   {typeof col.cell === "function"
                     ? col.cell(row)
                     : (row[col.cell] as React.ReactNode)}

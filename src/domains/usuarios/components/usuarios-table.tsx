@@ -4,23 +4,16 @@ import {
   ChevronsUpDown,
   ChevronUp,
   Pencil,
-  UserX,
 } from "lucide-react";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
+import { Switch } from "@/shared/components/ui/switch";
 import { AsyncState } from "@/shared/components/feedback/async-state";
 import { EmptyState, NoResultsState } from "@/shared/components/feedback/empty-state";
 import { TableSkeleton, type SkeletonColumnDef } from "@/shared/components/feedback/table-skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/shared/components/ui/table";
 import { useListFilters } from "@/shared/hooks/use-list-filters";
 import { PagedTableControls } from "@/shared/components/common/paged-table-controls";
+import { DataTable, type Column } from "@/shared/components/common/data-table";
 import { useRoles } from "../hooks/use-roles";
 import { useUsuarios } from "../hooks/use-usuarios";
 import type { Usuario, UsuarioEstado, UsuariosFiltrosParams } from "../usuarios.types";
@@ -56,7 +49,7 @@ function EstadoBadge({ estado }: { estado: UsuarioEstado }) {
       return (
         <Badge
           variant="outline"
-          className="bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 gap-1.5 font-medium"
+          className="border-success/20 bg-success/10 text-success gap-1.5 font-medium"
         >
           <span className="size-1.5 rounded-full bg-emerald-500" aria-hidden />
           Activo
@@ -66,7 +59,7 @@ function EstadoBadge({ estado }: { estado: UsuarioEstado }) {
       return (
         <Badge
           variant="outline"
-          className="bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 gap-1.5 font-medium"
+          className="border-muted-foreground/20 bg-muted text-muted-foreground gap-1.5 font-medium"
         >
           <span className="size-1.5 rounded-full bg-slate-400" aria-hidden />
           Inactivo
@@ -76,7 +69,7 @@ function EstadoBadge({ estado }: { estado: UsuarioEstado }) {
       return (
         <Badge
           variant="outline"
-          className="bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800 gap-1.5 font-medium"
+          className="border-destructive/20 bg-destructive/10 text-destructive gap-1.5 font-medium"
         >
           <span className="size-1.5 rounded-full bg-rose-500" aria-hidden />
           Bloqueado
@@ -162,161 +155,138 @@ export function UsuariosTable({ puedeAdministrar, onEditar, onDesactivar }: Usua
 
   const items = data?.items ?? [];
 
+  const columns: Column<Usuario>[] = [
+    {
+      id: "name",
+      header: (
+        <button
+          type="button"
+          onClick={() => handleSort("nombre")}
+          className="flex items-center font-semibold text-muted-foreground transition-colors hover:text-foreground"
+          aria-label="Ordenar por nombre"
+        >
+          Nombre
+          <SortIcon active={sortCol === "nombre"} order={sortOrder} />
+        </button>
+      ),
+      ariaSort: sortCol === "nombre" ? (sortOrder === "asc" ? "ascending" : "descending") : "none",
+      cell: (u) => (
+        <div className="flex flex-col">
+          <span className="font-medium text-foreground">{u.nombreCompleto}</span>
+          <span className="text-xs text-muted-foreground">@{u.username}</span>
+        </div>
+      ),
+    },
+    {
+      id: "email",
+      header: "Correo",
+      cell: (u) => u.email ?? <span className="text-muted-foreground/60">—</span>,
+      className: "hidden text-muted-foreground md:table-cell",
+    },
+    {
+      id: "role",
+      header: "Rol",
+      cell: (u) => <span className="text-sm font-medium">{u.rol.etiqueta}</span>,
+    },
+    {
+      id: "status",
+      header: "Estado",
+      cell: (u) => <EstadoBadge estado={u.estado} />,
+    },
+    {
+      id: "last-login",
+      header: (
+        <button
+          type="button"
+          onClick={() => handleSort("ultimoAcceso")}
+          className="flex items-center font-semibold text-muted-foreground transition-colors hover:text-foreground"
+          aria-label="Ordenar por último acceso"
+        >
+          Último Acceso
+          <SortIcon active={sortCol === "ultimoAcceso"} order={sortOrder} />
+        </button>
+      ),
+      ariaSort: sortCol === "ultimoAcceso" ? (sortOrder === "asc" ? "ascending" : "descending") : "none",
+      cell: (u) => formatUltimoAcceso(u.ultimoAcceso),
+      className: "hidden text-sm text-muted-foreground lg:table-cell",
+    },
+    ...(puedeAdministrar ? [{
+      id: "actions",
+      header: "Acciones",
+      className: "w-32 pr-4 text-right",
+      cell: (u: Usuario) => {
+        const esRoot = u.rol.nombre === "root";
+        return (
+          <div className="flex items-center justify-end gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onEditar(u)}
+              disabled={esRoot}
+              aria-label={`Editar a ${u.nombreCompleto}`}
+              className="size-8"
+            >
+              <Pencil className="size-4" aria-hidden />
+            </Button>
+            <Switch
+              checked={u.activo}
+              disabled={esRoot || !u.activo}
+              onCheckedChange={(checked) => { if (!checked) onDesactivar(u); }}
+              aria-label={`Desactivar a ${u.nombreCompleto}`}
+            />
+          </div>
+        );
+      },
+    } satisfies Column<Usuario>] : []),
+  ];
+
   const total = data?.total ?? 0;
   const totalPages = data?.pages ?? Math.max(1, Math.ceil(total / limit));
 
   return (
-    <div className="space-y-4">
-      {/* Controles de búsqueda y filtros */}
-      <UsuariosTableFilters
-        search={search}
-        onSearchChange={list.setSearch}
-        rolId={rolId}
-        onRolIdChange={(value) => list.setFilter("role", value)}
-        estado={estado}
-        onEstadoChange={(value) => list.setFilter("status", value)}
-        roles={roles}
-        loadingRoles={loadingRoles}
-      />
+    <section className="rounded-xl border bg-card p-4 shadow-sm sm:p-5" aria-label="Directorio de usuarios">
+      <div className="border-b pb-4">
+        <UsuariosTableFilters
+          search={search}
+          onSearchChange={list.setSearch}
+          rolId={rolId}
+          onRolIdChange={(value) => list.setFilter("role", value)}
+          estado={estado}
+          onEstadoChange={(value) => list.setFilter("status", value)}
+          roles={roles}
+          loadingRoles={loadingRoles}
+        />
+      </div>
 
-      <AsyncState
-        loading={isPending}
-        error={isError ? error : undefined}
-        empty={items.length === 0}
-        loadingFallback={<TableSkeleton columns={SKELETON_COLUMNS} rows={Math.min(limit, 10)} />}
-        emptyFallback={hasFilters
-          ? <NoResultsState onClearFilters={clearFilters} bordered />
-          : <EmptyState title="Sin usuarios registrados" description="Aún no hay usuarios dados de alta en el sistema." />}
-        onRetry={() => refetch()}
-      >
-        <div className="rounded-lg border bg-card overflow-hidden">
-          <Table>
-            <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                {/* Nombre */}
-                <TableHead
-                  aria-sort={sortCol === "nombre" ? (sortOrder === "asc" ? "ascending" : "descending") : "none"}
-                >
-                  <button
-                    type="button"
-                    onClick={() => handleSort("nombre")}
-                    className="flex items-center font-semibold text-foreground hover:text-brand-blue transition-colors cursor-pointer select-none"
-                    aria-label="Ordenar por nombre"
-                  >
-                    Nombre
-                    <SortIcon active={sortCol === "nombre"} order={sortOrder} />
-                  </button>
-                </TableHead>
-
-                {/* Correo (oculto en móviles) */}
-                <TableHead className="hidden md:table-cell font-semibold text-foreground">Correo</TableHead>
-
-                {/* Rol */}
-                <TableHead className="font-semibold text-foreground">Rol</TableHead>
-
-                {/* Estado */}
-                <TableHead className="font-semibold text-foreground">Estado</TableHead>
-
-                {/* Último Acceso (oculto en pantallas pequeñas) */}
-                <TableHead
-                  className="hidden lg:table-cell"
-                  aria-sort={sortCol === "ultimoAcceso" ? (sortOrder === "asc" ? "ascending" : "descending") : "none"}
-                >
-                  <button
-                    type="button"
-                    onClick={() => handleSort("ultimoAcceso")}
-                    className="flex items-center font-semibold text-foreground hover:text-brand-blue transition-colors cursor-pointer select-none"
-                    aria-label="Ordenar por último acceso"
-                  >
-                    Último Acceso
-                    <SortIcon active={sortCol === "ultimoAcceso"} order={sortOrder} />
-                  </button>
-                </TableHead>
-
-                {/* Acciones */}
-                {puedeAdministrar && <TableHead className="w-24 text-right pr-4">Acciones</TableHead>}
-              </TableRow>
-            </TableHeader>
-
-            <TableBody>
-              {/* Filas de usuarios */}
-              {items.map((u) => {
-                  const esRoot = u.rol.nombre === "root";
-                  return (
-                    <TableRow key={u.id} className="hover:bg-muted/40 transition-colors">
-                      {/* Nombre y usuario */}
-                      <TableCell>
-                        <div className="flex flex-col">
-                          <span className="font-medium text-foreground">{u.nombreCompleto}</span>
-                          <span className="text-xs text-muted-foreground">@{u.username}</span>
-                        </div>
-                      </TableCell>
-
-                      {/* Correo */}
-                      <TableCell className="hidden md:table-cell text-muted-foreground">
-                        {u.email ?? <span className="text-muted-foreground/60">—</span>}
-                      </TableCell>
-
-                      {/* Rol */}
-                      <TableCell>
-                        <span className="text-sm font-medium">{u.rol.etiqueta}</span>
-                      </TableCell>
-
-                      {/* Estado con Badge cromático */}
-                      <TableCell>
-                        <EstadoBadge estado={u.estado} />
-                      </TableCell>
-
-                      {/* Último Acceso */}
-                      <TableCell className="hidden lg:table-cell text-sm text-muted-foreground">
-                        {formatUltimoAcceso(u.ultimoAcceso)}
-                      </TableCell>
-
-                      {/* Acciones */}
-                      {puedeAdministrar && <TableCell className="text-right pr-4">
-                        <div className="flex justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => onEditar(u)}
-                            disabled={esRoot}
-                            aria-label={`Editar a ${u.nombreCompleto}`}
-                            className="size-8"
-                          >
-                            <Pencil className="size-4" aria-hidden />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => onDesactivar(u)}
-                            disabled={esRoot || !u.activo}
-                            aria-label={`Desactivar a ${u.nombreCompleto}`}
-                            className="size-8 text-destructive hover:text-destructive"
-                          >
-                            <UserX className="size-4" aria-hidden />
-                          </Button>
-                        </div>
-                      </TableCell>}
-                    </TableRow>
-                  );
-              })}
-            </TableBody>
-          </Table>
-        </div>
-      </AsyncState>
+      <div className="mt-4">
+        <AsyncState
+          loading={isPending}
+          error={isError ? error : undefined}
+          empty={items.length === 0}
+          loadingFallback={<TableSkeleton columns={SKELETON_COLUMNS} rows={Math.min(limit, 10)} />}
+          emptyFallback={hasFilters
+            ? <NoResultsState onClearFilters={clearFilters} bordered />
+            : <EmptyState title="Sin usuarios registrados" description="Aún no hay usuarios dados de alta en el sistema." />}
+          onRetry={() => refetch()}
+        >
+          <DataTable columns={columns} data={items} />
+        </AsyncState>
+      </div>
 
       {!isError && (
-        <PagedTableControls
-          page={page}
-          totalPages={totalPages}
-          total={total}
-          onPageChange={setPage}
-          pageSize={limit}
-          onPageSizeChange={(size) => { setLimit(size); setPage(1); }}
-          itemLabel="usuarios"
-          busy={isPending}
-        />
+        <div className="mt-4">
+          <PagedTableControls
+            page={page}
+            totalPages={totalPages}
+            total={total}
+            onPageChange={setPage}
+            pageSize={limit}
+            onPageSizeChange={(size) => { setLimit(size); setPage(1); }}
+            itemLabel="usuarios"
+            busy={isPending}
+          />
+        </div>
       )}
-    </div>
+    </section>
   );
 }

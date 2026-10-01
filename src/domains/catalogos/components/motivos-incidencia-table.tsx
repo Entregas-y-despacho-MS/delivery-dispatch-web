@@ -77,18 +77,18 @@ export function MotivosIncidenciaTable({
     },
     {
       header: "Estado",
-      cell: (motivo) => (
-        <div className="flex items-center gap-3">
-          <Switch checked={motivo.active} disabled={busy} onCheckedChange={() => onToggle(motivo)} aria-label={`${motivo.active ? "Desactivar" : "Activar"} ${motivo.name}`} />
-          <StatusBadge active={motivo.active} />
-        </div>
-      ),
+      cell: (motivo) => <StatusBadge active={motivo.active} />,
       className: "w-[24%]",
     },
     {
-      header: "",
-      cell: (motivo) => <EditButton motivo={motivo} onEdit={onEdit} busy={busy} />,
-      className: "w-12 text-right",
+      header: "Acciones",
+      cell: (motivo) => (
+        <div className="flex items-center justify-end gap-2">
+          <EditButton motivo={motivo} onEdit={onEdit} busy={busy} />
+          <Switch checked={motivo.active} disabled={busy} onCheckedChange={() => onToggle(motivo)} aria-label={`${motivo.active ? "Desactivar" : "Activar"} ${motivo.name}`} />
+        </div>
+      ),
+      className: "w-[12%] text-right",
     },
   ];
 
@@ -96,7 +96,7 @@ export function MotivosIncidenciaTable({
     <ResponsiveList
       columns={columns} data={data} loading={loading} emptyMessage={emptyMessage}
       renderCard={(motivo) => (
-        <article className="rounded-lg border bg-card p-4 shadow-sm">
+        <article className="rounded-xl border border-border bg-card p-4 shadow-sm">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0 space-y-1">
               <h3 className="truncate font-semibold">{motivo.name}</h3>

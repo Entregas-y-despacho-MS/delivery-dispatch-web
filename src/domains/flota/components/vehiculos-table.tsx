@@ -12,7 +12,7 @@ import type { EstadoVehiculo, Vehiculo } from "../flota.types";
  */
 const ESTADO_BADGE: Record<string, { label: string; className: string }> = {
   active: { label: "Disponible", className: "bg-success/10 text-success" },
-  maintenance: { label: "Mantenimiento", className: "bg-amber-500/10 text-amber-600 dark:text-amber-400" },
+  maintenance: { label: "Mantenimiento", className: "bg-warning/10 text-warning" },
   out_of_service: { label: "Fuera de servicio", className: "bg-destructive/10 text-destructive" },
 };
 
@@ -91,7 +91,7 @@ export function VehiculosTable({
       emptyMessage={searchActive ? "No encontramos vehículos con ese criterio." : "Registra el primer vehículo para comenzar a gestionar la flota."}
       mobileSkeletonCount={4}
       renderCard={(vehiculo) => (
-        <article className="rounded-lg border bg-card p-4 shadow-sm">
+        <article className="rounded-xl border border-border bg-card p-4 shadow-sm">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0 space-y-1">
               <p className="font-mono text-sm font-semibold tracking-tight">{vehiculo.plate}</p>

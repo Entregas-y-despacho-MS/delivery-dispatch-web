@@ -2,11 +2,10 @@ import { useState } from "react";
 
 interface EditorDialogOptions {
   busy?: boolean;
-  confirmDiscardMessage?: string;
 }
 
-/** Apertura de creación y edición, con protección opcional de cambios sin guardar. */
-export function useEditorDialog<T>({ busy = false, confirmDiscardMessage }: EditorDialogOptions = {}) {
+/** Apertura y cierre de los formularios de creación y edición. */
+export function useEditorDialog<T>({ busy = false }: EditorDialogOptions = {}) {
   const [open, setOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<T>();
   const [dirty, setDirty] = useState(false);
@@ -31,7 +30,6 @@ export function useEditorDialog<T>({ busy = false, confirmDiscardMessage }: Edit
 
   const onOpenChange = (nextOpen: boolean) => {
     if (busy) return;
-    if (!nextOpen && dirty && confirmDiscardMessage && !window.confirm(confirmDiscardMessage)) return;
     if (nextOpen) setOpen(true);
     else finish();
   };

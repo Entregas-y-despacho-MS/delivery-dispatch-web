@@ -9,6 +9,7 @@ import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 import { parseApiError } from "@/shared/lib/api-error";
+import { useFormSubmitConfirmation } from "@/shared/hooks/use-form-submit-confirmation";
 import { tipoIncidenteVehiculoSchema, type TipoIncidenteVehiculoFormValues } from "../catalogos.schemas";
 import type { SeveridadIncidenteVehiculo, TipoIncidenteVehiculo } from "../catalogos.types";
 import { SEVERIDADES_INCIDENTE_VEHICULO } from "../tipos-incidente-vehiculo.constants";
@@ -42,8 +43,9 @@ export function TipoIncidenteVehiculoForm({
     });
 
   useEffect(() => onDirtyChange?.(isDirty), [isDirty, onDirtyChange]);
+  const confirmation = useFormSubmitConfirmation("tipo de falla", !!tipo);
 
-  const submit = handleSubmit(async (values) => {
+  const save = async (values: TipoIncidenteVehiculoFormValues) => {
     try {
       await onSubmit(values);
     } catch (error) {
@@ -56,9 +58,11 @@ export function TipoIncidenteVehiculoForm({
             : apiError.message,
       });
     }
-  });
+  };
+  const submit = handleSubmit((values) => confirmation.requestConfirmation(() => save(values)));
 
   return (
+    <>
     <form onSubmit={submit} className="space-y-5" noValidate>
       {errors.root?.message && (
         <Alert variant="destructive">
@@ -136,13 +140,15 @@ export function TipoIncidenteVehiculoForm({
         </p>
         {errors.disablesVehicle && <p id="falla-blocks-unit-error" className="text-sm text-destructive">{errors.disablesVehicle.message}</p>}
       </div>
-      <div className="flex flex-col-reverse gap-2 border-t pt-5 sm:flex-row sm:justify-end">
+      <div className="form-dialog-footer flex flex-col-reverse gap-2 border-t pt-5 sm:flex-row sm:justify-end">
         <Button type="button" variant="outline" onClick={onCancel} disabled={guardando}>Cancelar</Button>
-        <Button type="submit" disabled={guardando}>
+        <Button type="submit" variant={tipo ? "brandBlue" : "default"} disabled={guardando}>
           {guardando && <LoaderCircle className="size-4 animate-spin" aria-hidden />}
           {guardando ? "Guardando…" : tipo ? "Guardar cambios" : "Crear tipo de falla"}
         </Button>
       </div>
     </form>
+    {confirmation.confirmationDialog}
+    </>
   );
 }

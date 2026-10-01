@@ -14,10 +14,6 @@ export class ErrorBoundary extends Component<
     return { error };
   }
 
-  componentDidCatch(error: Error) {
-    console.error("[ErrorBoundary]", error);
-  }
-
   render() {
     if (this.state.error) {
       const isPage = this.props.scope === "page";

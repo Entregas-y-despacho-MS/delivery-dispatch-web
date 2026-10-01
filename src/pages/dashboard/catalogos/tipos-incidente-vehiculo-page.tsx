@@ -1,4 +1,4 @@
-import { CarFront, Plus } from "lucide-react";
+import { CarFront, Plus, Wrench } from "lucide-react";
 
 import {
   TipoIncidenteVehiculoForm,
@@ -7,10 +7,12 @@ import {
   useTiposIncidenteVehiculoScreen,
 } from "@/domains/catalogos";
 import { PageHeader } from "@/shared/components/common/page-header";
+import { FormDialogHeader } from "@/shared/components/common/form-dialog-header";
 import { PaginationControls } from "@/shared/components/common/pagination-controls";
+import { SearchField } from "@/shared/components/common/search-field";
 import { ErrorAlert } from "@/shared/components/feedback/error-alert";
 import { Button } from "@/shared/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/shared/components/ui/dialog";
+import { Dialog, DialogContent } from "@/shared/components/ui/dialog";
 
 export default function TiposIncidenteVehiculoPage() {
   const screen = useTiposIncidenteVehiculoScreen();
@@ -28,16 +30,11 @@ export default function TiposIncidenteVehiculoPage() {
 
       <section className="rounded-xl border bg-card p-4 shadow-sm sm:p-5"
         aria-label="Catálogo de fallas mecánicas">
-        <div className="flex flex-col gap-4 border-b pb-4 lg:flex-row lg:items-end lg:justify-between">
-          <div className="space-y-1">
-            <h2 className="font-semibold">Tipos de falla</h2>
-            <p className="text-sm text-muted-foreground">
-              {tipos.isLoading ? "Cargando tipos de falla…" : tipos.isError
-                ? "No se pudo consultar el catálogo"
-                : `${tipos.total} ${tipos.total === 1 ? "tipo encontrado" : "tipos encontrados"}`}
-            </p>
-          </div>
-          <TiposIncidenteVehiculoFilters search={screen.search} onSearchChange={screen.setSearch}
+        <div className="flex flex-col gap-4 border-b pb-4 lg:flex-row lg:items-center lg:justify-between">
+          <SearchField id="fallas-search" label="Buscar tipos de falla" value={screen.search}
+            onChange={screen.setSearch} maxLength={100} placeholder="Frenos o MEC-FRE-01"
+            className="sm:min-w-56 sm:max-w-sm" />
+          <TiposIncidenteVehiculoFilters
             severity={screen.severityFilter} onSeverityChange={screen.setSeverityFilter}
             blocking={screen.blockingFilter} onBlockingChange={screen.setBlockingFilter} />
         </div>
@@ -62,13 +59,10 @@ export default function TiposIncidenteVehiculoPage() {
       </section>
 
       <Dialog open={screen.dialogOpen} onOpenChange={screen.closeDialog}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>{screen.editingTipo ? "Editar tipo de falla" : "Nuevo tipo de falla"}</DialogTitle>
-            <DialogDescription>
-              Define la severidad y si esta falla impide asignar nuevos despachos al vehículo.
-            </DialogDescription>
-          </DialogHeader>
+        <DialogContent data-form-dialog className="form-dialog-content max-h-[90dvh] overflow-y-auto bg-card sm:max-w-2xl motion-reduce:animate-none">
+          <FormDialogHeader icon={Wrench}
+            title={screen.editingTipo ? "Editar tipo de falla" : "Nuevo tipo de falla"}
+            description="Define la severidad y si esta falla impide asignar nuevos despachos al vehículo." />
           <TipoIncidenteVehiculoForm key={screen.editingTipo?.id ?? "new"} tipo={screen.editingTipo}
             onSubmit={screen.saveTipo} onCancel={() => screen.closeDialog(false)}
             onDirtyChange={screen.setFormDirty} guardando={tipos.isSaving} />

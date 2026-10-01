@@ -1,11 +1,12 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Gauge, Hash, LoaderCircle, Package, Truck } from "lucide-react";
+import { CarFront, Gauge, Hash, LoaderCircle, Package, Truck } from "lucide-react";
 import { useForm } from "react-hook-form";
 
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { parseApiError } from "@/shared/lib/api-error";
+import { useFormSubmitConfirmation } from "@/shared/hooks/use-form-submit-confirmation";
 import { vehiculoSchema, type VehiculoFormValues } from "../flota.schemas";
 import type { Vehiculo } from "../flota.types";
 
@@ -40,8 +41,9 @@ export function VehiculoForm({
     mode: "onTouched",
     reValidateMode: "onChange",
   });
+  const confirmation = useFormSubmitConfirmation("vehículo", !!vehiculo);
 
-  const submit = handleSubmit(async (values) => {
+  const save = async (values: VehiculoFormValues) => {
     try {
       await onSubmit(values);
     } catch (error) {
@@ -53,9 +55,11 @@ export function VehiculoForm({
       }
       setError("root", { message: parsed.message });
     }
-  });
+  };
+  const submit = handleSubmit((values) => confirmation.requestConfirmation(() => save(values)));
 
   return (
+    <>
     <form onSubmit={submit} className="space-y-5" noValidate>
       {errors.root?.message && <p role="alert" className="text-sm text-destructive">{errors.root.message}</p>}
       <div className="grid gap-5 sm:grid-cols-2">
@@ -100,16 +104,19 @@ export function VehiculoForm({
 
       <div className="space-y-2">
         <Label htmlFor="vehiculo-model">Modelo</Label>
-        <Input
-          id="vehiculo-model"
-          className="h-11"
-          placeholder="Toyota Hilux 2022"
-          maxLength={100}
-          autoComplete="off"
-          aria-invalid={!!errors.model}
-          aria-describedby={errors.model ? "vehiculo-model-error" : undefined}
-          {...register("model")}
-        />
+        <div className="relative">
+          <CarFront className={FIELD_ICON} aria-hidden />
+          <Input
+            id="vehiculo-model"
+            className="h-11 pl-10"
+            placeholder="Toyota Hilux 2022"
+            maxLength={100}
+            autoComplete="off"
+            aria-invalid={!!errors.model}
+            aria-describedby={errors.model ? "vehiculo-model-error" : undefined}
+            {...register("model")}
+          />
+        </div>
         {errors.model && <p id="vehiculo-model-error" className="text-sm text-destructive">{errors.model.message}</p>}
       </div>
 
@@ -165,15 +172,17 @@ export function VehiculoForm({
         </div>
       </div>
 
-      <div className="flex flex-col-reverse gap-2 border-t pt-5 sm:flex-row sm:justify-end">
+      <div className="form-dialog-footer flex flex-col-reverse gap-2 border-t pt-5 sm:flex-row sm:justify-end">
         <Button type="button" variant="outline" onClick={onCancel} disabled={guardando}>
           Cancelar
         </Button>
-        <Button type="submit" disabled={guardando}>
+        <Button type="submit" variant={vehiculo ? "brandBlue" : "default"} disabled={guardando}>
           {guardando && <LoaderCircle className="size-4 animate-spin" aria-hidden />}
           {guardando ? "Guardando…" : vehiculo ? "Guardar cambios" : "Registrar vehículo"}
         </Button>
       </div>
     </form>
+    {confirmation.confirmationDialog}
+    </>
   );
 }

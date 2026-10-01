@@ -9,6 +9,7 @@ import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { Switch } from "@/shared/components/ui/switch";
 import { parseApiError } from "@/shared/lib/api-error";
+import { useFormSubmitConfirmation } from "@/shared/hooks/use-form-submit-confirmation";
 import { motivoIncidenciaSchema, type MotivoIncidenciaFormValues } from "../catalogos.schemas";
 import type { MotivoIncidencia } from "../catalogos.types";
 
@@ -47,8 +48,9 @@ export function MotivoIncidenciaForm({
   });
 
   useEffect(() => onDirtyChange?.(isDirty), [isDirty, onDirtyChange]);
+  const confirmation = useFormSubmitConfirmation("motivo de incidencia", !!motivo);
 
-  const submit = handleSubmit(async (values) => {
+  const save = async (values: MotivoIncidenciaFormValues) => {
     try {
       await onSubmit(values);
     } catch (error) {
@@ -65,9 +67,11 @@ export function MotivoIncidenciaForm({
           : apiError.message,
       });
     }
-  });
+  };
+  const submit = handleSubmit((values) => confirmation.requestConfirmation(() => save(values)));
 
   return (
+    <>
     <form onSubmit={submit} className="space-y-5" noValidate>
       {errors.root?.message && (
         <Alert variant="destructive">
@@ -175,13 +179,15 @@ export function MotivoIncidenciaForm({
         )}
       </div>
 
-      <div className="flex flex-col-reverse gap-2 border-t pt-5 sm:flex-row sm:justify-end">
+      <div className="form-dialog-footer flex flex-col-reverse gap-2 border-t pt-5 sm:flex-row sm:justify-end">
         <Button type="button" variant="outline" onClick={onCancel} disabled={guardando}>Cancelar</Button>
-        <Button type="submit" disabled={guardando}>
+        <Button type="submit" variant={motivo ? "brandBlue" : "default"} disabled={guardando}>
           {guardando && <LoaderCircle className="size-4 animate-spin" aria-hidden />}
           {guardando ? "Guardando…" : motivo ? "Guardar cambios" : "Crear motivo"}
         </Button>
       </div>
     </form>
+    {confirmation.confirmationDialog}
+    </>
   );
 }

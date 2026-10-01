@@ -93,12 +93,12 @@ export function ErrorAlert({
   const getIcon = () => {
     switch (classification.kind) {
       case "network":
-        return <WifiOff className="size-5 text-amber-600 dark:text-amber-400 shrink-0" aria-hidden />;
+        return <WifiOff className="size-4.5 shrink-0" aria-hidden />;
       case "server":
-        return <ServerCrash className="size-5 text-destructive shrink-0" aria-hidden />;
+        return <ServerCrash className="size-4.5 shrink-0" aria-hidden />;
       case "generic":
       default:
-        return <TriangleAlert className="size-5 text-destructive shrink-0" aria-hidden />;
+        return <TriangleAlert className="size-4.5 shrink-0" aria-hidden />;
     }
   };
 
@@ -117,24 +117,31 @@ export function ErrorAlert({
     <Alert
       variant={getVariant()}
       className={cn(
-        "flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 shadow-xs border transition-all animate-in fade-in-50",
-        classification.kind === "network" && "border-amber-500/30 bg-amber-500/5",
+        "flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl shadow-xs border transition-all animate-in fade-in-50",
         className
       )}
     >
-      <div className="flex items-start gap-3 min-w-0">
-        <div className="mt-0.5">{getIcon()}</div>
-        <div className="space-y-1 min-w-0">
+      <div className="flex items-start sm:items-center gap-3.5 min-w-0">
+        <div
+          className={cn(
+            "flex size-9 shrink-0 items-center justify-center rounded-full shadow-xs",
+            classification.kind === "network"
+              ? "bg-amber-100 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400"
+              : "bg-red-100 text-red-600 dark:bg-red-950/60 dark:text-red-400"
+          )}
+        >
+          {getIcon()}
+        </div>
+        <div className="space-y-0.5 min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <AlertTitle className="text-base font-semibold leading-none">{finalTitle}</AlertTitle>
-            <Badge variant="outline" className="text-[11px] px-1.5 py-0 font-mono tracking-tight">
+            <AlertTitle className="text-sm font-semibold leading-snug">{finalTitle}</AlertTitle>
+            <Badge variant="outline" className="text-[11px] px-1.5 py-0 font-mono tracking-tight rounded-md bg-background/60 border-current/20">
               {classification.badgeLabel}
             </Badge>
           </div>
-          <AlertDescription className="text-sm opacity-90 leading-relaxed">
+          <AlertDescription className="text-xs sm:text-sm opacity-90 leading-relaxed mt-0.5">
             {finalDescription}
           </AlertDescription>
-
         </div>
       </div>
 
@@ -146,7 +153,7 @@ export function ErrorAlert({
             size="sm"
             onClick={handleManualRetry}
             disabled={activeLoading}
-            className="gap-2 cursor-pointer shadow-xs font-medium hover:bg-accent"
+            className="gap-2 cursor-pointer shadow-xs font-medium rounded-lg bg-background/80 hover:bg-background transition-all"
           >
             <RefreshCw className={cn("size-3.5", activeLoading && "animate-spin")} aria-hidden />
             {activeLoading ? "Reintentando..." : "Reintentar ahora"}

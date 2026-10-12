@@ -43,6 +43,11 @@ export interface PedidoPendiente {
   volumeM3: number;
   /** Otro coordinador lo está planificando: no se puede seleccionar. */
   locked: boolean;
+  /**
+   * Solo lectura: se muestra pero no se puede seleccionar ni reservar (hoy, los `address_review`:
+   * la dirección debe validarse antes de planificarlo). Si se intenta reservar, el back responde 409.
+   */
+  readOnly: boolean;
   reservation: ReservaPedido | null;
 }
 

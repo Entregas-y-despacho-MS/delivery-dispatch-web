@@ -10,7 +10,7 @@ import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { cn } from "@/shared/lib/utils";
 import { GRUPOS_PARAMETROS, type CampoParametro } from "../configuracion.grupos";
-import { crearParametrosSchema, type ParametrosFormValues } from "../configuracion.schemas";
+import { CLAVES_PARAMETROS_OPERATIVOS, crearParametrosSchema, type ParametrosFormValues } from "../configuracion.schemas";
 import type { ClaveParametroOperativo, EstadoValorParametro } from "../configuracion.types";
 import type { ErrorGuardado } from "../hooks/use-configuracion";
 
@@ -80,6 +80,8 @@ export function ParametrosForm({
   const renderCampo = (campo: CampoParametro) => {
     const id = `parametro-${campo.clave}`;
     const error = errors[campo.clave]?.message;
+    // Las reglas entre campos (ventanas, plazos, cadenas de horas) marcan el error en OTRO campo: al
+    // cambiar el corte de rutas, el error sale bajo el fin de la revisión. Por eso `deps` revalida todos.
     return (
       <div key={campo.clave} className="space-y-2">
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -96,7 +98,7 @@ export function ParametrosForm({
             aria-invalid={!!error}
             aria-describedby={error ? `${id}-error` : `${id}-ayuda`}
             className={cn("h-11", campo.unidad && "pr-20")}
-            {...register(campo.clave)}
+            {...register(campo.clave, { deps: CLAVES_PARAMETROS_OPERATIVOS })}
           />
           {campo.unidad && (
             <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">

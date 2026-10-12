@@ -1,12 +1,15 @@
 import {
   createColumnHelper,
+  rowSelectionFeature,
   rowSortingFeature,
   tableFeatures,
   useTable,
+  type RowSelectionState,
   type SortingState,
 } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 
+import { Checkbox } from "@/shared/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -23,11 +26,36 @@ import { PedidoBadges, UrgenciaBadge } from "./pedido-badges";
 
 // TanStack Table v9: las features se declaran una vez, fuera del componente.
 // columnMeta tipa `meta` de cada columna (las numéricas se alinean a la derecha).
-const features = tableFeatures({ rowSortingFeature, columnMeta: {} as { numerica?: boolean } });
+const features = tableFeatures({
+  rowSortingFeature,
+  rowSelectionFeature,
+  columnMeta: {} as { numerica?: boolean },
+});
 const columna = createColumnHelper<typeof features, PedidoPendiente>();
 
 /** El id de cada columna es el `sortBy` que entiende el back; las que no ordena llevan enableSorting: false. */
 const columnas = columna.columns([
+  // Selección para armar la ruta. Los pedidos que planifica otro coordinador no se pueden marcar.
+  columna.display({
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        aria-label="Seleccionar los pedidos disponibles de esta página"
+        checked={table.getIsAllPageRowsSelected() ? true : table.getIsSomePageRowsSelected() ? "indeterminate" : false}
+        onCheckedChange={(valor) => table.toggleAllPageRowsSelected(valor === true)}
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        aria-label={row.getCanSelect()
+          ? `Seleccionar el pedido ${row.original.orderNumber}`
+          : `El pedido ${row.original.orderNumber} lo está planificando ${row.original.reservation?.reservedByName ?? "otro coordinador"}`}
+        checked={row.getIsSelected()}
+        disabled={!row.getCanSelect()}
+        onCheckedChange={(valor) => row.toggleSelected(valor === true)}
+      />
+    ),
+  }),
   columna.accessor("orderNumber", {
     id: "orderNumber",
     header: "N° de orden",
@@ -102,20 +130,26 @@ export interface BandejaPedidosTableProps {
   data: PedidoPendiente[];
   orden: OrdenActual | null;
   onToggleOrden: (columna: OrdenBandeja) => void;
+  /** Filas marcadas, por id de pedido. */
+  seleccion: RowSelectionState;
+  onSeleccionChange: (seleccion: RowSelectionState) => void;
 }
 
 /** Tabla de la bandeja con TanStack Table v9. El orden lo resuelve el servidor (manualSorting). */
-export function BandejaPedidosTable({ data, orden, onToggleOrden }: BandejaPedidosTableProps) {
+export function BandejaPedidosTable({ data, orden, onToggleOrden, seleccion, onSeleccionChange }: BandejaPedidosTableProps) {
   const sorting: SortingState = orden ? [{ id: orden.sortBy, desc: orden.order === "desc" }] : [];
 
   const table = useTable({
     features,
     columns: columnas,
     data,
-    state: { sorting },
+    state: { sorting, rowSelection: seleccion },
     // El clic en el encabezado lo maneja el hook (toggleOrden), que vuelve a pedir la página al servidor.
     onSortingChange: () => {},
     manualSorting: true,
+    // `locked`: otro coordinador lo está planificando y no puede entrar en una segunda ruta.
+    enableRowSelection: (row) => !row.original.locked,
+    onRowSelectionChange: (updater) => onSeleccionChange(typeof updater === "function" ? updater(seleccion) : updater),
     getRowId: (pedido) => String(pedido.id),
   });
 
@@ -153,7 +187,12 @@ export function BandejaPedidosTable({ data, orden, onToggleOrden }: BandejaPedid
         </TableHeader>
         <TableBody>
           {table.getRowModel().rows.map((row) => (
-            <TableRow key={row.id} className="align-top transition-colors hover:bg-muted/40">
+            <TableRow
+              key={row.id}
+              data-state={row.getIsSelected() ? "selected" : undefined}
+              aria-disabled={!row.getCanSelect() || undefined}
+              className={cn("align-top transition-colors hover:bg-muted/40", !row.getCanSelect() && "bg-muted/30 text-muted-foreground")}
+            >
               {row.getAllCells().map((cell) => (
                 <TableCell
                   key={cell.id}

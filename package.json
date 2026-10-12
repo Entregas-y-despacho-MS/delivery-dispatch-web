@@ -15,7 +15,8 @@
     "test:loading": "node --test scripts/loading-states.test.mjs",
     "test:configuration": "node --test scripts/app-configuration.test.mjs",
     "test:catalog-patterns": "node --test scripts/catalog-patterns.test.mjs",
-    "test:architecture": "node --test scripts/architecture.test.mjs"
+    "test:architecture": "node --test scripts/architecture.test.mjs",
+    "test:bandeja-pedidos": "node --test scripts/bandeja-pedidos.test.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

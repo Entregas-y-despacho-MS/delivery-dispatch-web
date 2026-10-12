@@ -32,6 +32,8 @@ export const PORTAL_ROUTES = {
   usuarios: { path: "usuarios", roles: USER_READERS },
   auditoria: { path: "auditoria", roles: COORDINATOR },
   configuracion: { path: "configuracion", roles: ADMIN },
+  // El back solo deja guardar parámetros al coordinador (PUT /settings): página propia, aparte de Configuración.
+  parametros: { path: "configuracion/parametros", roles: COORDINATOR },
   // PORTAL_ROUTE_ANCHOR — no borres esta línea
 } as const satisfies Record<string, PortalRoute>;
 

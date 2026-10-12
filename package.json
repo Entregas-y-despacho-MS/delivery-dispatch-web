@@ -16,11 +16,13 @@
     "test:configuration": "node --test scripts/app-configuration.test.mjs",
     "test:catalog-patterns": "node --test scripts/catalog-patterns.test.mjs",
     "test:architecture": "node --test scripts/architecture.test.mjs",
+    "test:bandeja-pedidos": "node --test scripts/bandeja-pedidos.test.mjs",
     "test:parametros-operativos": "node --test scripts/parametros-operativos.test.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
     "@tanstack/react-query": "^5.103.1",
+    "@tanstack/react-table": "^9.2.8",
     "axios": "^1.20.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useCrud } from "@/shared/hooks/use-crud";
 import { parseApiError } from "@/shared/lib/api-error";
 import { planificarGuardado } from "../configuracion.guardado";
+import { validarParametro } from "../configuracion.reglas";
 import { CLAVES_PARAMETROS_OPERATIVOS } from "../configuracion.schemas";
 import type {
   ClaveParametroOperativo,
@@ -15,8 +16,10 @@ import type {
 import { parametrosService, type ActualizarParametroPayload } from "../services/configuracion.service";
 
 /** El back marca en la descripción los valores de demostración o sin definir (plan, 6.4). */
-function estadoDelValor(parametro: ParametroSistema | undefined): EstadoValorParametro {
-  if (!parametro || parametro.value === "" || /^not configured/i.test(parametro.description ?? "")) return "sin-definir";
+function estadoDelValor(clave: ClaveParametroOperativo, parametro: ParametroSistema | undefined): EstadoValorParametro {
+  if (!parametro || /^not configured/i.test(parametro.description ?? "")) return "sin-definir";
+  // Vacío solo es "sin definir" si la regla no lo admite: en feriados, vacío significa "sin feriados".
+  if (parametro.value === "" && validarParametro(clave, "") !== null) return "sin-definir";
   if (/\b(proposed|example)\b/i.test(parametro.description ?? "")) return "propuesto";
   return "definido";
 }
@@ -58,7 +61,7 @@ export function useParametrosOperativos() {
 
   const estados = useMemo(
     () => Object.fromEntries(
-      CLAVES_PARAMETROS_OPERATIVOS.map((clave) => [clave, estadoDelValor(porClave.get(clave))]),
+      CLAVES_PARAMETROS_OPERATIVOS.map((clave) => [clave, estadoDelValor(clave, porClave.get(clave))]),
     ) as Record<ClaveParametroOperativo, EstadoValorParametro>,
     [porClave],
   );

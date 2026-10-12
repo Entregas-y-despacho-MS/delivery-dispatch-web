@@ -21,6 +21,9 @@ export interface OrdenActual {
   order: "asc" | "desc";
 }
 
+/** Pedidos marcados, por id (mismo formato que la selección de TanStack Table). */
+export type SeleccionPedidos = Record<string, true>;
+
 /**
  * Estado de la bandeja central (ST-48.1): búsqueda con debounce de 300 ms,
  * filtros por zona y turno, orden en el servidor y paginación.
@@ -42,6 +45,13 @@ export function useBandejaPedidos() {
     sortBy: orden?.sortBy,
     order: orden?.order,
   }), [page, debouncedSearch, zonaFilter, turnoFilter, orden]);
+
+  // La selección pertenece a la consulta que la originó: si cambia la búsqueda, un filtro, el orden
+  // o la página, se descarta sola. Así el contador nunca cuenta pedidos que ya no están a la vista.
+  const claveConsulta = JSON.stringify(params);
+  const [seleccionGuardada, setSeleccionGuardada] = useState<{ clave: string; ids: SeleccionPedidos }>({ clave: claveConsulta, ids: {} });
+  const seleccion = seleccionGuardada.clave === claveConsulta ? seleccionGuardada.ids : {};
+  const setSeleccion = (ids: SeleccionPedidos) => setSeleccionGuardada({ clave: claveConsulta, ids });
 
   // "live": las reservas de otros coordinadores cambian seguido, así que se refresca al volver a la pestaña.
   const pedidos = useCrud<PedidoPendiente, never, never, PedidosPendientesParams>(
@@ -69,6 +79,8 @@ export function useBandejaPedidos() {
     setTurnoFilter: (value: TurnoFilter) => list.setFilter("turno", value),
     orden,
     toggleOrden,
+    seleccion,
+    setSeleccion,
     page,
     setPage,
     totalPages: Math.max(pedidos.pages ?? 0, 1),

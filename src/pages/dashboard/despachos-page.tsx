@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { ClipboardList, Inbox } from "lucide-react";
 
 import { useZonas } from "@/domains/catalogos";
@@ -15,8 +15,7 @@ export default function DespachosPage() {
   const { pedidos } = bandeja;
   const zonas = useZonas(ZONAS_PARAMS);
   const zonasOpciones = useMemo(() => zonas.data.map(({ id, name }) => ({ id, name })), [zonas.data]);
-  const [seleccion, setSeleccion] = useState<Record<string, true>>({});
-  const seleccionados = Object.keys(seleccion).length;
+  const seleccionados = Object.keys(bandeja.seleccion).length;
 
   return (
     <div className="space-y-6">
@@ -63,8 +62,8 @@ export default function DespachosPage() {
             onLimpiarFiltros={bandeja.clearFilters}
             orden={bandeja.orden}
             onToggleOrden={bandeja.toggleOrden}
-            seleccion={seleccion}
-            onSeleccionChange={setSeleccion}
+            seleccion={bandeja.seleccion}
+            onSeleccionChange={bandeja.setSeleccion}
           />
         </div>
 

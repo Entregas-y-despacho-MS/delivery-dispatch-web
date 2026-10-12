@@ -18,19 +18,8 @@ import {
 import { cn } from "@/shared/lib/utils";
 import type { OrdenActual } from "../hooks/use-bandeja-pedidos";
 import type { OrdenBandeja, PedidoPendiente } from "../despachos.types";
+import { formatearFranja, formatearKilos, formatearMetrosCubicos } from "../despachos.format";
 import { PedidoBadges, UrgenciaBadge } from "./pedido-badges";
-
-const ZONA_HORARIA = "America/La_Paz";
-const hora = new Intl.DateTimeFormat("es-BO", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: ZONA_HORARIA });
-const kilos = new Intl.NumberFormat("es-BO", { maximumFractionDigits: 2 });
-const metrosCubicos = new Intl.NumberFormat("es-BO", { maximumFractionDigits: 3 });
-
-/** Franja pactada en hora de Bolivia, p. ej. «08:00–10:00». */
-export function formatearFranja(inicio: string | null, fin: string | null): string {
-  if (!inicio) return "Sin franja";
-  const desde = hora.format(new Date(inicio));
-  return fin ? `${desde}–${hora.format(new Date(fin))}` : desde;
-}
 
 // TanStack Table v9: las features se declaran una vez, fuera del componente.
 // columnMeta tipa `meta` de cada columna (las numéricas se alinean a la derecha).
@@ -85,14 +74,14 @@ const columnas = columna.columns([
     id: "weight",
     header: "Peso (kg)",
     meta: { numerica: true },
-    cell: ({ getValue }) => kilos.format(getValue()),
+    cell: ({ getValue }) => formatearKilos(getValue()),
   }),
   columna.accessor("volumeM3", {
     id: "volume",
     header: "Volumen (m³)",
     enableSorting: false,
     meta: { numerica: true },
-    cell: ({ getValue }) => metrosCubicos.format(getValue()),
+    cell: ({ getValue }) => formatearMetrosCubicos(getValue()),
   }),
   columna.accessor("priority", {
     id: "priority",

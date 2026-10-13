@@ -2,7 +2,9 @@ import { RotateCw } from "lucide-react";
 
 import { SearchField } from "@/shared/components/common/search-field";
 import { Button } from "@/shared/components/ui/button";
+import { Label } from "@/shared/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
+import { Switch } from "@/shared/components/ui/switch";
 import { cn } from "@/shared/lib/utils";
 import type { PrioridadFilter, TurnoFilter, ZonaFilter } from "../hooks/use-bandeja-pedidos";
 
@@ -22,6 +24,9 @@ interface BandejaPedidosToolbarProps {
   onTurnoChange: (value: TurnoFilter) => void;
   prioridad: PrioridadFilter;
   onPrioridadChange: (value: PrioridadFilter) => void;
+  /** Interruptor «Solo urgentes»: urgentes ordenados por vencimiento de SLA. */
+  soloUrgentes: boolean;
+  onSoloUrgentesChange: (activo: boolean) => void;
   onRefrescar: () => void;
   refrescando?: boolean;
 }
@@ -37,6 +42,8 @@ export function BandejaPedidosToolbar({
   onTurnoChange,
   prioridad,
   onPrioridadChange,
+  soloUrgentes,
+  onSoloUrgentesChange,
   onRefrescar,
   refrescando = false,
 }: BandejaPedidosToolbarProps) {
@@ -82,6 +89,16 @@ export function BandejaPedidosToolbar({
           <SelectItem value="normal">Normales</SelectItem>
         </SelectContent>
       </Select>
+      <div className="flex h-10 items-center gap-2 rounded-md border border-input px-3">
+        <Switch
+          id="bandeja-solo-urgentes"
+          checked={soloUrgentes}
+          onCheckedChange={onSoloUrgentesChange}
+          aria-describedby="bandeja-solo-urgentes-ayuda"
+        />
+        <Label htmlFor="bandeja-solo-urgentes" className="cursor-pointer whitespace-nowrap">Solo urgentes</Label>
+        <span id="bandeja-solo-urgentes-ayuda" className="sr-only">Muestra solo los pedidos urgentes, primero los que vencen antes.</span>
+      </div>
       <Button type="button" variant="outline" className="h-10" onClick={onRefrescar} disabled={refrescando}>
         <RotateCw className={cn("size-4", refrescando && "animate-spin")} aria-hidden />
         {refrescando ? "Actualizando…" : "Actualizar"}

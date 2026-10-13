@@ -95,6 +95,13 @@ export function useBandejaPedidos() {
     setTurnoFilter: (value: TurnoFilter) => actualizar({ turno: value }),
     prioridadFilter,
     setPrioridadFilter: (value: PrioridadFilter) => actualizar({ prioridad: value }),
+    /** «Solo urgentes» (ST-58.1): equivale a la prioridad «Urgentes». */
+    soloUrgentes: prioridadFilter === "urgent",
+    /**
+     * Al activarlo filtra urgentes y quita el orden por columna: sin `sortBy`, el back los entrega
+     * ordenados por vencimiento de SLA (el que vence antes, primero). Al apagarlo vuelve a toda prioridad.
+     */
+    setSoloUrgentes: (activo: boolean) => actualizar(activo ? { prioridad: "urgent", orden: null } : { prioridad: "all" }),
     orden,
     toggleOrden,
     seleccion,

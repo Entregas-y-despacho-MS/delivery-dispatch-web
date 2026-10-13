@@ -48,6 +48,8 @@ export default function DespachosPage() {
             onTurnoChange={bandeja.setTurnoFilter}
             prioridad={bandeja.prioridadFilter}
             onPrioridadChange={bandeja.setPrioridadFilter}
+            soloUrgentes={bandeja.soloUrgentes}
+            onSoloUrgentesChange={bandeja.setSoloUrgentes}
             onRefrescar={bandeja.refrescar}
             refrescando={pedidos.isFetching}
           />

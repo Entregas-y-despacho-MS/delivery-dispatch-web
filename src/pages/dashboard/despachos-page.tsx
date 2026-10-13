@@ -46,6 +46,8 @@ export default function DespachosPage() {
             onZonaChange={bandeja.setZonaFilter}
             turno={bandeja.turnoFilter}
             onTurnoChange={bandeja.setTurnoFilter}
+            prioridad={bandeja.prioridadFilter}
+            onPrioridadChange={bandeja.setPrioridadFilter}
             onRefrescar={bandeja.refrescar}
             refrescando={pedidos.isFetching}
           />

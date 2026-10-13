@@ -4,7 +4,7 @@ import { SearchField } from "@/shared/components/common/search-field";
 import { Button } from "@/shared/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 import { cn } from "@/shared/lib/utils";
-import type { TurnoFilter, ZonaFilter } from "../hooks/use-bandeja-pedidos";
+import type { PrioridadFilter, TurnoFilter, ZonaFilter } from "../hooks/use-bandeja-pedidos";
 
 /** Opción de zona para el filtro. La página la arma con el catálogo de zonas. */
 export interface ZonaOpcion {
@@ -20,11 +20,13 @@ interface BandejaPedidosToolbarProps {
   onZonaChange: (value: ZonaFilter) => void;
   turno: TurnoFilter;
   onTurnoChange: (value: TurnoFilter) => void;
+  prioridad: PrioridadFilter;
+  onPrioridadChange: (value: PrioridadFilter) => void;
   onRefrescar: () => void;
   refrescando?: boolean;
 }
 
-/** Búsqueda (con debounce en el hook), filtros rápidos por zona y turno, y refresco manual. */
+/** Búsqueda (con debounce en el hook), filtros rápidos por zona, turno y prioridad, y refresco manual. */
 export function BandejaPedidosToolbar({
   search,
   onSearchChange,
@@ -33,6 +35,8 @@ export function BandejaPedidosToolbar({
   onZonaChange,
   turno,
   onTurnoChange,
+  prioridad,
+  onPrioridadChange,
   onRefrescar,
   refrescando = false,
 }: BandejaPedidosToolbarProps) {
@@ -66,6 +70,16 @@ export function BandejaPedidosToolbar({
           <SelectItem value="all">Todo el día</SelectItem>
           <SelectItem value="morning">Mañana</SelectItem>
           <SelectItem value="afternoon">Tarde</SelectItem>
+        </SelectContent>
+      </Select>
+      <Select value={prioridad} onValueChange={(value: PrioridadFilter) => onPrioridadChange(value)}>
+        <SelectTrigger className="h-10 w-full sm:w-44" aria-label="Filtrar por prioridad">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">Toda prioridad</SelectItem>
+          <SelectItem value="urgent">Urgentes</SelectItem>
+          <SelectItem value="normal">Normales</SelectItem>
         </SelectContent>
       </Select>
       <Button type="button" variant="outline" className="h-10" onClick={onRefrescar} disabled={refrescando}>

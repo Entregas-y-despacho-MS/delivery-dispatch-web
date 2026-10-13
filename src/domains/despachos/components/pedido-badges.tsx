@@ -36,7 +36,7 @@ export function SituacionBadge({ pedido }: { pedido: Pick<PedidoPendiente, "inbo
       );
     }
     return (
-      <Badge variant="outline" className="border-warning/20 bg-warning/10 text-warning">
+      <Badge variant="outline" className="h-auto whitespace-normal border-warning/20 bg-warning/10 text-left text-warning">
         <Lock aria-hidden /> En planificación por {pedido.reservation.reservedByName}
       </Badge>
     );

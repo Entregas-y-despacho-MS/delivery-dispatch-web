@@ -23,6 +23,7 @@ import type { OrdenActual } from "../hooks/use-bandeja-pedidos";
 import type { OrdenBandeja, PedidoPendiente } from "../despachos.types";
 import { formatearFranja, formatearKilos, formatearMetrosCubicos } from "../despachos.format";
 import { PedidoBadges, PrioridadBadge } from "./pedido-badges";
+import { VencimientoSla } from "./vencimiento-sla";
 
 // TanStack Table v9: las features se declaran una vez, fuera del componente.
 // columnMeta tipa `meta` de cada columna (las numéricas se alinean a la derecha).
@@ -60,7 +61,7 @@ const columnas = columna.columns([
     id: "orderNumber",
     header: "N° de orden",
     cell: ({ row }) => (
-      <div className="min-w-36 space-y-1">
+      <div className="min-w-36 max-w-52 space-y-1">
         <p className="font-medium tabular-nums">{row.original.orderNumber}</p>
         {row.original.trackingCode && (
           <p className="font-mono text-xs text-muted-foreground">{row.original.trackingCode}</p>
@@ -78,12 +79,12 @@ const columnas = columna.columns([
     id: "address",
     header: "Dirección",
     enableSorting: false,
-    cell: ({ getValue }) => <span className="line-clamp-2 min-w-48">{getValue()}</span>,
+    cell: ({ getValue }) => <span className="line-clamp-2 min-w-40 max-w-56">{getValue()}</span>,
   }),
   columna.accessor("zoneName", {
     id: "zone",
     header: "Zona",
-    cell: ({ getValue }) => getValue() ?? <span className="text-muted-foreground">Sin zona</span>,
+    cell: ({ getValue }) => <span className="block min-w-24">{getValue() ?? <span className="text-muted-foreground">Sin zona</span>}</span>,
   }),
   columna.accessor("windowStart", {
     id: "window",
@@ -114,7 +115,14 @@ const columnas = columna.columns([
   columna.accessor("priority", {
     id: "priority",
     header: "Prioridad",
-    cell: ({ getValue }) => <PrioridadBadge priority={getValue()} />,
+    // Debajo de la prioridad, el vencimiento del SLA: juntos dicen qué tan apurado está el pedido
+    // sin sumar otra columna a una tabla que ya es ancha.
+    cell: ({ row }) => (
+      <div className="flex flex-col items-start gap-1">
+        <PrioridadBadge priority={row.original.priority} />
+        <VencimientoSla slaDueAt={row.original.slaDueAt} />
+      </div>
+    ),
   }),
 ]);
 

@@ -8,6 +8,7 @@ import {
   type SortingState,
 } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
+import { createContext, useContext, useMemo } from "react";
 
 import { Checkbox } from "@/shared/components/ui/checkbox";
 import {
@@ -20,9 +21,10 @@ import {
 } from "@/shared/components/ui/table";
 import { cn } from "@/shared/lib/utils";
 import type { OrdenActual } from "../hooks/use-bandeja-pedidos";
-import type { OrdenBandeja, PedidoPendiente } from "../despachos.types";
+import type { OrdenBandeja, PedidoPendiente, PrioridadPedido } from "../despachos.types";
 import { formatearFranja, formatearKilos, formatearMetrosCubicos } from "../despachos.format";
-import { PedidoBadges, PrioridadBadge } from "./pedido-badges";
+import { PedidoBadges } from "./pedido-badges";
+import { PrioridadSelector, type PedidoConPrioridad } from "./prioridad-selector";
 import { VencimientoSla } from "./vencimiento-sla";
 
 // TanStack Table v9: las features se declaran una vez, fuera del componente.
@@ -33,6 +35,17 @@ const features = tableFeatures({
   columnMeta: {} as { numerica?: boolean },
 });
 const columna = createColumnHelper<typeof features, PedidoPendiente>();
+
+/** Las columnas se declaran fuera del componente: el cambio de prioridad les llega por contexto. */
+const CambioPrioridadContext = createContext<{
+  onCambiar?: (pedido: PedidoConPrioridad, prioridad: PrioridadPedido) => void;
+  cambiandoId?: number;
+}>({});
+
+function CeldaPrioridad({ pedido }: { pedido: PedidoPendiente }) {
+  const { onCambiar, cambiandoId } = useContext(CambioPrioridadContext);
+  return <PrioridadSelector pedido={pedido} onCambiar={onCambiar} guardando={cambiandoId === pedido.id} />;
+}
 
 /** El id de cada columna es el `sortBy` que entiende el back; las que no ordena llevan enableSorting: false. */
 const columnas = columna.columns([
@@ -119,7 +132,7 @@ const columnas = columna.columns([
     // sin sumar otra columna a una tabla que ya es ancha.
     cell: ({ row }) => (
       <div className="flex flex-col items-start gap-1">
-        <PrioridadBadge priority={row.original.priority} />
+        <CeldaPrioridad pedido={row.original} />
         <VencimientoSla slaDueAt={row.original.slaDueAt} />
       </div>
     ),
@@ -139,10 +152,26 @@ export interface BandejaPedidosTableProps {
   /** Filas marcadas, por id de pedido. */
   seleccion: RowSelectionState;
   onSeleccionChange: (seleccion: RowSelectionState) => void;
+  /** Cambio rápido de prioridad desde el badge (ST-58.1). Sin esta función el badge es de solo lectura. */
+  onCambiarPrioridad?: (pedido: PedidoConPrioridad, prioridad: PrioridadPedido) => void;
+  /** Pedido cuyo cambio de prioridad se está guardando. */
+  cambiandoPrioridadId?: number;
 }
 
 /** Tabla de la bandeja con TanStack Table v9. El orden lo resuelve el servidor (manualSorting). */
-export function BandejaPedidosTable({ data, orden, onToggleOrden, seleccion, onSeleccionChange }: BandejaPedidosTableProps) {
+export function BandejaPedidosTable({
+  data,
+  orden,
+  onToggleOrden,
+  seleccion,
+  onSeleccionChange,
+  onCambiarPrioridad,
+  cambiandoPrioridadId,
+}: BandejaPedidosTableProps) {
+  const cambioPrioridad = useMemo(
+    () => ({ onCambiar: onCambiarPrioridad, cambiandoId: cambiandoPrioridadId }),
+    [onCambiarPrioridad, cambiandoPrioridadId],
+  );
   const sorting: SortingState = orden ? [{ id: orden.sortBy, desc: orden.order === "desc" }] : [];
 
   const table = useTable({
@@ -160,57 +189,59 @@ export function BandejaPedidosTable({ data, orden, onToggleOrden, seleccion, onS
   });
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
-      <Table>
-        <TableHeader>
-          {table.getHeaderGroups().map((grupo) => (
-            <TableRow key={grupo.id} className="hover:bg-transparent">
-              {grupo.headers.map((header) => {
-                const numerica = header.column.columnDef.meta?.numerica;
-                const direccion = header.column.getIsSorted();
-                const titulo = <table.FlexRender header={header} />;
-                return (
-                  <TableHead
-                    key={header.id}
-                    aria-sort={direccion === "asc" ? "ascending" : direccion === "desc" ? "descending" : undefined}
-                    className={cn("font-semibold", numerica && "text-right")}
+    <CambioPrioridadContext.Provider value={cambioPrioridad}>
+      <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((grupo) => (
+              <TableRow key={grupo.id} className="hover:bg-transparent">
+                {grupo.headers.map((header) => {
+                  const numerica = header.column.columnDef.meta?.numerica;
+                  const direccion = header.column.getIsSorted();
+                  const titulo = <table.FlexRender header={header} />;
+                  return (
+                    <TableHead
+                      key={header.id}
+                      aria-sort={direccion === "asc" ? "ascending" : direccion === "desc" ? "descending" : undefined}
+                      className={cn("font-semibold", numerica && "text-right")}
+                    >
+                      {header.column.getCanSort() ? (
+                        <button
+                          type="button"
+                          onClick={() => onToggleOrden(header.column.id as OrdenBandeja)}
+                          className="-mx-2 inline-flex items-center gap-1.5 rounded-md px-2 py-1 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          {titulo}
+                          <IconoOrden direccion={direccion} />
+                        </button>
+                      ) : titulo}
+                    </TableHead>
+                  );
+                })}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows.map((row) => (
+              <TableRow
+                key={row.id}
+                data-state={row.getIsSelected() ? "selected" : undefined}
+                aria-disabled={!row.getCanSelect() || undefined}
+                className={cn("align-top transition-colors hover:bg-muted/40", !row.getCanSelect() && "bg-muted/30 text-muted-foreground")}
+              >
+                {row.getAllCells().map((cell) => (
+                  <TableCell
+                    key={cell.id}
+                    className={cn(cell.column.columnDef.meta?.numerica && "text-right tabular-nums")}
                   >
-                    {header.column.getCanSort() ? (
-                      <button
-                        type="button"
-                        onClick={() => onToggleOrden(header.column.id as OrdenBandeja)}
-                        className="-mx-2 inline-flex items-center gap-1.5 rounded-md px-2 py-1 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      >
-                        {titulo}
-                        <IconoOrden direccion={direccion} />
-                      </button>
-                    ) : titulo}
-                  </TableHead>
-                );
-              })}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows.map((row) => (
-            <TableRow
-              key={row.id}
-              data-state={row.getIsSelected() ? "selected" : undefined}
-              aria-disabled={!row.getCanSelect() || undefined}
-              className={cn("align-top transition-colors hover:bg-muted/40", !row.getCanSelect() && "bg-muted/30 text-muted-foreground")}
-            >
-              {row.getAllCells().map((cell) => (
-                <TableCell
-                  key={cell.id}
-                  className={cn(cell.column.columnDef.meta?.numerica && "text-right tabular-nums")}
-                >
-                  <table.FlexRender cell={cell} />
-                </TableCell>
-              ))}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+                    <table.FlexRender cell={cell} />
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </CambioPrioridadContext.Provider>
   );
 }

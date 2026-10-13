@@ -1,46 +1,45 @@
 import { useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
 import { useCrud } from "@/shared/hooks/use-crud";
-import { useListFilters } from "@/shared/hooks/use-list-filters";
+import { useDebounce } from "@/shared/hooks/use-debounce";
 import { pedidosPendientesService } from "../services/pedidos-pendientes.service";
-import type {
-  OrdenBandeja,
-  PedidoPendiente,
-  PedidosPendientesParams,
-  PrioridadPedido,
-  TurnoPedido,
-} from "../despachos.types";
+import type { OrdenBandeja, PedidoPendiente, PedidosPendientesParams } from "../despachos.types";
+import {
+  escribirFiltrosBandeja,
+  FILTROS_BANDEJA_INICIALES,
+  leerFiltrosBandeja,
+  type FiltrosBandeja,
+  type PrioridadFilter,
+  type TurnoFilter,
+  type ZonaFilter,
+} from "../despachos.url";
+
+export type { OrdenActual, PrioridadFilter, TurnoFilter, ZonaFilter } from "../despachos.url";
 
 const PAGE_SIZE = 10;
-
-/** "all" o el id de la zona como texto (los filtros de lista son strings). */
-export type ZonaFilter = "all" | `${number}`;
-export type TurnoFilter = "all" | TurnoPedido;
-export type PrioridadFilter = "all" | PrioridadPedido;
-
-export interface OrdenActual {
-  sortBy: OrdenBandeja;
-  order: "asc" | "desc";
-}
 
 /** Pedidos marcados, por id (mismo formato que la selección de TanStack Table). */
 export type SeleccionPedidos = Record<string, true>;
 
 /**
- * Estado de la bandeja central (ST-48.1): búsqueda con debounce de 300 ms,
+ * Estado de la bandeja central (ST-48.1 / ST-58.1): búsqueda con debounce de 300 ms,
  * filtros por zona, turno y prioridad, orden en el servidor y paginación.
+ * Todo vive en la URL: al recargar o compartir el link, la bandeja se abre igual.
  * Sin orden explícito, el back muestra urgentes primero y luego por vencimiento de SLA.
  */
 export function useBandejaPedidos() {
-  const list = useListFilters<{ zona: ZonaFilter; turno: TurnoFilter; prioridad: PrioridadFilter }>(
-    { zona: "all", turno: "all", prioridad: "all" },
-    300,
-  );
-  const { search, debouncedSearch, page, setPage, clearFilters, hasFilters } = list;
-  const zonaFilter = list.filters.zona;
-  const turnoFilter = list.filters.turno;
-  const prioridadFilter = list.filters.prioridad;
-  const [orden, setOrden] = useState<OrdenActual | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const filtros = useMemo(() => leerFiltrosBandeja(searchParams), [searchParams]);
+  const { search, zona: zonaFilter, turno: turnoFilter, prioridad: prioridadFilter, orden, page } = filtros;
+
+  const delayedSearch = useDebounce(search.trim(), 300);
+  const debouncedSearch = search.trim() ? delayedSearch : "";
+
+  /** Cambia filtros en la URL. Salvo que se pida otra página, vuelve a la 1. `replace` evita llenar el historial. */
+  const actualizar = (cambios: Partial<FiltrosBandeja>) => {
+    setSearchParams((actuales) => escribirFiltrosBandeja({ ...leerFiltrosBandeja(actuales), page: 1, ...cambios }, actuales), { replace: true });
+  };
 
   const params = useMemo<PedidosPendientesParams>(() => ({
     page,
@@ -69,32 +68,34 @@ export function useBandejaPedidos() {
 
   /** Primer clic: ascendente; segundo: descendente; tercero: vuelve al orden por defecto. */
   const toggleOrden = (sortBy: OrdenBandeja) => {
-    setOrden((actual) => {
-      if (actual?.sortBy !== sortBy) return { sortBy, order: "asc" };
-      return actual.order === "asc" ? { sortBy, order: "desc" } : null;
-    });
-    setPage(1);
+    const siguiente = orden?.sortBy !== sortBy
+      ? { sortBy, order: "asc" as const }
+      : orden.order === "asc" ? { sortBy, order: "desc" as const } : null;
+    actualizar({ orden: siguiente });
   };
+
+  const hasFilters = Boolean(search.trim()) || zonaFilter !== "all" || turnoFilter !== "all" || prioridadFilter !== "all";
 
   return {
     pedidos,
     search,
-    setSearch: list.setSearch,
+    setSearch: (value: string) => actualizar({ search: value }),
     zonaFilter,
-    setZonaFilter: (value: ZonaFilter) => list.setFilter("zona", value),
+    setZonaFilter: (value: ZonaFilter) => actualizar({ zona: value }),
     turnoFilter,
-    setTurnoFilter: (value: TurnoFilter) => list.setFilter("turno", value),
+    setTurnoFilter: (value: TurnoFilter) => actualizar({ turno: value }),
     prioridadFilter,
-    setPrioridadFilter: (value: PrioridadFilter) => list.setFilter("prioridad", value),
+    setPrioridadFilter: (value: PrioridadFilter) => actualizar({ prioridad: value }),
     orden,
     toggleOrden,
     seleccion,
     setSeleccion,
     page,
-    setPage,
+    setPage: (value: number) => actualizar({ page: value }),
     totalPages: Math.max(pedidos.pages ?? 0, 1),
     hasFilters,
-    clearFilters,
+    /** Limpia búsqueda y filtros; el orden elegido se mantiene. */
+    clearFilters: () => actualizar({ search: "", zona: FILTROS_BANDEJA_INICIALES.zona, turno: "all", prioridad: "all" }),
     refrescar: () => pedidos.refetch(),
   };
 }

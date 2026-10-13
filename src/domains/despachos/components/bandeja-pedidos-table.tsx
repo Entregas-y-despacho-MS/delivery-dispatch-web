@@ -22,7 +22,7 @@ import { cn } from "@/shared/lib/utils";
 import type { OrdenActual } from "../hooks/use-bandeja-pedidos";
 import type { OrdenBandeja, PedidoPendiente } from "../despachos.types";
 import { formatearFranja, formatearKilos, formatearMetrosCubicos } from "../despachos.format";
-import { PedidoBadges, UrgenciaBadge } from "./pedido-badges";
+import { PedidoBadges, PrioridadBadge } from "./pedido-badges";
 
 // TanStack Table v9: las features se declaran una vez, fuera del componente.
 // columnMeta tipa `meta` de cada columna (las numéricas se alinean a la derecha).
@@ -114,9 +114,7 @@ const columnas = columna.columns([
   columna.accessor("priority", {
     id: "priority",
     header: "Prioridad",
-    cell: ({ getValue }) => getValue() === "urgent"
-      ? <UrgenciaBadge priority="urgent" />
-      : <span className="text-muted-foreground">Normal</span>,
+    cell: ({ getValue }) => <PrioridadBadge priority={getValue()} />,
   }),
 ]);
 

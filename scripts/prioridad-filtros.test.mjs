@@ -18,6 +18,9 @@ const { describirVencimientoSla } = await server.ssrLoadModule("/src/domains/des
 const { PrioridadBadge } = await server.ssrLoadModule("/src/domains/despachos/components/pedido-badges.tsx");
 const { BandejaPedidosToolbar } = await server.ssrLoadModule("/src/domains/despachos/components/bandeja-pedidos-toolbar.tsx");
 const { BandejaPedidosTable } = await server.ssrLoadModule("/src/domains/despachos/components/bandeja-pedidos-table.tsx");
+const { PrioridadSelector } = await server.ssrLoadModule("/src/domains/despachos/components/prioridad-selector.tsx");
+const { opcionesCambioPrioridad, bandejaKeys } = await server.ssrLoadModule("/src/domains/despachos/despachos.prioridad.ts");
+const { QueryClient, MutationObserver } = await server.ssrLoadModule("@tanstack/react-query");
 
 const leer = (query) => leerFiltrosBandeja(new URLSearchParams(query));
 
@@ -60,6 +63,9 @@ test("el vencimiento del SLA se describe según cuánto falta", () => {
   assert.equal(describirVencimientoSla("2026-10-12T12:00:00Z", ahora).texto, "Vencido hace 2 h");
   assert.equal(describirVencimientoSla("2026-10-12T14:45:00Z", ahora).estado, "proximo");
   assert.equal(describirVencimientoSla("2026-10-12T16:00:00Z", ahora).estado, "proximo");
+  // Lejos del vencimiento se omiten los minutos para que el texto no ensanche la tabla.
+  assert.equal(describirVencimientoSla("2026-10-11T16:12:00Z", ahora).texto, "Vencido hace 21 h");
+  assert.equal(describirVencimientoSla("2026-10-12T15:10:00Z", ahora).texto, "Vence en 1 h 10 min");
   const lejos = describirVencimientoSla("2026-10-13T17:00:00Z", ahora);
   assert.equal(lejos.estado, "a-tiempo");
   assert.equal(lejos.texto, "Vence en 1 d 3 h");
@@ -96,4 +102,62 @@ test("la tabla muestra el SLA debajo de la prioridad de cada pedido", () => {
   assert.match(html, /Vencido hace 3 h/);
   assert.match(html, /Sin SLA/);
   assert.doesNotMatch(html, />Vence</, "el SLA no es una columna aparte");
+});
+
+// ── Cambio rápido de prioridad (ST-58.1 parte 2, contra PATCH /dispatches/:id/priority de ST-58.2) ──
+
+const pedidoBandeja = (id, priority, status = "pending") => ({ id, orderNumber: `SO-${id}`, priority, status });
+
+/** Bandeja en caché + la mutación real de la tabla, con el back y los toasts simulados. */
+function prepararCambio(cambiar) {
+  const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
+  const key = bandejaKeys.lists({ page: 1 });
+  queryClient.setQueryData(key, { items: [pedidoBandeja(1, "normal"), pedidoBandeja(2, "urgent")], total: 2 });
+  const avisos = { exito: [], error: [] };
+  const opciones = opcionesCambioPrioridad({
+    queryClient,
+    cambiar,
+    avisar: { exito: (m) => avisos.exito.push(m), error: (m) => avisos.error.push(m) },
+  });
+  const mutacion = new MutationObserver(queryClient, opciones);
+  const prioridadEnCache = (id) => queryClient.getQueryData(key).items.find((p) => p.id === id).priority;
+  return { mutacion, avisos, prioridadEnCache };
+}
+
+test("cambiar la prioridad con éxito actualiza la bandeja y avisa con un toast", async () => {
+  const llamadas = [];
+  const { mutacion, avisos, prioridadEnCache } = prepararCambio(async (id, priority) => {
+    llamadas.push({ id, priority });
+    return { id, priority, status: "pending" };
+  });
+  await mutacion.mutate({ pedido: { id: 1, orderNumber: "SO-1" }, priority: "urgent" });
+  assert.deepEqual(llamadas, [{ id: 1, priority: "urgent" }]);
+  assert.equal(prioridadEnCache(1), "urgent");
+  assert.equal(prioridadEnCache(2), "urgent", "los demás pedidos no cambian");
+  assert.deepEqual(avisos.exito, ["SO-1 ahora es urgente."]);
+  assert.deepEqual(avisos.error, []);
+});
+
+test("si el back rechaza el cambio (409) el badge vuelve a su prioridad y se explica por qué", async () => {
+  const rechazo = {
+    isAxiosError: true,
+    response: { status: 409, data: { error: "DISPATCH_PRIORITY_NOT_CHANGEABLE", message: "current status: assigned" } },
+  };
+  const { mutacion, avisos, prioridadEnCache } = prepararCambio(async () => { throw rechazo; });
+  await assert.rejects(mutacion.mutate({ pedido: { id: 1, orderNumber: "SO-1" }, priority: "urgent" }));
+  assert.equal(prioridadEnCache(1), "normal");
+  assert.equal(avisos.exito.length, 0);
+  assert.match(avisos.error[0], /SO-1: ya no está pendiente ni en planificación/);
+});
+
+test("el menú de prioridad solo se ofrece en los estados que el back acepta", () => {
+  const render = (props) => renderToStaticMarkup(createElement(PrioridadSelector, { onCambiar: () => {}, ...props }));
+  assert.match(render({ pedido: pedidoBandeja(1, "normal") }), /aria-label="Cambiar la prioridad de SO-1, ahora normal"/);
+  assert.match(render({ pedido: pedidoBandeja(1, "urgent", "in_planning") }), /ahora urgente/);
+  const fijo = render({ pedido: pedidoBandeja(5, "normal", "address_review") });
+  assert.doesNotMatch(fijo, /Cambiar la prioridad/);
+  assert.match(fijo, /solo se cambia en pedidos pendientes/);
+  assert.match(render({ pedido: pedidoBandeja(1, "normal"), guardando: true }), /disabled=""[\s\S]*animate-spin/);
+  // Sin función para cambiarla (vista de solo lectura) es un badge simple.
+  assert.doesNotMatch(renderToStaticMarkup(createElement(PrioridadSelector, { pedido: pedidoBandeja(1, "normal") })), /button/);
 });

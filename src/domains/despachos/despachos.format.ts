@@ -31,13 +31,17 @@ export interface VencimientoSla {
   fecha: string | null;
 }
 
-/** Duración legible: «45 min», «2 h 10 min», «1 d 3 h». */
+/**
+ * Duración legible y corta: «45 min», «1 h 10 min», «21 h», «1 d 3 h».
+ * Los minutos solo importan cerca del vencimiento (menos de 2 h); después se omiten
+ * para que el texto no ensanche la tabla.
+ */
 function formatearDuracion(minutos: number): string {
   if (minutos < 60) return `${minutos} min`;
   const horas = Math.floor(minutos / 60);
   if (horas < 24) {
     const resto = minutos % 60;
-    return resto ? `${horas} h ${resto} min` : `${horas} h`;
+    return resto && minutos < MINUTOS_SLA_PROXIMO ? `${horas} h ${resto} min` : `${horas} h`;
   }
   const dias = Math.floor(horas / 24);
   const restoHoras = horas % 24;

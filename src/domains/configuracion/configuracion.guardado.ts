@@ -1,3 +1,4 @@
+import { parseApiError } from "@/shared/lib/api-error";
 import { validarCruces, validarParametro } from "./configuracion.reglas";
 import type { ClaveParametroOperativo } from "./configuracion.types";
 
@@ -45,4 +46,54 @@ export function planificarGuardado(
   }
 
   return errores(estado) === 0 ? orden : null;
+}
+
+/** Error al guardar: la clave que el back rechazó y su mensaje, para mostrarlo bajo ese campo. */
+export interface ErrorGuardado {
+  clave?: ClaveParametroOperativo;
+  mensaje: string;
+}
+
+export type ResultadoGuardado = { ok: true; guardados: number } | { ok: false; error: ErrorGuardado };
+
+interface GuardarParametros {
+  actuales: Valores;
+  nuevos: Valores;
+  ventanaGeneral?: { inicio: string; fin: string };
+  /** Un PUT /settings/:key por clave. */
+  enviar: (clave: ClaveParametroOperativo, valor: string) => Promise<unknown>;
+}
+
+/** Mensaje para el coordinador cuando el back rechaza una clave. */
+function mensajeError(error: unknown): string {
+  const apiError = parseApiError(error);
+  if (apiError.status === 403) return "Solo el coordinador puede modificar los parámetros operativos.";
+  if (apiError.code === "INVALID_SETTING_VALUE") return `El servidor rechazó este valor: ${apiError.message}`;
+  return "No se pudo guardar. Revisa tu conexión e inténtalo de nuevo.";
+}
+
+/**
+ * Envío del formulario (ST-57.1): manda al back solo lo que cambió, una clave por PUT y en el orden
+ * de `planificarGuardado`. Si el back rechaza una clave se detiene ahí (lo anterior ya quedó guardado)
+ * y devuelve esa clave para marcar el campo.
+ */
+export async function guardarParametros({ actuales, nuevos, ventanaGeneral, enviar }: GuardarParametros): Promise<ResultadoGuardado> {
+  const cambios = planificarGuardado(actuales, nuevos, ventanaGeneral);
+  if (cambios === null) {
+    return { ok: false, error: { mensaje: "Revisa los campos marcados: hay valores que no cumplen las reglas." } };
+  }
+  for (const { clave, valor } of cambios) {
+    try {
+      await enviar(clave, valor);
+    } catch (error) {
+      return { ok: false, error: { clave, mensaje: mensajeError(error) } };
+    }
+  }
+  return { ok: true, guardados: cambios.length };
+}
+
+/** Texto del toast tras un guardado exitoso. */
+export function mensajeGuardado(guardados: number): string {
+  if (guardados === 0) return "No hay cambios para guardar.";
+  return guardados === 1 ? "Parámetro guardado." : `${guardados} parámetros guardados.`;
 }

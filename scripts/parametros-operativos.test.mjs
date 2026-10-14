@@ -14,7 +14,7 @@ const server = await createServer({
 after(async () => server.close());
 
 const { crearParametrosSchema, CLAVES_PARAMETROS_OPERATIVOS } = await server.ssrLoadModule("/src/domains/configuracion/configuracion.schemas.ts");
-const { planificarGuardado } = await server.ssrLoadModule("/src/domains/configuracion/configuracion.guardado.ts");
+const { planificarGuardado, guardarParametros, mensajeGuardado } = await server.ssrLoadModule("/src/domains/configuracion/configuracion.guardado.ts");
 const { validarCruces } = await server.ssrLoadModule("/src/domains/configuracion/configuracion.reglas.ts");
 const { ParametrosForm } = await server.ssrLoadModule("/src/domains/configuracion/components/parametros-form.tsx");
 
@@ -93,4 +93,52 @@ test("el formulario muestra los 7 grupos, los 25 campos y las marcas de propuest
   assert.match(html, /Propuesto/);
   assert.match(html, /Sin definir/);
   assert.match(html, /Guardar cambios/);
+});
+
+// ── Envío del formulario (guardado completo contra un back simulado) ──
+
+test("guardar el formulario envía cada cambio al back en orden seguro y confirma el éxito", async () => {
+  const nuevos = { ...actuales, morning_window_start: "14:00", morning_window_end: "16:00", max_wait_time_min: "10" };
+  const back = { ...actuales };
+  const enviados = [];
+  const resultado = await guardarParametros({
+    actuales, nuevos, ventanaGeneral,
+    // El back real valida la configuración completa en cada PUT: aquí igual.
+    enviar: async (clave, valor) => {
+      const siguiente = { ...back, [clave]: valor };
+      assert.deepEqual(validarCruces(siguiente, ventanaGeneral), [], `el back rechazaría ${clave}=${valor}`);
+      back[clave] = valor;
+      enviados.push(clave);
+    },
+  });
+  assert.deepEqual(resultado, { ok: true, guardados: 3 });
+  assert.deepEqual(enviados.sort(), ["max_wait_time_min", "morning_window_end", "morning_window_start"]);
+  assert.deepEqual(back, nuevos, "el back quedó con todos los valores del formulario");
+  assert.equal(mensajeGuardado(resultado.guardados), "3 parámetros guardados.");
+  assert.equal(mensajeGuardado(1), "Parámetro guardado.");
+});
+
+test("sin cambios el formulario no envía nada", async () => {
+  let llamadas = 0;
+  const resultado = await guardarParametros({ actuales, nuevos: { ...actuales }, ventanaGeneral, enviar: async () => { llamadas++; } });
+  assert.deepEqual(resultado, { ok: true, guardados: 0 });
+  assert.equal(llamadas, 0);
+  assert.equal(mensajeGuardado(0), "No hay cambios para guardar.");
+});
+
+test("si el back rechaza una clave el guardado se detiene y marca ese campo", async () => {
+  const nuevos = { ...actuales, max_wait_time_min: "10", max_delivery_attempts: "4" };
+  const enviados = [];
+  const resultado = await guardarParametros({
+    actuales, nuevos, ventanaGeneral,
+    enviar: async (clave) => {
+      enviados.push(clave);
+      if (enviados.length === 1) return;
+      throw { isAxiosError: true, response: { status: 400, data: { error: "INVALID_SETTING_VALUE", message: "out of range" } } };
+    },
+  });
+  assert.equal(resultado.ok, false);
+  assert.equal(enviados.length, 2, "no sigue enviando después del rechazo");
+  assert.equal(resultado.error.clave, enviados[1]);
+  assert.match(resultado.error.mensaje, /El servidor rechazó este valor/);
 });

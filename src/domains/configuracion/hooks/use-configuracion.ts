@@ -3,8 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { useCrud } from "@/shared/hooks/use-crud";
-import { parseApiError } from "@/shared/lib/api-error";
-import { planificarGuardado } from "../configuracion.guardado";
+import { guardarParametros, mensajeGuardado, type ErrorGuardado } from "../configuracion.guardado";
 import { validarParametro } from "../configuracion.reglas";
 import { CLAVES_PARAMETROS_OPERATIVOS } from "../configuracion.schemas";
 import type {
@@ -24,11 +23,7 @@ function estadoDelValor(clave: ClaveParametroOperativo, parametro: ParametroSist
   return "definido";
 }
 
-/** Error al guardar: la clave que el back rechazó y su mensaje, para mostrarlo bajo ese campo. */
-export interface ErrorGuardado {
-  clave?: ClaveParametroOperativo;
-  mensaje: string;
-}
+export type { ErrorGuardado } from "../configuracion.guardado";
 
 /**
  * Parámetros operativos del coordinador (ST-57.1): carga los valores actuales y guarda solo lo que
@@ -76,31 +71,17 @@ export function useParametrosOperativos() {
    * y devuelve el error para mostrarlo bajo ese campo. Devuelve null si todo salió bien.
    */
   const guardar = async (nuevos: ParametrosOperativos): Promise<ErrorGuardado | null> => {
-    const cambios = planificarGuardado(valores, nuevos, ventanaGeneral);
-    if (cambios === null) return { mensaje: "Revisa los campos marcados: hay valores que no cumplen las reglas." };
-    if (cambios.length === 0) {
-      toast.info("No hay cambios para guardar.");
-      return null;
-    }
-
     setGuardando(true);
     try {
-      for (const { clave, valor } of cambios) {
-        try {
-          await parametrosService.update(clave, { value: valor });
-        } catch (error) {
-          const apiError = parseApiError(error);
-          return {
-            clave,
-            mensaje: apiError.status === 403
-              ? "Solo el coordinador puede modificar los parámetros operativos."
-              : apiError.code === "INVALID_SETTING_VALUE"
-                ? `El servidor rechazó este valor: ${apiError.message}`
-                : "No se pudo guardar. Revisa tu conexión e inténtalo de nuevo.",
-          };
-        }
-      }
-      toast.success(cambios.length === 1 ? "Parámetro guardado." : `${cambios.length} parámetros guardados.`);
+      const resultado = await guardarParametros({
+        actuales: valores,
+        nuevos,
+        ventanaGeneral,
+        enviar: (clave, valor) => parametrosService.update(clave, { value: valor }),
+      });
+      if (!resultado.ok) return resultado.error;
+      if (resultado.guardados === 0) toast.info(mensajeGuardado(0));
+      else toast.success(mensajeGuardado(resultado.guardados));
       return null;
     } finally {
       // Aunque falle a la mitad, lo que sí se guardó debe verse al recargar.

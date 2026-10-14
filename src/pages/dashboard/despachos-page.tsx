@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { ClipboardList, Inbox } from "lucide-react";
 
 import { useZonas } from "@/domains/catalogos";
-import { BandejaPedidosToolbar, BandejaPedidosVista, useBandejaPedidos } from "@/domains/despachos";
+import { BandejaPedidosToolbar, BandejaPedidosVista, useBandejaPedidos, useCambiarPrioridad } from "@/domains/despachos";
 import { PageHeader } from "@/shared/components/common/page-header";
 import { PaginationControls } from "@/shared/components/common/pagination-controls";
 
@@ -12,6 +12,7 @@ const ZONAS_PARAMS = { page: 1, limit: 100 };
 /** Bandeja central de pedidos pendientes de planificación (ST-48.1, RF-A40). */
 export default function DespachosPage() {
   const bandeja = useBandejaPedidos();
+  const prioridad = useCambiarPrioridad();
   const { pedidos } = bandeja;
   const zonas = useZonas(ZONAS_PARAMS);
   const zonasOpciones = useMemo(() => zonas.data.map(({ id, name }) => ({ id, name })), [zonas.data]);
@@ -46,6 +47,10 @@ export default function DespachosPage() {
             onZonaChange={bandeja.setZonaFilter}
             turno={bandeja.turnoFilter}
             onTurnoChange={bandeja.setTurnoFilter}
+            prioridad={bandeja.prioridadFilter}
+            onPrioridadChange={bandeja.setPrioridadFilter}
+            soloUrgentes={bandeja.soloUrgentes}
+            onSoloUrgentesChange={bandeja.setSoloUrgentes}
             onRefrescar={bandeja.refrescar}
             refrescando={pedidos.isFetching}
           />
@@ -64,6 +69,8 @@ export default function DespachosPage() {
             onToggleOrden={bandeja.toggleOrden}
             seleccion={bandeja.seleccion}
             onSeleccionChange={bandeja.setSeleccion}
+            onCambiarPrioridad={prioridad.cambiarPrioridad}
+            cambiandoPrioridadId={prioridad.cambiandoId}
           />
         </div>
 

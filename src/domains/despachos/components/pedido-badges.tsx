@@ -1,14 +1,23 @@
-import { Lock, MapPinOff, Sparkles, UserCheck, Zap } from "lucide-react";
+import { Lock, MapPinOff, Minus, Sparkles, UserCheck, Zap } from "lucide-react";
 
 import { Badge } from "@/shared/components/ui/badge";
-import type { PedidoPendiente } from "../despachos.types";
+import type { PedidoPendiente, PrioridadPedido } from "../despachos.types";
 
-/** Urgencia del pedido. Los normales no llevan badge para no saturar la tabla. */
-export function UrgenciaBadge({ priority }: Pick<PedidoPendiente, "priority">) {
-  if (priority !== "urgent") return null;
+/**
+ * Prioridad del pedido (ST-58.1): rojo «Urgente», gris «Normal».
+ * Recibe solo la prioridad para poder reutilizarse en la bandeja y en el tablero Kanban.
+ */
+export function PrioridadBadge({ priority }: { priority: PrioridadPedido }) {
+  if (priority === "urgent") {
+    return (
+      <Badge variant="outline" className="border-destructive/20 bg-destructive/10 text-destructive">
+        <Zap aria-hidden /> Urgente
+      </Badge>
+    );
+  }
   return (
-    <Badge variant="outline" className="border-destructive/20 bg-destructive/10 text-destructive">
-      <Zap aria-hidden /> Urgente
+    <Badge variant="outline" className="border-border bg-muted text-muted-foreground">
+      <Minus aria-hidden /> Normal
     </Badge>
   );
 }
@@ -27,7 +36,7 @@ export function SituacionBadge({ pedido }: { pedido: Pick<PedidoPendiente, "inbo
       );
     }
     return (
-      <Badge variant="outline" className="border-warning/20 bg-warning/10 text-warning">
+      <Badge variant="outline" className="h-auto whitespace-normal border-warning/20 bg-warning/10 text-left text-warning">
         <Lock aria-hidden /> En planificación por {pedido.reservation.reservedByName}
       </Badge>
     );

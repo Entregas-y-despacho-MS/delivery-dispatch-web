@@ -29,6 +29,7 @@ const reservado = {
   reservation: { reservedById: 7, reservedByName: "Ana Rojas", expiresAt: "2026-10-12T15:00:00Z", reservedByMe: false },
 };
 const propuesto = { ...base, id: 3, orderNumber: "SO-PROPUESTO", status: "in_planning", inbox: "proposed" };
+const enRevision = { ...base, id: 4, orderNumber: "SO-REVISION", status: "address_review", readOnly: true };
 
 const renderTabla = (props = {}) => renderToStaticMarkup(createElement(BandejaPedidosTable, {
   data: [libre, reservado, propuesto],
@@ -67,6 +68,18 @@ test("seleccionar los disponibles ignora las filas bloqueadas", () => {
   const [filaLibre, filaReservada] = filas(html);
   assert.match(filaLibre, /data-state="checked"/);
   assert.doesNotMatch(filaReservada, /data-state="checked"/);
+});
+
+test("el pedido en revisión de dirección se muestra con su badge pero no se puede seleccionar", () => {
+  const html = renderTabla({ data: [libre, enRevision], seleccion: { 1: true } });
+  const [filaLibre, filaRevision] = filas(html);
+  assert.match(filaRevision, /Dirección en revisión/);
+  assert.match(filaRevision, /aria-disabled="true"/);
+  assert.match(filaRevision, /role="checkbox"[^>]*disabled=""/);
+  assert.match(filaRevision, /tiene la dirección en revisión/);
+  assert.doesNotMatch(filaLibre, /aria-disabled="true"/);
+  // Con el único pedido seleccionable marcado, "seleccionar todos" queda completo: ignora el de solo lectura.
+  assert.match(html.split("<tbody")[0], /data-state="checked"/);
 });
 
 test("los badges distinguen propuesto, urgente y normal", () => {

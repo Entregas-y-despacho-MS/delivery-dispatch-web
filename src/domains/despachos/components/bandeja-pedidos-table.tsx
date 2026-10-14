@@ -49,7 +49,9 @@ const columnas = columna.columns([
       <Checkbox
         aria-label={row.getCanSelect()
           ? `Seleccionar el pedido ${row.original.orderNumber}`
-          : `El pedido ${row.original.orderNumber} lo está planificando ${row.original.reservation?.reservedByName ?? "otro coordinador"}`}
+          : row.original.readOnly
+            ? `El pedido ${row.original.orderNumber} tiene la dirección en revisión y todavía no se puede planificar`
+            : `El pedido ${row.original.orderNumber} lo está planificando ${row.original.reservation?.reservedByName ?? "otro coordinador"}`}
         checked={row.getIsSelected()}
         disabled={!row.getCanSelect()}
         onCheckedChange={(valor) => row.toggleSelected(valor === true)}
@@ -148,7 +150,8 @@ export function BandejaPedidosTable({ data, orden, onToggleOrden, seleccion, onS
     onSortingChange: () => {},
     manualSorting: true,
     // `locked`: otro coordinador lo está planificando y no puede entrar en una segunda ruta.
-    enableRowSelection: (row) => !row.original.locked,
+    // `readOnly`: solo lectura (dirección en revisión); el back rechaza reservarlo con 409.
+    enableRowSelection: (row) => !row.original.locked && !row.original.readOnly,
     onRowSelectionChange: (updater) => onSeleccionChange(typeof updater === "function" ? updater(seleccion) : updater),
     getRowId: (pedido) => String(pedido.id),
   });

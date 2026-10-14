@@ -53,3 +53,18 @@ export { CambiarVehiculoDialog } from "./components/cambiar-vehiculo-dialog";
 export type { OpcionVehiculo } from "./components/cambiar-vehiculo-dialog";
 export { ReasignarLoteDialog } from "./components/reasignar-lote-dialog";
 export type { OpcionRevisor, Reasignacion } from "./components/reasignar-lote-dialog";
+export { BarraCapacidad } from "./components/capacidad-vehiculo";
+export {
+  calcularCapacidad,
+  formatearMedida,
+  PORCENTAJE_CAPACIDAD_ALTA,
+  puedeAprobarPorCapacidad,
+} from "./planificacion.capacidad";
+// MedidaCapacidad ya es el reporte del back (planificacion.types); aquí se expone como TipoMedida.
+export type {
+  Capacidad,
+  CargaVehiculo,
+  EstadoCapacidad,
+  MedidaCapacidad as TipoMedida,
+  ResultadoAprobacion,
+} from "./planificacion.capacidad";

@@ -17,6 +17,7 @@
     "test:catalog-patterns": "node --test scripts/catalog-patterns.test.mjs",
     "test:architecture": "node --test scripts/architecture.test.mjs",
     "test:bandeja-pedidos": "node --test scripts/bandeja-pedidos.test.mjs",
+    "test:parametros-operativos": "node --test scripts/parametros-operativos.test.mjs"
     "test:prioridad-filtros": "node --test scripts/prioridad-filtros.test.mjs"
   },
   "dependencies": {

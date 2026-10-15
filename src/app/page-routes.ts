@@ -22,6 +22,7 @@ const ReportesPage = lazy(() => import("@/pages/dashboard/reportes-page"));
 const UsuariosPage = lazy(() => import("@/pages/dashboard/usuarios-page"));
 const AuditoriaPage = lazy(() => import("@/pages/dashboard/auditoria-page"));
 const ConfiguracionPage = lazy(() => import("@/pages/dashboard/configuracion-page"));
+const ParametrosPage = lazy(() => import("@/pages/dashboard/parametros-page"));
 
 // ── Catálogos ──
 const ZonasPage = lazy(() => import("@/pages/dashboard/catalogos/zonas-page"));
@@ -51,5 +52,6 @@ export const PAGE_ROUTES = [
   ["usuarios", UsuariosPage],
   ["auditoria", AuditoriaPage],
   ["configuracion", ConfiguracionPage],
+  ["parametros", ParametrosPage],
   // ROUTE_ANCHOR — no borres esta línea
 ] as const satisfies readonly (readonly [PortalRouteKey, ComponentType])[];

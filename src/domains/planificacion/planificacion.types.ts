@@ -113,3 +113,20 @@ export interface ReasignarRevisorPayload {
   /** Motivo opcional; queda en la bitácora del lote. Máximo 500 caracteres. */
   reason?: string;
 }
+
+/** Cuerpo de POST /route-batches/:id/approve-final (ST-51.2, 2.ª aprobación). */
+export interface AprobarLoteFinalPayload {
+  /** Versión de planificación del lote que se mostró al coordinador. */
+  version: number;
+  /** Todos los despachos del lote con su versión; si cambió alguno, el back responde 409. */
+  dispatches: VersionDespacho[];
+}
+
+/** Respuesta de POST /route-batches/:id/approve-final: el lote queda `confirmed` y sus pedidos `assigned`. */
+export interface AprobacionFinal {
+  routeBatchId: number;
+  version: number;
+  driverId: number;
+  vehicleId: number;
+  dispatchIds: number[];
+}

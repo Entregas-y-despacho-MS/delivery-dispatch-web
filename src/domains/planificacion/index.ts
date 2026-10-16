@@ -3,6 +3,7 @@ export {
   asignarVehiculoLote,
   reasignarRevisorLote,
 } from "./services/lotes-provisionales.service";
+export { aprobarLoteFinal } from "./services/lotes-definitivos.service";
 export { mensajeErrorLote, requiereRecargarLote } from "./planificacion.errores";
 export type { AccionLote } from "./planificacion.errores";
 export { useAccionesLote } from "./hooks/use-acciones-lote";
@@ -33,7 +34,9 @@ export {
 } from "./planificacion.format";
 
 export type {
+  AprobacionFinal,
   AprobacionPromesas,
+  AprobarLoteFinalPayload,
   AprobarPromesasPayload,
   AsignacionVehiculoLote,
   AsignarVehiculoPayload,

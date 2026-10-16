@@ -60,7 +60,7 @@ export function LoteResumenCard({
             : <span>{titulo}</span>}
           <span className="flex items-center gap-1 text-xs font-normal text-muted-foreground">
             <Package className="size-3.5" aria-hidden />
-            {cantidadPedidos} {cantidadPedidos === 1 ? "pedido" : "pedidos"}
+            {`${cantidadPedidos} ${cantidadPedidos === 1 ? "pedido" : "pedidos"}`}
           </span>
         </CardTitle>
       </CardHeader>

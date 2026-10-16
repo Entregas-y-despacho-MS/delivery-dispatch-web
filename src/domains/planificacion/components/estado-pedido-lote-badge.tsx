@@ -25,7 +25,7 @@ export function EstadoPedidoLoteBadge({ reservadoPor }: EstadoPedidoLoteBadgePro
   if (reservadoPor) {
     return (
       <Badge variant="outline" className="h-auto whitespace-normal border-warning/20 bg-warning/10 text-left text-warning">
-        <Lock aria-hidden /> En planificación por {reservadoPor.nombre}
+        <Lock aria-hidden /> {`En planificación por ${reservadoPor.nombre}`}
       </Badge>
     );
   }

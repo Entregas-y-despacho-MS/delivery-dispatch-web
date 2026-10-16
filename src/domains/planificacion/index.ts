@@ -31,3 +31,10 @@ export type {
   RevisorLote,
   VersionDespacho,
 } from "./planificacion.types";
+export { AprobarPromesasDialog } from "./components/aprobar-promesas-dialog";
+export type { PedidoDelLote } from "./components/aprobar-promesas-dialog";
+export { SacarPedidoDialog } from "./components/sacar-pedido-dialog";
+export { CambiarVehiculoDialog } from "./components/cambiar-vehiculo-dialog";
+export type { OpcionVehiculo } from "./components/cambiar-vehiculo-dialog";
+export { ReasignarLoteDialog } from "./components/reasignar-lote-dialog";
+export type { OpcionRevisor, Reasignacion } from "./components/reasignar-lote-dialog";

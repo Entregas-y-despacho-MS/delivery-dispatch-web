@@ -61,6 +61,7 @@ export type { OpcionVehiculo } from "./components/cambiar-vehiculo-dialog";
 export { ReasignarLoteDialog } from "./components/reasignar-lote-dialog";
 export type { OpcionRevisor, Reasignacion } from "./components/reasignar-lote-dialog";
 export { BarraCapacidad } from "./components/capacidad-vehiculo";
+export { AprobarLoteDialog } from "./components/aprobar-lote-dialog";
 export {
   calcularCapacidad,
   formatearMedida,

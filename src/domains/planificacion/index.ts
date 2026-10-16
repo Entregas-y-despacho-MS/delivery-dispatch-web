@@ -21,6 +21,9 @@ export type {
   ValidacionLote,
 } from "./lotes.types";
 export { useAprobacionFinal } from "./hooks/use-aprobacion-final";
+export { RelojRevisionLote } from "./components/reloj-revision";
+export { describirRelojRevision, MINUTOS_REVISION_PROXIMA } from "./planificacion.reloj";
+export type { EstadoReloj, RelojRevision } from "./planificacion.reloj";
 export { lotesKeys, mensajeAprobacion, mensajeAprobacionFinal } from "./planificacion.mutaciones";
 export type { AprobarLoteFinal, AprobarPromesas, CambiarVehiculo, ReasignarRevisor } from "./planificacion.mutaciones";
 export { BarraOcupacion, OcupacionLote } from "./components/ocupacion-lote";

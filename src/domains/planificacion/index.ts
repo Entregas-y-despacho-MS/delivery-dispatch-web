@@ -8,6 +8,15 @@ export type { AccionLote } from "./planificacion.errores";
 export { useAccionesLote } from "./hooks/use-acciones-lote";
 export { lotesKeys, mensajeAprobacion } from "./planificacion.mutaciones";
 export type { AprobarPromesas, CambiarVehiculo, ReasignarRevisor } from "./planificacion.mutaciones";
+export { BarraOcupacion, OcupacionLote } from "./components/ocupacion-lote";
+export { EstadoPedidoLoteBadge } from "./components/estado-pedido-lote-badge";
+export { LoteResumenCard } from "./components/lote-resumen-card";
+export type { LoteResumenCardProps } from "./components/lote-resumen-card";
+export {
+  formatearFechaTurno,
+  nivelOcupacion,
+  PORCENTAJE_OCUPACION_ALTA,
+} from "./planificacion.format";
 
 export type {
   AprobacionPromesas,

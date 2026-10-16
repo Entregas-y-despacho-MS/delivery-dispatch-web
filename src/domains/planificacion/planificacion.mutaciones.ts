@@ -4,7 +4,9 @@ import { parseApiError } from "@/shared/lib/api-error";
 import { createQueryKeys } from "@/shared/lib/query-keys";
 import { mensajeErrorLote, requiereRecargarLote, type AccionLote } from "./planificacion.errores";
 import type {
+  AprobacionFinal,
   AprobacionPromesas,
+  AprobarLoteFinalPayload,
   AprobarPromesasPayload,
   AsignacionVehiculoLote,
   AsignarVehiculoPayload,
@@ -121,5 +123,31 @@ export function opcionesReasignarRevisor(base: Base & {
     onSuccess: (_, { nombre }) => base.avisar.exito(`El lote ahora lo revisa ${nombre}.`),
     onError: alFallar(base, "revisor"),
     onSettled: () => base.queryClient.invalidateQueries({ queryKey: lotesKeys.all }),
+  };
+}
+
+export interface AprobarLoteFinal {
+  loteId: number;
+  payload: AprobarLoteFinalPayload;
+}
+
+/** Texto del aviso después de la 2.ª aprobación. */
+export function mensajeAprobacionFinal({ dispatchIds }: AprobacionFinal): string {
+  const n = dispatchIds.length;
+  return `Lote aprobado: ${n} ${n === 1 ? "pedido asignado" : "pedidos asignados"} al conductor y al vehículo.`;
+}
+
+/**
+ * 2.ª aprobación (ST-51.1): confirma lote, pedidos, vehículo y conductor juntos.
+ * Igual que la 1.ª, nunca reintenta: ante un 409 de versión o de recursos compartidos avisa y recarga.
+ */
+export function opcionesAprobarLoteFinal(base: Base & {
+  aprobar: (id: number, payload: AprobarLoteFinalPayload) => Promise<AprobacionFinal>;
+}): MutationOptions<AprobacionFinal, unknown, AprobarLoteFinal> {
+  return {
+    mutationFn: ({ loteId, payload }) => base.aprobar(loteId, payload),
+    onSuccess: (resultado) => base.avisar.exito(mensajeAprobacionFinal(resultado)),
+    onError: alFallar(base, "aprobar-final"),
+    onSettled: () => recargarTodo(base.queryClient),
   };
 }

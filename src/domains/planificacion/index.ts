@@ -20,8 +20,9 @@ export type {
   PedidoLote,
   ValidacionLote,
 } from "./lotes.types";
-export { lotesKeys, mensajeAprobacion } from "./planificacion.mutaciones";
-export type { AprobarPromesas, CambiarVehiculo, ReasignarRevisor } from "./planificacion.mutaciones";
+export { useAprobacionFinal } from "./hooks/use-aprobacion-final";
+export { lotesKeys, mensajeAprobacion, mensajeAprobacionFinal } from "./planificacion.mutaciones";
+export type { AprobarLoteFinal, AprobarPromesas, CambiarVehiculo, ReasignarRevisor } from "./planificacion.mutaciones";
 export { BarraOcupacion, OcupacionLote } from "./components/ocupacion-lote";
 export { EstadoPedidoLoteBadge } from "./components/estado-pedido-lote-badge";
 export { LoteResumenCard } from "./components/lote-resumen-card";

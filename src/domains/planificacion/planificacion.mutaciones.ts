@@ -7,6 +7,7 @@ import type {
   AprobacionPromesas,
   AprobarPromesasPayload,
   AsignacionVehiculoLote,
+  AsignarVehiculoPayload,
   ReasignarRevisorPayload,
   RevisorLote,
 } from "./planificacion.types";
@@ -87,13 +88,15 @@ export function opcionesAprobarPromesas(base: Base & {
 export interface CambiarVehiculo {
   loteId: number;
   vehicleId: number;
+  /** Versión del lote que se revisó. */
+  version: number;
 }
 
 export function opcionesAsignarVehiculo(base: Base & {
-  asignar: (id: number, vehicleId: number) => Promise<AsignacionVehiculoLote>;
+  asignar: (id: number, payload: AsignarVehiculoPayload) => Promise<AsignacionVehiculoLote>;
 }): MutationOptions<AsignacionVehiculoLote, unknown, CambiarVehiculo> {
   return {
-    mutationFn: ({ loteId, vehicleId }) => base.asignar(loteId, vehicleId),
+    mutationFn: ({ loteId, vehicleId, version }) => base.asignar(loteId, { vehicleId, version }),
     onSuccess: ({ capacity }) => {
       const ocupacion = Math.round(Math.max(capacity.weight.usedPercent, capacity.volume.usedPercent));
       base.avisar.exito(`Vehículo cambiado. La carga ocupa el ${ocupacion} % de su capacidad.`);

@@ -3,6 +3,7 @@ import type {
   AprobacionPromesas,
   AprobarPromesasPayload,
   AsignacionVehiculoLote,
+  AsignarVehiculoPayload,
   ReasignarRevisorPayload,
   RevisorLote,
 } from "../planificacion.types";
@@ -21,9 +22,12 @@ export async function aprobarPromesasLote(id: number, payload: AprobarPromesasPa
   return data;
 }
 
-/** Cambia el vehículo del lote; el back rechaza con 409 ROUTE_CAPACITY_EXCEEDED si la carga no entra. */
-export async function asignarVehiculoLote(id: number, vehicleId: number): Promise<AsignacionVehiculoLote> {
-  const { data } = await api.patch<AsignacionVehiculoLote>(`/route-batches/${id}/vehicle`, { vehicleId }, { skipErrorToast: true });
+/**
+ * Cambia el vehículo del lote con la versión que se revisó: 409 ROUTE_BATCH_VERSION_CONFLICT si cambió,
+ * 409 ROUTE_CAPACITY_EXCEEDED si la carga no entra.
+ */
+export async function asignarVehiculoLote(id: number, payload: AsignarVehiculoPayload): Promise<AsignacionVehiculoLote> {
+  const { data } = await api.patch<AsignacionVehiculoLote>(`/route-batches/${id}/vehicle`, payload, { skipErrorToast: true });
   return data;
 }
 

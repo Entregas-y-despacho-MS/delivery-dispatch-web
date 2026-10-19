@@ -81,8 +81,20 @@ export interface ReporteCapacidad {
 /** Respuesta de PATCH /route-batches/:id/vehicle. */
 export interface AsignacionVehiculoLote {
   routeBatchId: number;
+  /** Versión del lote después del cambio. */
+  version: number;
+  status: EstadoLote;
   vehicleId: number;
+  proposedDriverId: number | null;
+  /** false: se mandó el mismo vehículo y no cambió nada. */
+  changed: boolean;
   capacity: ReporteCapacidad;
+}
+
+/** Cuerpo de PATCH /route-batches/:id/vehicle: el back exige la versión del lote que se revisó. */
+export interface AsignarVehiculoPayload {
+  vehicleId: number;
+  version: number;
 }
 
 /** Respuesta de PATCH /route-batches/:id/reviewer. */

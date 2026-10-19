@@ -73,7 +73,8 @@ export function avisoAutoservicio(autoservicio: Autoservicio): string | null {
   if (autoservicio.open) {
     return autoservicio.canReschedule
       ? null
-      : "Para elegir otro horario necesitamos un correo registrado. Puedes solicitar un cambio.";
+      // El back no dice si falta el correo o la configuración: el aviso no culpa a ninguno.
+      : "Por ahora no puedes elegir otro horario desde este enlace. Si lo necesitas, solicita un cambio.";
   }
   const motivo = autoservicio.closedReason ? CIERRES[autoservicio.closedReason] : null;
   if (!motivo) return null;

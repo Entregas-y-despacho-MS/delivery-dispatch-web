@@ -8036,11 +8036,106 @@
           "Vehicle Maintenances"
         ]
       }
+    },
+    "/api/dispatches/kanban": {
+      "get": {
+        "operationId": "DispatchesController_findKanban",
+        "summary": "List dispatches grouped for the coordinator kanban board",
+        "tags": [
+          "Dispatches"
+        ],
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "delivery_zone_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "driver_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "dispatch_type_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dispatches grouped by Kanban column.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DispatchKanbanResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error."
+          },
+          "401": {
+            "description": "Invalid or expired token."
+          },
+          "403": {
+            "description": "Requires one of: coordinator, supervisor."
+          }
+        }
+      }
+    },
+    "/api/dispatches/kanban/filters": {
+      "get": {
+        "operationId": "DispatchesController_findKanbanFilters",
+        "summary": "List catalog options for kanban filters",
+        "description": "Returns all active, non-deleted drivers and all dispatch types, independent of the dispatches currently loaded on the board. Requires coordinator or supervisor role, or root.",
+        "tags": ["Dispatches"],
+        "security": [{ "access-token": [] }],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Available driver and dispatch-type filter options.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DispatchKanbanFiltersResponseDto" }
+              }
+            }
+          },
+          "401": { "description": "Invalid or expired token." },
+          "403": { "description": "Requires one of: coordinator, supervisor." }
+        }
+      }
     }
   },
   "info": {
     "title": "delivery-dispatch-svc",
-    "description": "Delivery / dispatch microservice of the ERP.\n\n**Authenticating.** `POST /auth/login` returns an access token (15 min) and a refresh token (7 days). Click **Authorize** and paste the access token; renew it with `POST /auth/refresh`. The token is checked against the database on every request: a deactivated or deleted user, a changed role or a changed password takes effect immediately (401 `INVALID_TOKEN`).\n\n**Must change password.** When login answers `mustChangePassword: true`, every endpoint except `PATCH /auth/change-password` and `POST /auth/logout` answers 403 `PASSWORD_CHANGE_REQUIRED` until the password is changed.\n\n**Errors.** Every error is `{ statusCode, error, message, path, timestamp }`. `error` is a stable code (`SERVICE_LEVEL_IN_USE`, ...) you can branch on; validation errors (400) have `error: \"Bad Request\"` and `message` as a list, one entry per invalid field.\n\n**Common statuses.** 401 missing/invalid token · 403 the role cannot do this · 404 not found · 409 conflict (duplicate name/code, or in use) · 429 rate limit (stricter on `change-password` and the 2FA endpoints).\n\n**Realtime (WebSocket) — not part of this REST document, connect separately.** OpenAPI/Swagger only describes HTTP; this section is the reference for it.\n\n- **Connect to** `{server}/{WEBSOCKET_NAMESPACE}` (Socket.IO, default namespace `app` — e.g. `wss://.../app`), sending the same access token used here: `auth: { token }` in the handshake, or an `Authorization: Bearer` header. No valid token → disconnected immediately.\n- **`dispatch.location.updated`** — pushed live whenever `POST /tracking/locations` saves a new position (RF-U11). Payload: `{ dispatchId, latitude, longitude, recordedAt }` — same shape as one entry of that endpoint's request body. Only received by connections whose role is `admin`, `coordinator`, `supervisor` or `root` (auto-joined to the `dispatch-board` room on connect) — a `driver` connection would never receive it. There is no other channel yet; a new one is documented here when it exists.\n- The driver's app never connects to this socket to report its own position — that is always the plain REST endpoint above (`POST /tracking/locations`), so it works the same online or replaying a buffered offline batch.",
+    "description": "Delivery / dispatch microservice of the ERP.\n\n**Authenticating.** `POST /auth/login` returns an access token (15 min) and a refresh token (7 days). Click **Authorize** and paste the access token; renew it with `POST /auth/refresh`. The token is checked against the database on every request: a deactivated or deleted user, a changed role or a changed password takes effect immediately (401 `INVALID_TOKEN`).\n\n**Must change password.** When login answers `mustChangePassword: true`, every endpoint except `PATCH /auth/change-password` and `POST /auth/logout` answers 403 `PASSWORD_CHANGE_REQUIRED` until the password is changed.\n\n**Errors.** Every error is `{ statusCode, error, message, path, timestamp }`. `error` is a stable code (`SERVICE_LEVEL_IN_USE`, ...) you can branch on; validation errors (400) have `error: \"Bad Request\"` and `message` as a list, one entry per invalid field.\n\n**Common statuses.** 401 missing/invalid token · 403 the role cannot do this · 404 not found · 409 conflict (duplicate name/code, or in use) · 429 rate limit (stricter on `change-password` and the 2FA endpoints).\n\n**Realtime (WebSocket) — not part of this REST document, connect separately.** OpenAPI/Swagger only describes HTTP; this section is the reference for it.\n\n- **Connect to** `{server}/{WEBSOCKET_NAMESPACE}` (Socket.IO, default namespace `app` — e.g. `wss://.../app`), sending the same access token used here: `auth: { token }` in the handshake, or an `Authorization: Bearer` header. No valid token → disconnected immediately.\n- **`dispatch.location.updated`** — pushed live whenever `POST /tracking/locations` saves a new position (RF-U11). Payload: `{ dispatchId, latitude, longitude, recordedAt }` — same shape as one entry of that endpoint's request body. Only received by connections whose role is `admin`, `coordinator`, `supervisor` or `root` (auto-joined to the `dispatch-board` room on connect) — a `driver` connection would never receive it. Dispatch-board clients also receive `dispatch.status_changed`, `dispatch.incident_reported`, `dispatch.evidence_registered`, `dispatch.change_requires_attention`, `route.assigned`, and integration rejection/incomplete events. The Kanban client invalidates its dispatch query when these arrive.\n- The driver's app never connects to this socket to report its own position — that is always the plain REST endpoint above (`POST /tracking/locations`), so it works the same online or replaying a buffered offline batch.",
     "version": "1.0",
     "contact": {}
   },
@@ -9793,7 +9888,300 @@
           "createdAt",
           "vehicleStatus"
         ]
+      },
+      "DispatchKanbanTypeDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "DispatchKanbanZoneDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "DispatchKanbanDriverDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "fullName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "fullName"
+        ]
+      },
+      "DispatchKanbanVehicleDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "plate": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "plate"
+        ]
+      },
+      "DispatchKanbanRouteBatchDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "status"
+        ]
+      },
+      "DispatchKanbanReservationDto": {
+        "type": "object",
+        "properties": {
+          "reservedById": {
+            "type": "integer"
+          },
+          "reservedByName": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reservedByMe": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "reservedById",
+          "reservedByName",
+          "expiresAt",
+          "reservedByMe"
+        ]
+      },
+      "DispatchKanbanItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "sourceOrderRef": {
+            "type": "string"
+          },
+          "trackingCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string"
+          },
+          "dispatchType": {
+            "$ref": "#/components/schemas/DispatchKanbanTypeDto"
+          },
+          "zone": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DispatchKanbanZoneDto"
+              }
+            ],
+            "nullable": true
+          },
+          "driver": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DispatchKanbanDriverDto"
+              }
+            ],
+            "nullable": true
+          },
+          "vehicle": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DispatchKanbanVehicleDto"
+              }
+            ],
+            "nullable": true
+          },
+          "windowStart": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "windowEnd": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "priority": {
+            "type": "string"
+          },
+          "volumeM3": {
+            "type": "number"
+          },
+          "attemptCount": {
+            "type": "integer"
+          },
+          "attemptLimit": {
+            "type": "integer"
+          },
+          "routeBatch": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DispatchKanbanRouteBatchDto"
+              }
+            ],
+            "nullable": true
+          },
+          "inbox": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "proposed",
+              "reserved"
+            ]
+          },
+          "reservation": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DispatchKanbanReservationDto"
+              }
+            ],
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "sourceOrderRef",
+          "trackingCode",
+          "status",
+          "dispatchType",
+          "zone",
+          "driver",
+          "vehicle",
+          "windowStart",
+          "windowEnd",
+          "priority",
+          "volumeM3",
+          "attemptCount",
+          "attemptLimit",
+          "routeBatch",
+          "inbox",
+          "reservation"
+        ]
+      },
+      "DispatchKanbanColumnDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "statuses": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "label": {
+            "type": "string"
+          },
+          "ordersCount": {
+            "type": "integer"
+          },
+          "volumeM3": {
+            "type": "number"
+          },
+          "dispatches": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DispatchKanbanItemDto"
+            }
+          }
+        },
+        "required": [
+          "key",
+          "statuses",
+          "label",
+          "ordersCount",
+          "volumeM3",
+          "dispatches"
+        ]
+      },
+      "DispatchKanbanResponseDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "columns": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DispatchKanbanColumnDto"
+            }
+          }
+        },
+        "required": [
+          "date",
+          "columns"
+        ]
+      },
+      "DispatchKanbanFilterOptionDto": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "number", "description": "Catalog item identifier." },
+          "name": { "type": "string", "description": "Human-readable catalog label." }
+        },
+        "required": ["id", "name"]
+      },
+      "DispatchKanbanDriverFilterOptionDto": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "number", "description": "Driver user identifier." },
+          "fullName": { "type": "string", "description": "Driver full name." }
+        },
+        "required": ["id", "fullName"]
+      },
+      "DispatchKanbanFiltersResponseDto": {
+        "type": "object",
+        "properties": {
+          "drivers": { "type": "array", "items": { "$ref": "#/components/schemas/DispatchKanbanDriverFilterOptionDto" } },
+          "dispatchTypes": { "type": "array", "items": { "$ref": "#/components/schemas/DispatchKanbanFilterOptionDto" } }
+        },
+        "required": ["drivers", "dispatchTypes"]
       }
     }
+  },
+  "x-documentation-provenance": {
+    "openapiSource": "delivery-dispatch-svc at 4cb8027+ST-53.2 corrections; DispatchesController.findKanban, findKanbanFilters, and dispatch-kanban DTOs",
+    "generatedAt": "2026-10-19"
   }
 }

@@ -1,8 +1,8 @@
 # API de Delivery Dispatch
 
-Referencia para implementar clientes y reutilizar en otros chats del mismo proyecto. Fuente: `../../backend/delivery-dispatch-svc/src`, commit `c87a858`; generada el 2026-09-28. La especificación completa está en [openapi.json](openapi.json).
+Referencia para implementar clientes y reutilizar en otros chats del mismo proyecto. Fuente: `../../backend/delivery-dispatch-svc/src`, commit `3c08b7b`; generada el 2026-10-19. La especificación completa está en [openapi.json](openapi.json).
 
-**Cobertura:** 52 operaciones HTTP, 34 rutas y 56 esquemas. Se contrastaron las rutas y modelos con el Swagger disponible y los decoradores del backend. Los ejemplos se generaron desde los DTO; no se ejecutaron operaciones contra la base de datos.
+**Cobertura:** 53 operaciones HTTP, 35 rutas y 65 esquemas. Se contrastaron las rutas y modelos con el Swagger disponible y los decoradores del backend. Los ejemplos se generaron desde los DTO; no se ejecutaron operaciones contra la base de datos.
 
 Las descripciones de reglas y campos conservan el texto original de Swagger en inglés; el índice, la estructura y las notas de uso están en español.
 
@@ -95,6 +95,7 @@ Los IDs de roles se consultan con `GET /api/roles`; usa el `id` devuelto para `r
 | `GET` | [`/api/vehicle-incident-types/{id}`](#get-apivehicle-incident-typesid) | Consultar tipo de incidente vehicular | supervisor, coordinator (o root) |
 | `PUT` | [`/api/vehicle-incident-types/{id}`](#put-apivehicle-incident-typesid) | Actualizar tipo de incidente vehicular | supervisor, coordinator (o root) |
 | `POST` | [`/api/vehicle-maintenances`](#post-apivehicle-maintenances) | Registrar incidente de vehículo | supervisor, coordinator (o root) |
+| `GET` | [`/api/dispatches/kanban`](#get-apidispatcheskanban) | Listar despachos agrupados para el tablero Kanban | coordinator, supervisor |
 
 ## Endpoints
 
@@ -3067,6 +3068,145 @@ Ejemplo ilustrativo armado con los ejemplos de campos del Swagger:
 | `404` | `VEHICLE_NOT_FOUND` | Vehicle not found. |
 | `404` | `VEHICLE_INCIDENT_TYPE_NOT_FOUND` | Vehicle incident type not found. |
 
+### Dispatches
+
+#### GET /api/dispatches/kanban
+
+**Función.** List dispatches grouped for the coordinator kanban board
+
+**Acceso:** JWT Bearer; roles: coordinator, supervisor.
+
+**Parámetros:**
+
+| Lugar | Nombre | Tipo | Obligatorio | Descripción | Restricciones / ejemplo |
+| --- | --- | --- | --- | --- | --- |
+| query | `date` | `string (date)` | No |  |  |
+| query | `delivery_zone_id` | `integer` | No |  | mín. 1 |
+| query | `driver_id` | `integer` | No |  | mín. 1 |
+| query | `dispatch_type_id` | `integer` | No |  | mín. 1 |
+
+**Respuesta correcta:** `200` → `DispatchKanbanResponseDto` (Dispatches grouped by Kanban column.).
+
+| Campo JSON | Tipo | Obligatorio | Descripción y reglas |
+| --- | --- | --- | --- |
+| `date` | `string (date)` | Sí |  |
+| `columns` | `DispatchKanbanColumnDto[]` | Sí |  |
+| `columns[].key` | `string` | Sí |  |
+| `columns[].statuses` | `string[]` | Sí |  |
+| `columns[].label` | `string` | Sí |  |
+| `columns[].ordersCount` | `integer` | Sí |  |
+| `columns[].volumeM3` | `number` | Sí |  |
+| `columns[].dispatches` | `DispatchKanbanItemDto[]` | Sí |  |
+| `columns[].dispatches[].id` | `integer` | Sí |  |
+| `columns[].dispatches[].sourceOrderRef` | `string` | Sí |  |
+| `columns[].dispatches[].trackingCode` | `string / null` | Sí |  |
+| `columns[].dispatches[].status` | `string` | Sí |  |
+| `columns[].dispatches[].dispatchType` | `DispatchKanbanTypeDto` | Sí |  |
+| `columns[].dispatches[].dispatchType.id` | `integer` | Sí |  |
+| `columns[].dispatches[].dispatchType.name` | `string` | Sí |  |
+| `columns[].dispatches[].zone` | `DispatchKanbanZoneDto` | Sí |  |
+| `columns[].dispatches[].zone.id` | `integer` | Sí |  |
+| `columns[].dispatches[].zone.name` | `string` | Sí |  |
+| `columns[].dispatches[].driver` | `DispatchKanbanDriverDto` | Sí |  |
+| `columns[].dispatches[].driver.id` | `integer` | Sí |  |
+| `columns[].dispatches[].driver.fullName` | `string` | Sí |  |
+| `columns[].dispatches[].vehicle` | `DispatchKanbanVehicleDto` | Sí |  |
+| `columns[].dispatches[].vehicle.id` | `integer` | Sí |  |
+| `columns[].dispatches[].vehicle.plate` | `string` | Sí |  |
+| `columns[].dispatches[].windowStart` | `string (date-time) / null` | Sí |  |
+| `columns[].dispatches[].windowEnd` | `string (date-time) / null` | Sí |  |
+| `columns[].dispatches[].priority` | `string` | Sí |  |
+| `columns[].dispatches[].volumeM3` | `number` | Sí |  |
+| `columns[].dispatches[].attemptCount` | `integer` | Sí |  |
+| `columns[].dispatches[].attemptLimit` | `integer` | Sí |  |
+| `columns[].dispatches[].routeBatch` | `DispatchKanbanRouteBatchDto` | Sí |  |
+| `columns[].dispatches[].routeBatch.id` | `integer` | Sí |  |
+| `columns[].dispatches[].routeBatch.status` | `string` | Sí |  |
+| `columns[].dispatches[].inbox` | `string / null: proposed, reserved` | Sí |  |
+| `columns[].dispatches[].reservation` | `DispatchKanbanReservationDto` | Sí |  |
+| `columns[].dispatches[].reservation.reservedById` | `integer` | Sí |  |
+| `columns[].dispatches[].reservation.reservedByName` | `string` | Sí |  |
+| `columns[].dispatches[].reservation.expiresAt` | `string (date-time)` | Sí |  |
+| `columns[].dispatches[].reservation.reservedByMe` | `boolean` | Sí |  |
+
+Ejemplo ilustrativo armado con los ejemplos de campos del Swagger:
+
+```json
+{
+  "date": "texto",
+  "columns": [
+    {
+      "key": "texto",
+      "statuses": [
+        "texto"
+      ],
+      "label": "texto",
+      "ordersCount": 0,
+      "volumeM3": 0,
+      "dispatches": [
+        {
+          "id": 0,
+          "sourceOrderRef": "texto",
+          "trackingCode": null,
+          "status": "texto",
+          "dispatchType": {
+            "id": 0,
+            "name": "texto"
+          },
+          "zone": {
+            "id": 0,
+            "name": "texto"
+          },
+          "driver": {
+            "id": 0,
+            "fullName": "texto"
+          },
+          "vehicle": {
+            "id": 0,
+            "plate": "texto"
+          },
+          "windowStart": null,
+          "windowEnd": null,
+          "priority": "texto",
+          "volumeM3": 0,
+          "attemptCount": 0,
+          "attemptLimit": 0,
+          "routeBatch": {
+            "id": 0,
+            "status": "texto"
+          },
+          "inbox": "proposed",
+          "reservation": {
+            "reservedById": 0,
+            "reservedByName": "texto",
+            "expiresAt": "2026-01-01T00:00:00.000Z",
+            "reservedByMe": false
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Errores y códigos:**
+
+| HTTP | `error` | `message` de ejemplo |
+| --- | --- | --- |
+| `400` | `—` | Validation error. |
+| `401` | `—` | Invalid or expired token. |
+| `403` | `—` | Requires one of: coordinator, supervisor. |
+
+#### GET /api/dispatches/kanban/filters
+
+**Función.** List catalog options for kanban filters
+
+**Acceso:** JWT Bearer; roles: coordinator, supervisor (o root).
+
+**Respuesta correcta:** `200` → `{ drivers: [{ id, fullName }], dispatchTypes: [{ id, name }] }`. Incluye conductores activos y no eliminados, y todos los tipos de despacho, aunque no tengan órdenes en el tablero actual.
+
+**Errores:** `401` token inválido o vencido; `403` rol insuficiente.
+
 ## Claves de configuración
 
 `GET /api/settings` devuelve las claves existentes en la base de datos; `PUT /api/settings/{key}` recibe `{"value": "..."}`. Los valores se envían siempre como texto. La tabla combina los valores iniciales de `../../backend/delivery-dispatch-db/schema/settings/data.sql` con las reglas actuales de `setting-value.validator.ts`. Una base de datos en ejecución puede tener valores distintos a los iniciales.
@@ -3092,9 +3232,15 @@ Socket.IO usa el namespace `app` por defecto (`WEBSOCKET_NAMESPACE` puede cambia
 
 | Evento recibido | Quién lo recibe | Cuerpo | Origen |
 | --- | --- | --- | --- |
-| `dispatch.location.updated` | `root`, `admin`, `coordinator`, `supervisor` (sala `dispatch-board`, asignada al conectar) | `{ dispatchId, latitude, longitude, recordedAt }` | Se emite cuando `POST /api/tracking/locations` guarda un punto nuevo. |
+| `dispatch.status_changed` | Coordinadores, supervisores, zona del despacho y repartidor asignado | `{ dispatchId, status, previousStatus, version, updatedAt }` |
+| `dispatch.incident_reported` | Coordinadores y supervisores de la zona | `{ dispatchId, incidentId, reasonCode, reportedAt }` |
+| `dispatch.evidence_registered` | Coordinadores y supervisores | `{ dispatchId, evidenceId, type, registeredAt }` |
+| `dispatch.change_requires_attention` | Coordinadores | `{ dispatchId, source, changeType, receivedAt }` |
+| `dispatch.location.updated` | Coordinadores y supervisores (sala del tablero) | `{ dispatchId, latitude, longitude, recordedAt }` |
+| `route.assigned` | Coordinadores y repartidor asignado | `{ routeId, driverId, vehicleId, dispatchIds, version }` |
+| `integration.message_rejected`, `integration.order_incomplete` | Coordinadores y supervisores | Eventos de integración; `integration.order_incomplete` no lleva `dispatchId`. |
 
-El repartidor reporta sus ubicaciones por REST. No recibe este evento de tablero. WebSocket no aparece como operación en OpenAPI.
+El cliente Kanban invalida `dispatches-kanban` cuando recibe estos eventos y usa polling cada 15 s mientras Socket.IO está desconectado. El repartidor reporta sus ubicaciones por REST. WebSocket no aparece como operación en OpenAPI.
 
 ## Esquemas de datos
 
@@ -3576,3 +3722,108 @@ Los campos y restricciones siguientes provienen de Swagger. `openapi.json` conti
 | `status` | `string` | Sí | pending, in_progress or completed — always pending right after registering (RF-A17 tracks it from here on, out of scope of this endpoint) |
 | `createdAt` | `string (date-time)` | Sí | Creation timestamp (UTC) |
 | `vehicleStatus` | `string` | Sí | The vehicle's current operational status, right after this write — `maintenance` if the incident type's `disablesVehicle` was true, unchanged otherwise |
+
+### DispatchKanbanTypeDto
+
+| Campo | Tipo | Obligatorio | Descripción y reglas |
+| --- | --- | --- | --- |
+| `id` | `integer` | Sí |  |
+| `name` | `string` | Sí |  |
+
+### DispatchKanbanZoneDto
+
+| Campo | Tipo | Obligatorio | Descripción y reglas |
+| --- | --- | --- | --- |
+| `id` | `integer` | Sí |  |
+| `name` | `string` | Sí |  |
+
+### DispatchKanbanDriverDto
+
+| Campo | Tipo | Obligatorio | Descripción y reglas |
+| --- | --- | --- | --- |
+| `id` | `integer` | Sí |  |
+| `fullName` | `string` | Sí |  |
+
+### DispatchKanbanVehicleDto
+
+| Campo | Tipo | Obligatorio | Descripción y reglas |
+| --- | --- | --- | --- |
+| `id` | `integer` | Sí |  |
+| `plate` | `string` | Sí |  |
+
+### DispatchKanbanRouteBatchDto
+
+| Campo | Tipo | Obligatorio | Descripción y reglas |
+| --- | --- | --- | --- |
+| `id` | `integer` | Sí |  |
+| `status` | `string` | Sí |  |
+
+### DispatchKanbanReservationDto
+
+| Campo | Tipo | Obligatorio | Descripción y reglas |
+| --- | --- | --- | --- |
+| `reservedById` | `integer` | Sí |  |
+| `reservedByName` | `string` | Sí |  |
+| `expiresAt` | `string (date-time)` | Sí |  |
+| `reservedByMe` | `boolean` | Sí |  |
+
+### DispatchKanbanItemDto
+
+| Campo | Tipo | Obligatorio | Descripción y reglas |
+| --- | --- | --- | --- |
+| `id` | `integer` | Sí |  |
+| `sourceOrderRef` | `string` | Sí |  |
+| `trackingCode` | `string / null` | Sí |  |
+| `status` | `string` | Sí |  |
+| `dispatchType` | `DispatchKanbanTypeDto` | Sí |  |
+| `zone` | `DispatchKanbanZoneDto` | Sí |  |
+| `driver` | `DispatchKanbanDriverDto` | Sí |  |
+| `vehicle` | `DispatchKanbanVehicleDto` | Sí |  |
+| `windowStart` | `string (date-time) / null` | Sí |  |
+| `windowEnd` | `string (date-time) / null` | Sí |  |
+| `priority` | `string` | Sí |  |
+| `volumeM3` | `number` | Sí |  |
+| `attemptCount` | `integer` | Sí |  |
+| `attemptLimit` | `integer` | Sí |  |
+| `routeBatch` | `DispatchKanbanRouteBatchDto` | Sí |  |
+| `inbox` | `string / null: proposed, reserved` | Sí |  |
+| `reservation` | `DispatchKanbanReservationDto` | Sí |  |
+
+### DispatchKanbanColumnDto
+
+| Campo | Tipo | Obligatorio | Descripción y reglas |
+| --- | --- | --- | --- |
+| `key` | `string` | Sí |  |
+| `statuses` | `string[]` | Sí |  |
+| `label` | `string` | Sí |  |
+| `ordersCount` | `integer` | Sí |  |
+| `volumeM3` | `number` | Sí |  |
+| `dispatches` | `DispatchKanbanItemDto[]` | Sí |  |
+
+### DispatchKanbanResponseDto
+
+| Campo | Tipo | Obligatorio | Descripción y reglas |
+| --- | --- | --- | --- |
+| `date` | `string (date)` | Sí |  |
+| `columns` | `DispatchKanbanColumnDto[]` | Sí |  |
+
+### DispatchKanbanFiltersResponseDto
+
+| Campo | Tipo | Obligatorio | Descripción y reglas |
+| --- | --- | --- | --- |
+| `drivers` | `DispatchKanbanDriverFilterOptionDto[]` | Sí | Conductores activos y no eliminados. |
+| `dispatchTypes` | `DispatchKanbanFilterOptionDto[]` | Sí | Todos los tipos de despacho. |
+
+### DispatchKanbanDriverFilterOptionDto
+
+| Campo | Tipo | Obligatorio | Descripción y reglas |
+| --- | --- | --- | --- |
+| `id` | `number` | Sí | ID del usuario conductor. |
+| `fullName` | `string` | Sí | Nombre completo del conductor. |
+
+### DispatchKanbanFilterOptionDto
+
+| Campo | Tipo | Obligatorio | Descripción y reglas |
+| --- | --- | --- | --- |
+| `id` | `number` | Sí | ID del tipo de despacho. |
+| `name` | `string` | Sí | Nombre del tipo de despacho. |

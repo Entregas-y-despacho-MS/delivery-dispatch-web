@@ -18,7 +18,7 @@ export interface PedidoDelLote {
 interface AprobarPromesasDialogProps {
   abierto: boolean;
   onOpenChange: (abierto: boolean) => void;
-  /** Nombre del lote para el título, p. ej. «Lote #12». */
+  /** Nombre del lote para el título, p. ej. «lote #12» (se lee «Aprobar promesas del lote #12»). */
   titulo: string;
   /** Pedidos que se aprueban: a cada cliente le sale un correo con fecha, franja y enlace. */
   aprobados: PedidoDelLote[];
@@ -47,7 +47,7 @@ export function AprobarPromesasDialog({
     <Dialog open={abierto} onOpenChange={(valor) => !aprobando && onOpenChange(valor)}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Aprobar promesas de {titulo}</DialogTitle>
+          <DialogTitle>{`Aprobar promesas del ${titulo}`}</DialogTitle>
           <DialogDescription>
             Los pedidos aprobados pasan a programados y cada cliente recibe su fecha y franja.
           </DialogDescription>

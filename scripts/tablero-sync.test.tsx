@@ -29,6 +29,7 @@ const { renderHook: renderHookInTest } = await import("@testing-library/react");
 
 afterEach(() => {
   cleanup();
+  vi.useRealTimers();
   useAuthStore.setState({ user: null, access_token: null, refresh_token: null });
 });
 
@@ -55,13 +56,23 @@ describe("sincronización del tablero", () => {
 
     expect(socketIo).toHaveBeenCalledWith("http://localhost:3001/app", expect.objectContaining({ auth: { token: "access-token" } }));
     expect(socketIo.mock.calls[0]?.[1]).toMatchObject({ reconnection: true, reconnectionAttempts: Infinity, reconnectionDelay: 1_000, reconnectionDelayMax: 30_000 });
-    expect(DISPATCH_LIVE_EVENTS).toHaveLength(8);
+    expect(DISPATCH_LIVE_EVENTS).toHaveLength(5);
+    expect(DISPATCH_LIVE_EVENTS).not.toContain("dispatch.location.updated");
+    expect(DISPATCH_LIVE_EVENTS).not.toContain("integration.message_rejected");
+    expect(DISPATCH_LIVE_EVENTS).not.toContain("integration.order_incomplete");
     socketHandlers.get("connect")?.();
     await waitFor(() => expect(result.current.connected).toBe(true));
 
+    vi.useFakeTimers();
     socketHandlers.get("dispatch.status_changed")?.({ dispatchId: 41 });
+    socketHandlers.get("route.assigned")?.({ routeBatchId: 7 });
+    await vi.advanceTimersByTimeAsync(499);
+    expect(invalidate).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(1);
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ["dispatches-kanban"] });
+    expect(invalidate).toHaveBeenCalledTimes(1);
     socketHandlers.get("disconnect")?.("transport close");
+    vi.useRealTimers();
     await waitFor(() => expect(result.current.connected).toBe(false));
   });
 

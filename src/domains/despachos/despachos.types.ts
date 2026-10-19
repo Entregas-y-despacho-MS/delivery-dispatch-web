@@ -113,6 +113,12 @@ export interface TableroKanban {
   columns: ColumnaKanban[];
 }
 
+/** Catálogos de filtros, independientes de los despachos de la fecha consultada. */
+export interface TableroKanbanFiltrosCatalogo {
+  drivers: { id: number; fullName: string }[];
+  dispatchTypes: { id: number; name: string }[];
+}
+
 export interface FiltrosTableroKanban {
   date: string;
   delivery_zone_id?: number;

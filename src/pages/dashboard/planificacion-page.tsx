@@ -123,7 +123,7 @@ export default function PlanificacionPage() {
                 usuarioId={usuarioId}
                 vehiculos={opcionesVehiculo}
                 revisores={revisores}
-              onCerrar={() => seleccionarLote(null)}
+                onCerrar={() => seleccionarLote(null)}
               />
             )}
         </div>

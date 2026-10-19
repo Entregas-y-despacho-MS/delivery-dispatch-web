@@ -2,6 +2,7 @@ export { useBandejaPedidos } from "./hooks/use-bandeja-pedidos";
 export { useCambiarPrioridad } from "./hooks/use-cambiar-prioridad";
 export { useDispatchEvents } from "./hooks/use-dispatch-events";
 export { useTableroKanban } from "./hooks/use-tablero-kanban";
+export { useTableroKanbanFiltros } from "./hooks/use-tablero-kanban-filtros";
 export { TableroKanban } from "./components/tablero-kanban";
 export { COLUMNAS_INVERSA, COLUMNAS_OPERATIVAS, destinoAbreRevision, ordenarColumnas, puedeArrastrarDespacho } from "./tablero-kanban.rules";
 export type { OrdenActual, PrioridadFilter, TurnoFilter, ZonaFilter } from "./hooks/use-bandeja-pedidos";

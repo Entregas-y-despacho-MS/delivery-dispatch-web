@@ -3197,6 +3197,16 @@ Ejemplo ilustrativo armado con los ejemplos de campos del Swagger:
 | `401` | `—` | Invalid or expired token. |
 | `403` | `—` | Requires one of: coordinator, supervisor. |
 
+#### GET /api/dispatches/kanban/filters
+
+**Función.** List catalog options for kanban filters
+
+**Acceso:** JWT Bearer; roles: coordinator, supervisor (o root).
+
+**Respuesta correcta:** `200` → `{ drivers: [{ id, fullName }], dispatchTypes: [{ id, name }] }`. Incluye conductores activos y no eliminados, y todos los tipos de despacho, aunque no tengan órdenes en el tablero actual.
+
+**Errores:** `401` token inválido o vencido; `403` rol insuficiente.
+
 ## Claves de configuración
 
 `GET /api/settings` devuelve las claves existentes en la base de datos; `PUT /api/settings/{key}` recibe `{"value": "..."}`. Los valores se envían siempre como texto. La tabla combina los valores iniciales de `../../backend/delivery-dispatch-db/schema/settings/data.sql` con las reglas actuales de `setting-value.validator.ts`. Una base de datos en ejecución puede tener valores distintos a los iniciales.
@@ -3796,3 +3806,24 @@ Los campos y restricciones siguientes provienen de Swagger. `openapi.json` conti
 | --- | --- | --- | --- |
 | `date` | `string (date)` | Sí |  |
 | `columns` | `DispatchKanbanColumnDto[]` | Sí |  |
+
+### DispatchKanbanFiltersResponseDto
+
+| Campo | Tipo | Obligatorio | Descripción y reglas |
+| --- | --- | --- | --- |
+| `drivers` | `DispatchKanbanDriverFilterOptionDto[]` | Sí | Conductores activos y no eliminados. |
+| `dispatchTypes` | `DispatchKanbanFilterOptionDto[]` | Sí | Todos los tipos de despacho. |
+
+### DispatchKanbanDriverFilterOptionDto
+
+| Campo | Tipo | Obligatorio | Descripción y reglas |
+| --- | --- | --- | --- |
+| `id` | `number` | Sí | ID del usuario conductor. |
+| `fullName` | `string` | Sí | Nombre completo del conductor. |
+
+### DispatchKanbanFilterOptionDto
+
+| Campo | Tipo | Obligatorio | Descripción y reglas |
+| --- | --- | --- | --- |
+| `id` | `number` | Sí | ID del tipo de despacho. |
+| `name` | `string` | Sí | Nombre del tipo de despacho. |

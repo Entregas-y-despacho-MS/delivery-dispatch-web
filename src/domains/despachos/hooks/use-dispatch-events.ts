@@ -13,10 +13,9 @@ export const DISPATCH_LIVE_EVENTS = [
   "dispatch.evidence_registered",
   "dispatch.change_requires_attention",
   "route.assigned",
-  "dispatch.location.updated",
-  "integration.message_rejected",
-  "integration.order_incomplete",
 ] as const;
+
+const INVALIDATION_DEBOUNCE_MS = 500;
 
 /** Escucha eventos operativos y mantiene la caché Kanban al día; Socket.IO reconecta con backoff. */
 export function useDispatchEvents() {
@@ -37,8 +36,13 @@ export function useDispatchEvents() {
       randomizationFactor: 0.5,
       autoConnect: true,
     });
+    let invalidationTimer: ReturnType<typeof setTimeout> | undefined;
     const invalidarTablero = () => {
-      void queryClient.invalidateQueries({ queryKey: DISPATCHES_KANBAN_QUERY_KEY });
+      if (invalidationTimer !== undefined) clearTimeout(invalidationTimer);
+      invalidationTimer = setTimeout(() => {
+        invalidationTimer = undefined;
+        void queryClient.invalidateQueries({ queryKey: DISPATCHES_KANBAN_QUERY_KEY });
+      }, INVALIDATION_DEBOUNCE_MS);
     };
     const alConectar = () => setConnectedToken(accessToken);
     const alDesconectar = () => setConnectedToken(null);
@@ -53,6 +57,7 @@ export function useDispatchEvents() {
       socket.off("disconnect", alDesconectar);
       socket.off("connect_error", alDesconectar);
       for (const eventName of DISPATCH_LIVE_EVENTS) socket.off(eventName, invalidarTablero);
+      if (invalidationTimer !== undefined) clearTimeout(invalidationTimer);
       socket.disconnect();
     };
   }, [accessToken, queryClient]);

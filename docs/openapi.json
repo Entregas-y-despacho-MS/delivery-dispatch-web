@@ -8109,6 +8109,28 @@
           }
         }
       }
+    },
+    "/api/dispatches/kanban/filters": {
+      "get": {
+        "operationId": "DispatchesController_findKanbanFilters",
+        "summary": "List catalog options for kanban filters",
+        "description": "Returns all active, non-deleted drivers and all dispatch types, independent of the dispatches currently loaded on the board. Requires coordinator or supervisor role, or root.",
+        "tags": ["Dispatches"],
+        "security": [{ "access-token": [] }],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Available driver and dispatch-type filter options.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DispatchKanbanFiltersResponseDto" }
+              }
+            }
+          },
+          "401": { "description": "Invalid or expired token." },
+          "403": { "description": "Requires one of: coordinator, supervisor." }
+        }
+      }
     }
   },
   "info": {
@@ -10131,11 +10153,35 @@
           "date",
           "columns"
         ]
+      },
+      "DispatchKanbanFilterOptionDto": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "number", "description": "Catalog item identifier." },
+          "name": { "type": "string", "description": "Human-readable catalog label." }
+        },
+        "required": ["id", "name"]
+      },
+      "DispatchKanbanDriverFilterOptionDto": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "number", "description": "Driver user identifier." },
+          "fullName": { "type": "string", "description": "Driver full name." }
+        },
+        "required": ["id", "fullName"]
+      },
+      "DispatchKanbanFiltersResponseDto": {
+        "type": "object",
+        "properties": {
+          "drivers": { "type": "array", "items": { "$ref": "#/components/schemas/DispatchKanbanDriverFilterOptionDto" } },
+          "dispatchTypes": { "type": "array", "items": { "$ref": "#/components/schemas/DispatchKanbanFilterOptionDto" } }
+        },
+        "required": ["drivers", "dispatchTypes"]
       }
     }
   },
   "x-documentation-provenance": {
-    "openapiSource": "delivery-dispatch-svc at 4cb8027+worktree; DispatchesController.findKanban and dispatch-kanban DTOs",
+    "openapiSource": "delivery-dispatch-svc at 4cb8027+ST-53.2 corrections; DispatchesController.findKanban, findKanbanFilters, and dispatch-kanban DTOs",
     "generatedAt": "2026-10-19"
   }
 }

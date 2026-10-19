@@ -3,6 +3,7 @@ import { DndContext, DragOverlay, KeyboardSensor, PointerSensor, useDraggable, u
 import { CalendarDays, CircleAlert, Clock3, Truck, Wifi, WifiOff } from "lucide-react";
 
 import { useZonas } from "@/domains/catalogos";
+import { useTableroKanbanFiltros } from "../hooks/use-tablero-kanban-filtros";
 import { Badge } from "@/shared/components/ui/badge";
 import { Input } from "@/shared/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
@@ -164,15 +165,15 @@ export function TableroKanban({
   columns, isLoading, isError, isFetching, socketConnected, onRetry, onOpenReview,
 }: TableroKanbanProps) {
   const zonas = useZonas({ page: 1, limit: 100 });
+  const filtrosCatalogo = useTableroKanbanFiltros();
   const [dispatchDragging, setDispatchDragging] = useState<DespachoKanban | null>(null);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor),
   );
   const columnasVisibles = useMemo(() => ordenarColumnas(columns, logisticaInversa), [columns, logisticaInversa]);
-  const dispatches = columns.flatMap(({ dispatches: values }) => values);
-  const drivers = [...new Map(dispatches.flatMap(({ driver }) => driver ? [[driver.id, { id: driver.id, name: driver.fullName }] as const] : [])).values()];
-  const dispatchTypes = [...new Map(dispatches.map(({ dispatchType }) => [dispatchType.id, dispatchType])).values()];
+  const drivers = (filtrosCatalogo.data?.drivers ?? []).map(({ id, fullName }) => ({ id, name: fullName }));
+  const dispatchTypes = filtrosCatalogo.data?.dispatchTypes ?? [];
   const totalOrdenes = columnasVisibles.reduce((total, column) => total + column.ordersCount, 0);
   const totalVolumen = columnasVisibles.reduce((total, column) => total + column.volumeM3, 0);
 

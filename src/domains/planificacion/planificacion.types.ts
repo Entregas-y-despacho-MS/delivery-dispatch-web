@@ -130,3 +130,24 @@ export interface AprobacionFinal {
   vehicleId: number;
   dispatchIds: number[];
 }
+
+/** Cuerpo de PATCH /route-batches/:id/driver (ST-51.6): conductor propuesto y versión revisada. */
+export interface AsignarConductorPayload {
+  driverId: number;
+  version: number;
+}
+
+/**
+ * Respuesta de PATCH /route-batches/:id/driver y /vehicle. En `pending_final_review` la corrección
+ * se vuelve a validar: si no pasa, el lote vuelve a `provisional` con los motivos.
+ */
+export interface CorreccionLote {
+  routeBatchId: number;
+  version: number;
+  status: EstadoLote;
+  vehicleId: number | null;
+  proposedDriverId: number | null;
+  /** false: se mandó el mismo valor y no cambió nada. */
+  changed: boolean;
+  capacity: ReporteCapacidad | null;
+}

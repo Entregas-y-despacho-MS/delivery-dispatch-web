@@ -7,6 +7,8 @@ import type {
   AprobacionFinal,
   AprobacionPromesas,
   AprobarLoteFinalPayload,
+  AsignarConductorPayload,
+  CorreccionLote,
   AprobarPromesasPayload,
   AsignacionVehiculoLote,
   AsignarVehiculoPayload,
@@ -149,5 +151,32 @@ export function opcionesAprobarLoteFinal(base: Base & {
     onSuccess: (resultado) => base.avisar.exito(mensajeAprobacionFinal(resultado)),
     onError: alFallar(base, "aprobar-final"),
     onSettled: () => recargarTodo(base.queryClient),
+  };
+}
+
+export interface CambiarConductor {
+  loteId: number;
+  driverId: number;
+  version: number;
+  /** Nombre del conductor, solo para el aviso. */
+  nombre: string;
+}
+
+/** Texto del aviso tras corregir un lote en revisión final: puede volver a provisional si no pasa la validación. */
+export function mensajeCorreccion({ status, changed }: CorreccionLote, que: string): string {
+  if (!changed) return `El lote ya tenía ese ${que}.`;
+  if (status === "provisional") return `${que[0].toUpperCase()}${que.slice(1)} cambiado, pero el lote no pasó la nueva validación y volvió a provisional.`;
+  return `${que[0].toUpperCase()}${que.slice(1)} cambiado. El lote pasó la nueva validación.`;
+}
+
+/** Corrección del conductor propuesto (ST-51.1 / ST-51.6). Ante 409 avisa y recarga, nunca reintenta. */
+export function opcionesAsignarConductor(base: Base & {
+  asignar: (id: number, payload: AsignarConductorPayload) => Promise<CorreccionLote>;
+}): MutationOptions<CorreccionLote, unknown, CambiarConductor> {
+  return {
+    mutationFn: ({ loteId, driverId, version }) => base.asignar(loteId, { driverId, version }),
+    onSuccess: (resultado) => base.avisar.exito(mensajeCorreccion(resultado, "conductor")),
+    onError: alFallar(base, "conductor"),
+    onSettled: () => base.queryClient.invalidateQueries({ queryKey: lotesKeys.all }),
   };
 }

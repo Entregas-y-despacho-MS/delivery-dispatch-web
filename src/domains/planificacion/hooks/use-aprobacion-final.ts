@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { opcionesAprobarLoteFinal } from "../planificacion.mutaciones";
-import { aprobarLoteFinal } from "../services/lotes-definitivos.service";
+import { opcionesAprobarLoteFinal, opcionesAsignarConductor } from "../planificacion.mutaciones";
+import { aprobarLoteFinal, asignarConductorLote } from "../services/lotes-definitivos.service";
 
 interface Opciones {
   /** Se llama cuando el lote cambió en el back y la pantalla debe mostrar la versión vigente. */
@@ -19,7 +19,16 @@ export function useAprobacionFinal({ alRecargar }: Opciones = {}) {
     aprobar: aprobarLoteFinal,
   }));
 
+  const conductor = useMutation(opcionesAsignarConductor({
+    queryClient,
+    alRecargar,
+    avisar: { exito: toast.success, error: toast.error },
+    asignar: asignarConductorLote,
+  }));
+
   return {
+    cambiarConductor: conductor.mutate,
+    cambiandoConductor: conductor.isPending,
     aprobarLote: mutation.mutate,
     /** Indicador de envío: el botón muestra «Aprobando...» y queda deshabilitado. */
     aprobando: mutation.isPending,

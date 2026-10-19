@@ -1,5 +1,10 @@
-import { PageHeader } from "@/shared/components/common/page-header";
+import { useParams } from "react-router-dom";
 
+import { SeguimientoPublicoVista } from "@/domains/seguimiento";
+
+/** Enlace del correo: /seguimiento/:token (ST-224.2). Sin login. */
 export default function SeguimientoDetallePage() {
-  return <PageHeader title="Estado de tu pedido" description="RF-U15 a RF-U22" />;
+  const { token = "" } = useParams<{ token: string }>();
+  // key: otro enlace en la misma pestaña arranca de cero (sin la verificación del anterior).
+  return <SeguimientoPublicoVista key={token} token={token} />;
 }

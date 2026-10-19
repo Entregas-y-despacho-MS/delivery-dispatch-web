@@ -12,6 +12,35 @@ export { BandejaPedidosVista } from "./components/bandeja-pedidos-vista";
 export { PedidoBadges, PrioridadBadge } from "./components/pedido-badges";
 export { PrioridadSelector } from "./components/prioridad-selector";
 export { formatearFranja, formatearKilos, formatearMetrosCubicos } from "./despachos.format";
+export { DespachoFicha } from "./components/despacho-ficha";
+export type { PestanaFicha } from "./components/despacho-ficha";
+export { EvidenciaVisor } from "./components/evidencia-visor";
+export { FichaEvidencias } from "./components/ficha-evidencias";
+export { FichaGeneral } from "./components/ficha-general";
+export { FichaIncidencias } from "./components/ficha-incidencias";
+export { FichaLineaTiempo } from "./components/ficha-linea-tiempo";
+export { despachoDetalleKeys, useDespachoDetalle } from "./hooks/use-despacho-detalle";
+export { obtenerDetalleDespacho } from "./services/despacho-detalle.service";
+export {
+  enlaceMapa,
+  etiquetaEstadoDespacho,
+  etiquetaEvento,
+  etiquetaEvidencia,
+  formatearCoordenadas,
+  formatearFechaHoraExacta,
+  formatearVentana,
+  formatearVentanaConDia,
+  quienOrigino,
+  urlVencida,
+} from "./despacho-detalle.format";
+export type {
+  DespachoDetalle,
+  EventoDetalle,
+  EvidenciaDetalle,
+  IncidenciaDetalle,
+  ReprogramacionDetalle,
+  TipoEvidencia,
+} from "./despacho-detalle.types";
 
 export type {
   PedidoPendiente,

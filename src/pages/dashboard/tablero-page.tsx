@@ -52,6 +52,7 @@ export default function TableroPage() {
         socketConnected={connected}
         onRetry={() => void tablero.refetch()}
         onOpenReview={(batchId) => navigate(`/app/planificacion?loteId=${batchId}`)}
+        onOpenDetail={(dispatchId) => navigate(`/app/despachos/${dispatchId}`)}
       />
     </div>
   );

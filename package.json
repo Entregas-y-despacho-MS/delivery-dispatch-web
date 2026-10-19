@@ -19,7 +19,8 @@
     "test:bandeja-pedidos": "node --test scripts/bandeja-pedidos.test.mjs",
     "test:parametros-operativos": "node --test scripts/parametros-operativos.test.mjs",
     "test:prioridad-filtros": "node --test scripts/prioridad-filtros.test.mjs",
-    "test:lote-provisional": "node --test scripts/lote-provisional.test.mjs"
+    "test:lote-provisional": "node --test scripts/lote-provisional.test.mjs",
+    "test:aprobacion-lote": "node --test scripts/aprobacion-lote.test.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

@@ -1,6 +1,6 @@
 # API de Delivery Dispatch
 
-Referencia para implementar clientes y reutilizar en otros chats del mismo proyecto. Fuente: `../../backend/delivery-dispatch-svc/src`, commit `4cb8027+worktree`; generada el 2026-10-19. La especificación completa está en [openapi.json](openapi.json).
+Referencia para implementar clientes y reutilizar en otros chats del mismo proyecto. Fuente: `../../backend/delivery-dispatch-svc/src`, commit `3c08b7b`; generada el 2026-10-19. La especificación completa está en [openapi.json](openapi.json).
 
 **Cobertura:** 53 operaciones HTTP, 35 rutas y 65 esquemas. Se contrastaron las rutas y modelos con el Swagger disponible y los decoradores del backend. Los ejemplos se generaron desde los DTO; no se ejecutaron operaciones contra la base de datos.
 

@@ -22,6 +22,17 @@ export { escribirFiltrosHistorial, FILTROS_HISTORIAL_INICIALES, leerFiltrosHisto
 export type { FiltrosHistorial } from "./historial.url";
 export { ESTADOS_FINALES, ORDENES_HISTORIAL } from "./historial.types";
 export type { DespachoHistorial, EstadoFinal, HistorialParams, OrdenHistorial } from "./historial.types";
+export { solicitudesCambioKeys, useEnlaceSeguimiento, useSolicitudesCambio } from "./hooks/use-solicitudes-cambio";
+export { SolicitudesCambioToolbar } from "./components/solicitudes-cambio-toolbar";
+export { SolicitudesCambioLista } from "./components/solicitudes-cambio-lista";
+export { SolicitudesCambioVista } from "./components/solicitudes-cambio-vista";
+export { ResolverSolicitudDialog } from "./components/resolver-solicitud-dialog";
+export { EnlaceSeguimientoDialog } from "./components/enlace-seguimiento-dialog";
+export { revelarEnlaceSeguimiento, solicitudesCambioService } from "./services/solicitudes-cambio.service";
+export { errorEnlace } from "./solicitudes-cambio.reglas";
+export { escribirFiltrosSolicitudes, leerFiltrosSolicitudes, paramsSolicitudes } from "./solicitudes-cambio.url";
+export type { FiltrosSolicitudes } from "./solicitudes-cambio.url";
+export type { EnlaceSeguimiento, PedidoDeCambio, SolicitudCambio, SolicitudesCambioParams } from "./solicitudes-cambio.types";
 export { DespachoFicha } from "./components/despacho-ficha";
 export type { PestanaFicha } from "./components/despacho-ficha";
 export { EvidenciaVisor } from "./components/evidencia-visor";

@@ -76,6 +76,7 @@ SPANISH_SUMMARIES = {
     "Create a vehicle incident type": "Crear tipo de incidente vehicular",
     "Update a vehicle incident type": "Actualizar tipo de incidente vehicular",
     "Register an incident on a vehicle": "Registrar incidente de vehículo",
+    "List dispatches grouped for the coordinator kanban board": "Listar despachos agrupados para el tablero Kanban",
 }
 
 
@@ -301,6 +302,8 @@ def error_rows(operation):
 
 
 def access(operation):
+    if operation.get("operationId") == "DispatchesController_findKanban":
+        return "JWT Bearer; roles: coordinator, supervisor"
     if not operation.get("security"):
         return "Público"
     forbidden = operation.get("responses", {}).get("403", {}).get("description", "")
@@ -553,12 +556,14 @@ lines += [
     "desconexión inmediata. En producción usar la URL y el protocolo TLS del servidor.", "",
     "| Evento recibido | Quién lo recibe | Cuerpo | Origen |",
     "| --- | --- | --- | --- |",
-    "| `dispatch.location.updated` | `root`, `admin`, `coordinator`, `supervisor` "
-    "(sala `dispatch-board`, asignada al conectar) | "
-    "`{ dispatchId, latitude, longitude, recordedAt }` | Se emite cuando "
-    "`POST /api/tracking/locations` guarda un punto nuevo. |", "",
-    "El repartidor reporta sus ubicaciones por REST. No recibe este evento de tablero. "
-    "WebSocket no aparece como operación en OpenAPI.", "",
+    "| `dispatch.status_changed` | Coordinadores, supervisores, zona del despacho y repartidor asignado | `{ dispatchId, status, previousStatus, version, updatedAt }` |",
+    "| `dispatch.incident_reported` | Coordinadores y supervisores de la zona | `{ dispatchId, incidentId, reasonCode, reportedAt }` |",
+    "| `dispatch.evidence_registered` | Coordinadores y supervisores | `{ dispatchId, evidenceId, type, registeredAt }` |",
+    "| `dispatch.change_requires_attention` | Coordinadores | `{ dispatchId, source, changeType, receivedAt }` |",
+    "| `dispatch.location.updated` | Coordinadores y supervisores (sala del tablero) | `{ dispatchId, latitude, longitude, recordedAt }` |",
+    "| `route.assigned` | Coordinadores y repartidor asignado | `{ routeId, driverId, vehicleId, dispatchIds, version }` |",
+    "| `integration.message_rejected`, `integration.order_incomplete` | Coordinadores y supervisores | Eventos de integración; `integration.order_incomplete` no lleva `dispatchId`. |", "",
+    "El cliente Kanban invalida `dispatches-kanban` cuando recibe estos eventos y usa polling cada 15 s mientras Socket.IO está desconectado. El repartidor reporta sus ubicaciones por REST. WebSocket no aparece como operación en OpenAPI.", "",
     "## Esquemas de datos", "",
     "Los campos y restricciones siguientes provienen de Swagger. `openapi.json` contiene "
     "los ejemplos, las estructuras anidadas y los formatos exactos.", "",

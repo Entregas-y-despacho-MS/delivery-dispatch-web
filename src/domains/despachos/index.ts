@@ -1,5 +1,9 @@
 export { useBandejaPedidos } from "./hooks/use-bandeja-pedidos";
 export { useCambiarPrioridad } from "./hooks/use-cambiar-prioridad";
+export { useDispatchEvents } from "./hooks/use-dispatch-events";
+export { useTableroKanban } from "./hooks/use-tablero-kanban";
+export { TableroKanban } from "./components/tablero-kanban";
+export { COLUMNAS_INVERSA, COLUMNAS_OPERATIVAS, destinoAbreRevision, ordenarColumnas, puedeArrastrarDespacho } from "./tablero-kanban.rules";
 export type { OrdenActual, PrioridadFilter, TurnoFilter, ZonaFilter } from "./hooks/use-bandeja-pedidos";
 export { BandejaPedidosToolbar } from "./components/bandeja-pedidos-toolbar";
 export type { ZonaOpcion } from "./components/bandeja-pedidos-toolbar";
@@ -14,4 +18,8 @@ export type {
   PrioridadPedido,
   ReservaPedido,
   SituacionBandeja,
+  ColumnaKanban,
+  ColumnaKanbanKey,
+  DespachoKanban,
+  FiltrosTableroKanban,
 } from "./despachos.types";

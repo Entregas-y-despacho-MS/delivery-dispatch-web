@@ -72,3 +72,50 @@ export interface PedidosPendientesResponse {
   page: number;
   limit: number;
 }
+
+/** Tarjeta del tablero Kanban (GET /dispatches/kanban). */
+export interface DespachoKanban {
+  id: number;
+  sourceOrderRef: string;
+  trackingCode: string | null;
+  status: string;
+  dispatchType: { id: number; name: string };
+  zone: { id: number; name: string } | null;
+  driver: { id: number; fullName: string } | null;
+  vehicle: { id: number; plate: string } | null;
+  windowStart: string | null;
+  windowEnd: string | null;
+  priority: string;
+  volumeM3: number;
+  attemptCount: number;
+  attemptLimit: number;
+  routeBatch: { id: number; status: string } | null;
+  inbox: SituacionBandeja;
+  reservation: ReservaPedido | null;
+}
+
+export type ColumnaKanbanKey =
+  | "pending" | "in_planning" | "scheduled" | "assigned" | "out_for_delivery"
+  | "in_transit" | "delivered" | "incident" | "rescheduled"
+  | "pickup_scheduled" | "picked_up_in_transit" | "returned_to_warehouse" | "returned";
+
+export interface ColumnaKanban {
+  key: ColumnaKanbanKey;
+  statuses: string[];
+  label: string;
+  ordersCount: number;
+  volumeM3: number;
+  dispatches: DespachoKanban[];
+}
+
+export interface TableroKanban {
+  date: string;
+  columns: ColumnaKanban[];
+}
+
+export interface FiltrosTableroKanban {
+  date: string;
+  delivery_zone_id?: number;
+  driver_id?: number;
+  dispatch_type_id?: number;
+}

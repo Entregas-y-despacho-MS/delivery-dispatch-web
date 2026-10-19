@@ -94,9 +94,9 @@ test("con la ventana vencida o sin intentos solo queda solicitar un cambio", () 
   assert.doesNotMatch(yaPidio, /<button/);
 });
 
-test("sin correo registrado no se ofrece reprogramar y se explica por qué", () => {
+test("si no se puede reprogramar (sin correo o sin configurar) no se ofrece y se sugiere pedir un cambio", () => {
   const sinCorreo = { ...abierto, canReschedule: false };
-  assert.match(avisoAutoservicio(sinCorreo), /necesitamos un correo registrado/);
+  assert.match(avisoAutoservicio(sinCorreo), /no puedes elegir otro horario desde este enlace\. Si lo necesitas, solicita un cambio/);
   assert.doesNotMatch(acciones(sinCorreo), /Elegir otro horario/);
   assert.equal(avisoAutoservicio(abierto), null);
 });

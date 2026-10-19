@@ -3,7 +3,7 @@ export {
   asignarVehiculoLote,
   reasignarRevisorLote,
 } from "./services/lotes-provisionales.service";
-export { aprobarLoteFinal } from "./services/lotes-definitivos.service";
+export { aprobarLoteFinal, asignarConductorLote } from "./services/lotes-definitivos.service";
 export { mensajeErrorLote, requiereRecargarLote } from "./planificacion.errores";
 export type { AccionLote } from "./planificacion.errores";
 export { useAccionesLote } from "./hooks/use-acciones-lote";
@@ -24,8 +24,8 @@ export { useAprobacionFinal } from "./hooks/use-aprobacion-final";
 export { RelojRevisionLote } from "./components/reloj-revision";
 export { describirRelojRevision, MINUTOS_REVISION_PROXIMA } from "./planificacion.reloj";
 export type { EstadoReloj, RelojRevision } from "./planificacion.reloj";
-export { lotesKeys, mensajeAprobacion, mensajeAprobacionFinal } from "./planificacion.mutaciones";
-export type { AprobarLoteFinal, AprobarPromesas, CambiarVehiculo, ReasignarRevisor } from "./planificacion.mutaciones";
+export { lotesKeys, mensajeAprobacion, mensajeAprobacionFinal, mensajeCorreccion } from "./planificacion.mutaciones";
+export type { AprobarLoteFinal, AprobarPromesas, CambiarConductor, CambiarVehiculo, ReasignarRevisor } from "./planificacion.mutaciones";
 export { BarraOcupacion, OcupacionLote } from "./components/ocupacion-lote";
 export { EstadoPedidoLoteBadge } from "./components/estado-pedido-lote-badge";
 export { LoteResumenCard } from "./components/lote-resumen-card";
@@ -43,7 +43,9 @@ export type {
   AprobarLoteFinalPayload,
   AprobarPromesasPayload,
   AsignacionVehiculoLote,
+  AsignarConductorPayload,
   AsignarVehiculoPayload,
+  CorreccionLote,
   CorreoPromesa,
   EstadoLote,
   MedidaCapacidad,
@@ -62,6 +64,9 @@ export { ReasignarLoteDialog } from "./components/reasignar-lote-dialog";
 export type { OpcionRevisor, Reasignacion } from "./components/reasignar-lote-dialog";
 export { BarraCapacidad } from "./components/capacidad-vehiculo";
 export { AprobarLoteDialog } from "./components/aprobar-lote-dialog";
+export { CambiarConductorDialog } from "./components/cambiar-conductor-dialog";
+export type { OpcionConductor } from "./components/cambiar-conductor-dialog";
+export { LoteDefinitivoDetalle } from "./components/lote-definitivo-detalle";
 export {
   calcularCapacidad,
   formatearMedida,

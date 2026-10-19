@@ -17,7 +17,7 @@ const { calcularCapacidad, puedeAprobarPorCapacidad } = await server.ssrLoadModu
 const { BarraCapacidad } = await server.ssrLoadModule("/src/domains/planificacion/components/capacidad-vehiculo.tsx");
 const { describirRelojRevision } = await server.ssrLoadModule("/src/domains/planificacion/planificacion.reloj.ts");
 const { RelojRevisionLote } = await server.ssrLoadModule("/src/domains/planificacion/components/reloj-revision.tsx");
-const { opcionesAprobarLoteFinal, mensajeAprobacionFinal } = await server.ssrLoadModule("/src/domains/planificacion/planificacion.mutaciones.ts");
+const { opcionesAprobarLoteFinal, opcionesAsignarConductor, mensajeAprobacionFinal, mensajeCorreccion } = await server.ssrLoadModule("/src/domains/planificacion/planificacion.mutaciones.ts");
 const { mensajeErrorLote, requiereRecargarLote } = await server.ssrLoadModule("/src/domains/planificacion/planificacion.errores.ts");
 const { parseApiError } = await server.ssrLoadModule("/src/shared/lib/api-error.ts");
 const { QueryClient, MutationObserver } = await server.ssrLoadModule("@tanstack/react-query");
@@ -177,4 +177,43 @@ test("los rechazos de la 2.ª aprobación se explican y solo los de lote vigente
   assert.match(mensajeErrorLote(error("DISPATCH_PACKAGES_REQUIRED"), "aprobar-final"), /bultos registrados/);
   assert.match(mensajeErrorLote(error("ROUTE_BATCH_DRIVER_REQUIRED"), "aprobar-final"), /conductor propuesto/);
   assert.match(mensajeErrorLote(parseApiError(errorHttp(500)), "aprobar-final"), /^No se pudo aprobar el lote\./);
+});
+
+test("al cambiar el conductor se manda la versión y el aviso dice si el lote pasó la nueva validación", async () => {
+  const { queryClient, invalidadas, avisos, avisar } = preparar();
+  let recibido;
+  const mutacion = new MutationObserver(queryClient, opcionesAsignarConductor({
+    queryClient,
+    avisar,
+    asignar: async (id, cuerpo) => {
+      recibido = { id, cuerpo };
+      return { routeBatchId: id, version: 5, status: "pending_final_review", vehicleId: 3, proposedDriverId: 9, changed: true, capacity: null };
+    },
+  }));
+  await mutacion.mutate({ loteId: 12, driverId: 9, version: 4, nombre: "Ana" });
+  assert.deepEqual(recibido, { id: 12, cuerpo: { driverId: 9, version: 4 } });
+  assert.equal(avisos.exito[0], "Conductor cambiado. El lote pasó la nueva validación.");
+  assert.ok(invalidadas.includes("route-batches"));
+  assert.match(mensajeCorreccion({ status: "provisional", changed: true }, "vehículo"), /^Vehículo cambiado, pero .*volvió a provisional/);
+  assert.equal(mensajeCorreccion({ status: "pending_final_review", changed: false }, "conductor"), "El lote ya tenía ese conductor.");
+});
+
+test("un conductor ocupado o un lote ya confirmado recargan; sin motor de rutas solo se avisa", async () => {
+  const { queryClient, avisos, avisar } = preparar();
+  let recargas = 0;
+  const mutacion = new MutationObserver(queryClient, opcionesAsignarConductor({
+    queryClient,
+    avisar,
+    alRecargar: () => { recargas += 1; },
+    asignar: async () => { throw errorHttp(409, "ROUTE_BATCH_DRIVER_NOT_AVAILABLE"); },
+  }));
+  await assert.rejects(mutacion.mutate({ loteId: 12, driverId: 9, version: 4, nombre: "Ana" }));
+  assert.equal(recargas, 1);
+  assert.match(avisos.error[0], /ya tiene otra ruta ese día/);
+
+  const error = (status, code) => parseApiError(errorHttp(status, code));
+  assert.equal(requiereRecargarLote(error(409, "ROUTE_BATCH_NOT_CORRECTABLE")), true);
+  assert.equal(requiereRecargarLote(error(503, "OSRM_UNAVAILABLE")), false);
+  assert.match(mensajeErrorLote(error(503, "OSRM_UNAVAILABLE"), "conductor"), /motor de rutas/);
+  assert.match(mensajeErrorLote(parseApiError(errorHttp(500)), "conductor"), /^No se pudo cambiar el conductor del lote\./);
 });

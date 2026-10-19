@@ -25,6 +25,8 @@ const { nivelOcupacion, formatearFechaTurno } = await server.ssrLoadModule("/src
 const { EstadoPedidoLoteBadge } = await server.ssrLoadModule("/src/domains/planificacion/components/estado-pedido-lote-badge.tsx");
 const { OcupacionLote } = await server.ssrLoadModule("/src/domains/planificacion/components/ocupacion-lote.tsx");
 const { LoteResumenCard } = await server.ssrLoadModule("/src/domains/planificacion/components/lote-resumen-card.tsx");
+const { LotePedidosTable } = await server.ssrLoadModule("/src/domains/planificacion/components/lote-pedidos-table.tsx");
+const { formatearFranja } = await server.ssrLoadModule("/src/domains/planificacion/planificacion.format.ts");
 const { QueryClient, MutationObserver } = await server.ssrLoadModule("@tanstack/react-query");
 
 /** Error de axios como lo arma el HttpExceptionFilter del back. */
@@ -224,4 +226,39 @@ test("la tarjeta del lote muestra sus datos y pide vehículo cuando no tiene", (
   assert.match(seleccionable, /<button[^>]*aria-pressed="true"/);
   assert.match(seleccionable, /2345-ABC/);
   assert.match(seleccionable, /bg-warning/);
+});
+
+/* ---------- Tabla de pedidos del lote ---------- */
+
+const pedido = (id, extra = {}) => ({
+  dispatchId: id, version: 1, status: "in_planning", sequenceOrder: id, sourceOrderRef: `LOTE-${id}`,
+  deliveryAddress: `Calle ${id}`, scheduledWindowStart: "2026-10-19T12:00:00Z", scheduledWindowEnd: "2026-10-19T14:00:00Z",
+  estimated: false, packages: [], ...extra,
+});
+
+test("la franja propuesta se muestra en hora de Bolivia", () => {
+  assert.equal(formatearFranja("2026-10-19T12:00:00Z", "2026-10-19T14:00:00Z"), "08:00–10:00");
+  assert.equal(formatearFranja(null, null), "Sin franja");
+});
+
+test("la tabla marca el pedido sacado y deja devolverlo; el resto se puede sacar", () => {
+  const html = renderToStaticMarkup(createElement(LotePedidosTable, {
+    pedidos: [pedido(1), pedido(2, { estimated: true })], sacados: new Set([1]), onSacar: () => {}, onDevolver: () => {},
+  }));
+  assert.match(html, /Se saca al aprobar/);
+  assert.match(html, /line-through/);
+  assert.match(html, /Devolver/);
+  assert.match(html, /Sacar</);
+  assert.match(html, /Peso estimado/);
+  assert.match(html, /08:00–10:00/);
+});
+
+test("un pedido con la promesa ya aprobada no se puede sacar y la tabla sin acciones queda de solo lectura", () => {
+  const html = renderToStaticMarkup(createElement(LotePedidosTable, {
+    pedidos: [pedido(1, { status: "scheduled" }), pedido(2)], sacados: new Set(),
+  }));
+  assert.match(html, /Promesa aprobada/);
+  assert.equal((html.match(/Sacar</g) ?? []).length, 1);
+  assert.match(html, /disabled=""/);
+  assert.match(renderToStaticMarkup(createElement(LotePedidosTable, { pedidos: [], sacados: new Set() })), /no tiene pedidos/);
 });

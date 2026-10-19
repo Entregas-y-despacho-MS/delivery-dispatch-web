@@ -1,20 +1,53 @@
+import { useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, FileSearch, PackageSearch } from "lucide-react";
+import { ArrowLeft, CalendarClock, FileSearch, PackageSearch } from "lucide-react";
 
-import { DespachoFicha, useDespachoDetalle } from "@/domains/despachos";
+import { useMotivosReprogramacion } from "@/domains/catalogos";
+import { useParametrosOperativos } from "@/domains/configuracion";
+import {
+  DespachoFicha,
+  generarFranjas,
+  mensajeErrorReprogramacion,
+  puedeReprogramar,
+  ReprogramarDespachoDialog,
+  useDespachoDetalle,
+  useReprogramacionDespacho,
+} from "@/domains/despachos";
 import { PageHeader } from "@/shared/components/common/page-header";
 import { ErrorAlert } from "@/shared/components/feedback/error-alert";
 import { Button } from "@/shared/components/ui/button";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { parseApiError } from "@/shared/lib/api-error";
 
-/** Ficha 360° del despacho (ST-56.1, RF-A09): /app/despachos/:id. */
+const MOTIVOS_PARAMS = { page: 1, limit: 100, active: true };
+/** Valor por defecto de max_delivery_attempts si el parámetro todavía no está definido. */
+const LIMITE_POR_DEFECTO = 3;
+
+/** Ficha 360° del despacho (ST-56.1, RF-A09) con la reprogramación del coordinador (ST-52.1, RF-A05). */
 export default function DespachoDetallePage() {
   const { id } = useParams<{ id: string }>();
   const despachoId = Number(id);
   const valido = Number.isInteger(despachoId) && despachoId > 0;
   const detalle = useDespachoDetalle(valido ? despachoId : null);
   const noExiste = !valido || (detalle.isError && parseApiError(detalle.error).status === 404);
+
+  const [reprogramando, setReprogramando] = useState(false);
+  const { reprogramar, devolver } = useReprogramacionDespacho(despachoId);
+  const { valores } = useParametrosOperativos();
+  const franjas = useMemo(() => generarFranjas(valores), [valores]);
+  const limiteIntentos = Number(valores.max_delivery_attempts) || LIMITE_POR_DEFECTO;
+  const motivosCatalogo = useMotivosReprogramacion(MOTIVOS_PARAMS);
+  const motivos = useMemo(
+    () => motivosCatalogo.data.filter((m) => m.active).map((m) => ({ code: m.code, name: m.name })),
+    [motivosCatalogo.data],
+  );
+  const errorAccion = reprogramar.error ?? devolver.error;
+
+  const abrir = (abierto: boolean) => {
+    reprogramar.reset();
+    devolver.reset();
+    setReprogramando(abierto);
+  };
 
   return (
     <div className="space-y-6">
@@ -43,7 +76,33 @@ export default function DespachoDetallePage() {
         ) : detalle.isError ? (
           <ErrorAlert error={detalle.error} onRetry={() => detalle.refetch()} isRetrying={detalle.isFetching} />
         ) : (
-          <DespachoFicha despacho={detalle.data} onRenovar={() => void detalle.refetch()} renovando={detalle.isFetching} />
+          <>
+            <DespachoFicha
+              despacho={detalle.data}
+              onRenovar={() => void detalle.refetch()}
+              renovando={detalle.isFetching}
+              acciones={puedeReprogramar(detalle.data.status.name) && (
+                <Button type="button" onClick={() => abrir(true)}>
+                  <CalendarClock aria-hidden /> Reprogramar
+                </Button>
+              )}
+            />
+            <ReprogramarDespachoDialog
+              abierto={reprogramando}
+              onOpenChange={abrir}
+              despacho={detalle.data}
+              motivos={motivos}
+              franjas={franjas}
+              limiteIntentos={limiteIntentos}
+              enviando={reprogramar.isPending}
+              devolviendo={devolver.isPending}
+              error={errorAccion ? mensajeErrorReprogramacion(parseApiError(errorAccion)) : null}
+              onReprogramar={(payload) => reprogramar.mutate(payload, { onSuccess: () => setReprogramando(false) })}
+              onDevolver={(notas) => devolver.mutate(notas, { onSuccess: () => setReprogramando(false) })}
+              onRenovarFotos={() => void detalle.refetch()}
+              renovandoFotos={detalle.isFetching}
+            />
+          </>
         )}
       </div>
     </div>

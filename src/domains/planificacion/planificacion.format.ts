@@ -30,3 +30,12 @@ export function formatearFechaTurno(fecha: string): string {
   if (!anio || !mes || !dia) return fecha;
   return fechaTurno.format(new Date(Date.UTC(anio, mes - 1, dia)));
 }
+
+const hora = new Intl.DateTimeFormat("es-BO", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "America/La_Paz" });
+
+/** Franja propuesta en hora de Bolivia, p. ej. «08:00–10:00». */
+export function formatearFranja(inicio: string | null, fin: string | null): string {
+  if (!inicio) return "Sin franja";
+  const desde = hora.format(new Date(inicio));
+  return fin ? `${desde}–${hora.format(new Date(fin))}` : desde;
+}

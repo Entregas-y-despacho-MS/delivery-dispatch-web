@@ -23,7 +23,8 @@
     "test:lote-provisional": "node --test scripts/lote-provisional.test.mjs",
     "test:kanban": "vitest run scripts/tablero-kanban.test.tsx scripts/tablero-sync.test.tsx",
     "test:ficha-despacho": "vitest run scripts/despacho-ficha.test.tsx",
-    "test:reprogramacion": "vitest run scripts/reprogramacion-despacho.test.tsx"
+    "test:reprogramacion": "vitest run scripts/reprogramacion-despacho.test.tsx",
+    "test:historial": "vitest run scripts/historial-despachos.test.tsx"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

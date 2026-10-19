@@ -20,6 +20,7 @@
     "test:parametros-operativos": "node --test scripts/parametros-operativos.test.mjs",
     "test:prioridad-filtros": "node --test scripts/prioridad-filtros.test.mjs",
     "test:seguimiento-publico": "node --test scripts/seguimiento-publico.test.mjs"
+    "test:lote-provisional": "node --test scripts/lote-provisional.test.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

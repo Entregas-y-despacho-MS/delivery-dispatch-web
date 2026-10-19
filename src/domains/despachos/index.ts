@@ -20,6 +20,23 @@ export { FichaGeneral } from "./components/ficha-general";
 export { FichaIncidencias } from "./components/ficha-incidencias";
 export { FichaLineaTiempo } from "./components/ficha-linea-tiempo";
 export { despachoDetalleKeys, useDespachoDetalle } from "./hooks/use-despacho-detalle";
+export { useReprogramacionDespacho } from "./hooks/use-reprogramacion-despacho";
+export { ReprogramarDespachoDialog } from "./components/reprogramar-despacho-dialog";
+export type { MotivoOpcion } from "./components/reprogramar-despacho-dialog";
+export {
+  contarIntentos,
+  estadoIntentos,
+  generarFranjas,
+  hoyEnBolivia,
+  mensajeErrorReprogramacion,
+  puedeDevolver,
+  puedeReprogramar,
+  requiereRecargar,
+  ventanaUtc,
+} from "./reprogramacion.reglas";
+export type { EstadoIntentos, Franja } from "./reprogramacion.reglas";
+export { devolverAlAlmacen, reprogramarDespacho } from "./services/reprogramacion.service";
+export type { DevolucionHecha, ReprogramacionHecha, ReprogramarPayload } from "./services/reprogramacion.service";
 export { obtenerDetalleDespacho } from "./services/despacho-detalle.service";
 export {
   enlaceMapa,

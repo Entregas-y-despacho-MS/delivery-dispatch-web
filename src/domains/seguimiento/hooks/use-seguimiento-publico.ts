@@ -1,0 +1,38 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
+import { parseApiError } from "@/shared/lib/api-error";
+import { createQueryKeys } from "@/shared/lib/query-keys";
+import type { SeguimientoPublico } from "../seguimiento.types";
+import {
+  confirmarEntrega,
+  obtenerSeguimiento,
+  solicitarCambio,
+} from "../services/tracking-publico.service";
+
+export const seguimientoKeys = createQueryKeys("public-tracking");
+
+/** Ni 404 (enlace inválido) ni 429 (límite por IP) mejoran reintentando solos. */
+const reintentar = (fallos: number, error: unknown) => fallos < 2 && parseApiError(error).retryable;
+
+/** Pedido del enlace. Se recarga al volver a la pestaña: el estado cambia sin que el cliente haga nada. */
+export function useSeguimientoPublico(token: string) {
+  return useQuery({
+    queryKey: seguimientoKeys.detail(token),
+    queryFn: ({ signal }) => obtenerSeguimiento(token, signal),
+    retry: reintentar,
+    staleTime: 30_000,
+    refetchOnWindowFocus: true,
+  });
+}
+
+/** Confirmar o pedir un cambio devuelven el pedido actualizado: se pone directo en la caché. */
+export function useRespuestaCliente(token: string) {
+  const queryClient = useQueryClient();
+  const guardar = (pedido: SeguimientoPublico) => queryClient.setQueryData(seguimientoKeys.detail(token), pedido);
+  const recargar = () => queryClient.invalidateQueries({ queryKey: seguimientoKeys.detail(token) });
+
+  const confirmar = useMutation({ mutationFn: () => confirmarEntrega(token), onSuccess: guardar, onError: recargar });
+  const cambio = useMutation({ mutationFn: (detalle: string) => solicitarCambio(token, detalle), onSuccess: guardar, onError: recargar });
+
+  return { confirmar, cambio, guardar, recargar };
+}

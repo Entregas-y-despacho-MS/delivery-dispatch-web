@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { DndContext, DragOverlay, KeyboardSensor, PointerSensor, useDraggable, useDroppable, useSensor, useSensors, type DragEndEvent, type DragStartEvent } from "@dnd-kit/core";
-import { CalendarDays, CircleAlert, Clock3, Truck, Wifi, WifiOff } from "lucide-react";
+import { CalendarDays, CircleAlert, Clock3, FileSearch, Truck, Wifi, WifiOff } from "lucide-react";
 
 import { useZonas } from "@/domains/catalogos";
 import { useTableroKanbanFiltros } from "../hooks/use-tablero-kanban-filtros";
@@ -31,15 +31,18 @@ interface TableroKanbanProps {
   socketConnected: boolean;
   onRetry: () => void;
   onOpenReview: (batchId: number) => void;
+  /** Abre la ficha 360° del despacho (ST-56.1); sin esto las tarjetas no muestran el enlace. */
+  onOpenDetail?: (dispatchId: number) => void;
 }
 
 interface TarjetaProps {
   dispatch: DespachoKanban;
   draggable: boolean;
   overlay?: boolean;
+  onOpenDetail?: (dispatchId: number) => void;
 }
 
-function TarjetaDespacho({ dispatch, draggable, overlay = false }: TarjetaProps) {
+function TarjetaDespacho({ dispatch, draggable, overlay = false, onOpenDetail }: TarjetaProps) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: `dispatch-${dispatch.id}`,
     disabled: !draggable || overlay,
@@ -82,6 +85,19 @@ function TarjetaDespacho({ dispatch, draggable, overlay = false }: TarjetaProps)
           <Badge variant="outline" className="text-xs">Reintento {dispatch.attemptCount}/{dispatch.attemptLimit}</Badge>
         )}
         {dispatch.inbox === "proposed" && <Badge variant="secondary" className="text-xs">Propuesto</Badge>}
+        {onOpenDetail && !overlay && (
+          <button
+            type="button"
+            // Sin esto el clic empezaría a arrastrar la tarjeta.
+            onPointerDown={(evento) => evento.stopPropagation()}
+            onKeyDown={(evento) => evento.stopPropagation()}
+            onClick={() => onOpenDetail(dispatch.id)}
+            className="inline-flex items-center gap-1 text-xs font-medium text-primary underline-offset-4 hover:underline"
+            aria-label={`Ver ficha de ${dispatch.sourceOrderRef}`}
+          >
+            <FileSearch className="size-3.5" aria-hidden /> Ver ficha
+          </button>
+        )}
         {dispatch.inbox === "reserved" && (
           <Badge variant="secondary" className="max-w-full truncate text-xs">
             En planificación por {dispatch.reservation?.reservedByName ?? "otro coordinador"}
@@ -95,9 +111,10 @@ function TarjetaDespacho({ dispatch, draggable, overlay = false }: TarjetaProps)
 interface ColumnaProps {
   columna: ColumnaKanban;
   arrastrando: boolean;
+  onOpenDetail?: (dispatchId: number) => void;
 }
 
-function ColumnaTablero({ columna, arrastrando }: ColumnaProps) {
+function ColumnaTablero({ columna, arrastrando, onOpenDetail }: ColumnaProps) {
   const habilitada = arrastrando && destinoAbreRevision(columna.key);
   const { isOver, setNodeRef } = useDroppable({ id: columna.key, disabled: !habilitada });
 
@@ -126,6 +143,7 @@ function ColumnaTablero({ columna, arrastrando }: ColumnaProps) {
               key={dispatch.id}
               dispatch={dispatch}
               draggable={puedeArrastrarDespacho(dispatch.status, dispatch.routeBatch?.id ?? null)}
+              onOpenDetail={onOpenDetail}
             />
           ))}
       </div>
@@ -162,7 +180,7 @@ function BoardSkeleton() {
 export function TableroKanban({
   date, onDateChange, deliveryZoneId, onDeliveryZoneChange, driverId, onDriverChange,
   dispatchTypeId, onDispatchTypeChange, logisticaInversa, onLogisticaInversaChange,
-  columns, isLoading, isError, isFetching, socketConnected, onRetry, onOpenReview,
+  columns, isLoading, isError, isFetching, socketConnected, onRetry, onOpenReview, onOpenDetail,
 }: TableroKanbanProps) {
   const zonas = useZonas({ page: 1, limit: 100 });
   const filtrosCatalogo = useTableroKanbanFiltros();
@@ -224,7 +242,7 @@ export function TableroKanban({
       {!isLoading && !isError && (
         <DndContext sensors={sensors} onDragStart={dragStart} onDragEnd={dragEnd} onDragCancel={() => setDispatchDragging(null)}>
           <div className="flex gap-3 overflow-x-auto pb-3" aria-busy={isFetching}>
-            {columnasVisibles.map((columna) => <ColumnaTablero key={columna.key} columna={columna} arrastrando={Boolean(dispatchDragging)} />)}
+            {columnasVisibles.map((columna) => <ColumnaTablero key={columna.key} columna={columna} arrastrando={Boolean(dispatchDragging)} onOpenDetail={onOpenDetail} />)}
           </div>
           <DragOverlay>{dispatchDragging && <TarjetaDespacho dispatch={dispatchDragging} draggable={false} overlay />}</DragOverlay>
         </DndContext>

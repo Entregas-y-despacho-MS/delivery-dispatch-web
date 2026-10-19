@@ -1,0 +1,233 @@
+import { useMemo, useState } from "react";
+import { DndContext, DragOverlay, KeyboardSensor, PointerSensor, useDraggable, useDroppable, useSensor, useSensors, type DragEndEvent, type DragStartEvent } from "@dnd-kit/core";
+import { CalendarDays, CircleAlert, Clock3, Truck, Wifi, WifiOff } from "lucide-react";
+
+import { useZonas } from "@/domains/catalogos";
+import { Badge } from "@/shared/components/ui/badge";
+import { Input } from "@/shared/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
+import { Switch } from "@/shared/components/ui/switch";
+import { formatearFranja, formatearMetrosCubicos } from "../despachos.format";
+import { PrioridadBadge } from "./pedido-badges";
+import type { ColumnaKanban, ColumnaKanbanKey, DespachoKanban } from "../despachos.types";
+import { COLUMNAS_OPERATIVAS, destinoAbreRevision, ordenarColumnas, puedeArrastrarDespacho } from "../tablero-kanban.rules";
+
+interface TableroKanbanProps {
+  date: string;
+  onDateChange: (date: string) => void;
+  deliveryZoneId: string;
+  onDeliveryZoneChange: (id: string) => void;
+  driverId: string;
+  onDriverChange: (id: string) => void;
+  dispatchTypeId: string;
+  onDispatchTypeChange: (id: string) => void;
+  logisticaInversa: boolean;
+  onLogisticaInversaChange: (value: boolean) => void;
+  columns: ColumnaKanban[];
+  isLoading: boolean;
+  isError: boolean;
+  isFetching: boolean;
+  socketConnected: boolean;
+  onRetry: () => void;
+  onOpenReview: (batchId: number) => void;
+}
+
+interface TarjetaProps {
+  dispatch: DespachoKanban;
+  draggable: boolean;
+  overlay?: boolean;
+}
+
+function TarjetaDespacho({ dispatch, draggable, overlay = false }: TarjetaProps) {
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+    id: `dispatch-${dispatch.id}`,
+    disabled: !draggable || overlay,
+    data: { dispatch },
+  });
+  const style = transform && !overlay
+    ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` }
+    : undefined;
+  const esUrgente = dispatch.priority === "urgent";
+
+  return (
+    <article
+      ref={setNodeRef}
+      style={style}
+      {...(draggable && !overlay ? { ...attributes, ...listeners } : {})}
+      aria-label={`${dispatch.sourceOrderRef}, ${dispatch.dispatchType.name}`}
+      className={`space-y-3 rounded-lg border bg-card p-3 shadow-sm transition-shadow ${
+        draggable ? "cursor-grab touch-none active:cursor-grabbing focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" : ""
+      } ${isDragging ? "opacity-40" : ""} ${overlay ? "w-72 rotate-1 shadow-lg" : ""}`}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="break-all text-sm font-semibold leading-5">{dispatch.sourceOrderRef}</p>
+          {dispatch.trackingCode && <p className="break-all text-xs text-muted-foreground">Seguimiento {dispatch.trackingCode}</p>}
+        </div>
+        <PrioridadBadge priority={esUrgente ? "urgent" : "normal"} />
+      </div>
+
+      <div className="space-y-1.5 text-xs text-muted-foreground">
+        <p className="flex items-center gap-2"><Truck className="size-3.5 shrink-0" aria-hidden />
+          <span className="truncate">{dispatch.driver?.fullName ?? "Sin conductor"} · {dispatch.vehicle?.plate ?? "Sin vehículo"}</span>
+        </p>
+        <p className="truncate">{dispatch.zone?.name ?? "Sin zona"} · {dispatch.dispatchType.name}</p>
+        <p className="flex items-center gap-2"><Clock3 className="size-3.5 shrink-0" aria-hidden />Franja {formatearFranja(dispatch.windowStart, dispatch.windowEnd)}</p>
+      </div>
+
+      <div className="flex flex-wrap items-center justify-between gap-2 border-t pt-2">
+        <span className="text-xs tabular-nums text-muted-foreground">{formatearMetrosCubicos(dispatch.volumeM3)} m³</span>
+        {dispatch.status === "rescheduled" && (
+          <Badge variant="outline" className="text-xs">Reintento {dispatch.attemptCount}/{dispatch.attemptLimit}</Badge>
+        )}
+        {dispatch.inbox === "proposed" && <Badge variant="secondary" className="text-xs">Propuesto</Badge>}
+        {dispatch.inbox === "reserved" && (
+          <Badge variant="secondary" className="max-w-full truncate text-xs">
+            En planificación por {dispatch.reservation?.reservedByName ?? "otro coordinador"}
+          </Badge>
+        )}
+      </div>
+    </article>
+  );
+}
+
+interface ColumnaProps {
+  columna: ColumnaKanban;
+  arrastrando: boolean;
+}
+
+function ColumnaTablero({ columna, arrastrando }: ColumnaProps) {
+  const habilitada = arrastrando && destinoAbreRevision(columna.key);
+  const { isOver, setNodeRef } = useDroppable({ id: columna.key, disabled: !habilitada });
+
+  return (
+    <section
+      ref={setNodeRef}
+      aria-label={columna.label}
+      data-column-key={columna.key}
+      className={`flex h-[min(66vh,46rem)] min-h-[22rem] w-[17rem] shrink-0 flex-col rounded-xl border bg-muted/30 transition-colors ${
+        habilitada ? "border-primary/60 bg-primary/5" : ""
+      } ${isOver ? "ring-2 ring-primary" : ""}`}
+    >
+      <header className="sticky top-0 z-10 space-y-2 rounded-t-xl border-b bg-card px-3 py-3">
+        <div className="flex items-start justify-between gap-2">
+          <h2 className="text-sm font-semibold leading-5">{columna.label}</h2>
+          <Badge variant="secondary" className="tabular-nums">{columna.ordersCount}</Badge>
+        </div>
+        <p className="text-xs tabular-nums text-muted-foreground">{columna.ordersCount} órdenes · {formatearMetrosCubicos(columna.volumeM3)} m³</p>
+        {habilitada && <p className="text-xs font-medium text-primary">Soltar aquí abre la revisión del lote</p>}
+      </header>
+      <div className="min-h-0 flex-1 space-y-2 overflow-y-auto p-2" aria-live="polite">
+        {columna.dispatches.length === 0
+          ? <p className="rounded-md border border-dashed bg-background/70 p-3 text-center text-xs text-muted-foreground">Sin despachos</p>
+          : columna.dispatches.map((dispatch) => (
+            <TarjetaDespacho
+              key={dispatch.id}
+              dispatch={dispatch}
+              draggable={puedeArrastrarDespacho(dispatch.status, dispatch.routeBatch?.id ?? null)}
+            />
+          ))}
+      </div>
+    </section>
+  );
+}
+
+function FiltroSelect({ label, value, onChange, options }: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  options: { id: number; name: string }[];
+}) {
+  return (
+    <div className="min-w-40 flex-1 space-y-1">
+      <label className="text-xs font-medium text-muted-foreground">{label}</label>
+      <Select value={value} onValueChange={onChange}>
+        <SelectTrigger className="w-full bg-background" aria-label={label}><SelectValue /></SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">Todos</SelectItem>
+          {options.map((option) => <SelectItem key={option.id} value={String(option.id)}>{option.name}</SelectItem>)}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
+
+function BoardSkeleton() {
+  return <div className="flex gap-3 overflow-hidden" aria-label="Cargando tablero">
+    {COLUMNAS_OPERATIVAS.map(({ key, label }) => <div key={key} className="h-[min(66vh,46rem)] w-[17rem] shrink-0 animate-pulse rounded-xl border bg-muted/40" aria-label={`Cargando ${label}`} />)}
+  </div>;
+}
+
+export function TableroKanban({
+  date, onDateChange, deliveryZoneId, onDeliveryZoneChange, driverId, onDriverChange,
+  dispatchTypeId, onDispatchTypeChange, logisticaInversa, onLogisticaInversaChange,
+  columns, isLoading, isError, isFetching, socketConnected, onRetry, onOpenReview,
+}: TableroKanbanProps) {
+  const zonas = useZonas({ page: 1, limit: 100 });
+  const [dispatchDragging, setDispatchDragging] = useState<DespachoKanban | null>(null);
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor),
+  );
+  const columnasVisibles = useMemo(() => ordenarColumnas(columns, logisticaInversa), [columns, logisticaInversa]);
+  const dispatches = columns.flatMap(({ dispatches: values }) => values);
+  const drivers = [...new Map(dispatches.flatMap(({ driver }) => driver ? [[driver.id, { id: driver.id, name: driver.fullName }] as const] : [])).values()];
+  const dispatchTypes = [...new Map(dispatches.map(({ dispatchType }) => [dispatchType.id, dispatchType])).values()];
+  const totalOrdenes = columnasVisibles.reduce((total, column) => total + column.ordersCount, 0);
+  const totalVolumen = columnasVisibles.reduce((total, column) => total + column.volumeM3, 0);
+
+  const dragStart = (event: DragStartEvent) => {
+    setDispatchDragging((event.active.data.current as { dispatch?: DespachoKanban } | undefined)?.dispatch ?? null);
+  };
+  const dragEnd = (event: DragEndEvent) => {
+    const dispatch = dispatchDragging;
+    const destination = event.over?.id as ColumnaKanbanKey | undefined;
+    setDispatchDragging(null);
+    if (dispatch && destination && destinoAbreRevision(destination) && dispatch.routeBatch) onOpenReview(dispatch.routeBatch.id);
+  };
+
+  return (
+    <div className="space-y-4">
+      <section className="space-y-4 rounded-xl border bg-card p-4" aria-label="Filtros del tablero">
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="min-w-40 flex-1 space-y-1">
+            <label htmlFor="tablero-date" className="text-xs font-medium text-muted-foreground">Fecha operativa</label>
+            <div className="relative"><CalendarDays className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
+              <Input id="tablero-date" type="date" value={date} onChange={(event) => onDateChange(event.target.value)} className="pl-9" />
+            </div>
+          </div>
+          <FiltroSelect label="Zona logística" value={deliveryZoneId} onChange={onDeliveryZoneChange} options={zonas.data.map(({ id, name }) => ({ id, name }))} />
+          <FiltroSelect label="Conductor" value={driverId} onChange={onDriverChange} options={drivers} />
+          <FiltroSelect label="Tipo de despacho" value={dispatchTypeId} onChange={onDispatchTypeChange} options={dispatchTypes} />
+          <div className="flex min-h-10 items-center gap-2 rounded-md border px-3">
+            <Switch id="reverse-logistics" checked={logisticaInversa} onCheckedChange={onLogisticaInversaChange} />
+            <label htmlFor="reverse-logistics" className="cursor-pointer text-sm font-medium">Logística inversa</label>
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t pt-3 text-sm">
+          <p className="font-medium tabular-nums">{totalOrdenes} órdenes · {formatearMetrosCubicos(totalVolumen)} m³</p>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground" aria-live="polite">
+            {socketConnected ? <><Wifi className="size-4 text-success" aria-hidden />Actualización en vivo</> : <><WifiOff className="size-4 text-warning" aria-hidden />Sin conexión en vivo · consulta cada 15 s</>}
+            {isFetching && <span>Actualizando…</span>}
+          </div>
+        </div>
+      </section>
+
+      <p className="text-sm text-muted-foreground">Arrastrar nunca cambia el estado. Solo puedes abrir la revisión del lote al soltar en Programado o Asignado; las demás etapas las gestiona el repartidor.</p>
+
+      {isError && <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm">
+        <span className="flex items-center gap-2"><CircleAlert className="size-4 text-destructive" aria-hidden />No se pudo cargar el tablero.</span>
+        <button type="button" onClick={onRetry} className="font-medium text-destructive underline underline-offset-4">Reintentar</button>
+      </div>}
+      {isLoading && <BoardSkeleton />}
+      {!isLoading && !isError && (
+        <DndContext sensors={sensors} onDragStart={dragStart} onDragEnd={dragEnd} onDragCancel={() => setDispatchDragging(null)}>
+          <div className="flex gap-3 overflow-x-auto pb-3" aria-busy={isFetching}>
+            {columnasVisibles.map((columna) => <ColumnaTablero key={columna.key} columna={columna} arrastrando={Boolean(dispatchDragging)} />)}
+          </div>
+          <DragOverlay>{dispatchDragging && <TarjetaDespacho dispatch={dispatchDragging} draggable={false} overlay />}</DragOverlay>
+        </DndContext>
+      )}
+    </div>
+  );
+}

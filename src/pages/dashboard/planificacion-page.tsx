@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Boxes, RefreshCw, Route } from "lucide-react";
 
 import { useVehiculos } from "@/domains/flota";
@@ -26,7 +27,17 @@ const ROLES_REVISORES: Record<string, string> = { coordinator: "Coordinador", su
 export default function PlanificacionPage() {
   const usuarioId = Number(useAuthStore((estado) => estado.user?.id)) || null;
   const [filtro, setFiltro] = useState<FiltroRevisor>("todos");
-  const [loteId, setLoteId] = useState<number | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const loteParam = Number(searchParams.get("loteId"));
+  const loteId = Number.isSafeInteger(loteParam) && loteParam > 0 ? loteParam : null;
+  const seleccionarLote = (id: number | null) => {
+    setSearchParams((actuales) => {
+      const siguientes = new URLSearchParams(actuales);
+      if (id === null) siguientes.delete("loteId");
+      else siguientes.set("loteId", String(id));
+      return siguientes;
+    }, { replace: true });
+  };
 
   const params = useMemo(() => ({
     page: 1,
@@ -61,7 +72,7 @@ export default function PlanificacionPage() {
       <section className="grid gap-4 lg:grid-cols-[minmax(18rem,22rem)_1fr]" aria-label="Lotes provisionales">
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <Select value={filtro} onValueChange={(valor: FiltroRevisor) => { setFiltro(valor); setLoteId(null); }}>
+            <Select value={filtro} onValueChange={(valor: FiltroRevisor) => { setFiltro(valor); seleccionarLote(null); }}>
               <SelectTrigger className="h-9 flex-1" aria-label="Filtrar lotes por revisor">
                 <SelectValue />
               </SelectTrigger>
@@ -97,7 +108,7 @@ export default function PlanificacionPage() {
               ocupacion={lote.occupancy ? Math.max(lote.occupancy.weight.usedPercent, lote.occupancy.volume.usedPercent) : null}
               revisor={lote.reviewer?.fullName ?? null}
               seleccionado={lote.id === loteId}
-              onSeleccionar={() => setLoteId(lote.id)}
+              onSeleccionar={() => seleccionarLote(lote.id)}
             />
           ))}
         </div>
@@ -112,7 +123,7 @@ export default function PlanificacionPage() {
                 usuarioId={usuarioId}
                 vehiculos={opcionesVehiculo}
                 revisores={revisores}
-                onCerrar={() => setLoteId(null)}
+              onCerrar={() => seleccionarLote(null)}
               />
             )}
         </div>

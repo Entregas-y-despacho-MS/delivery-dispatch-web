@@ -1,4 +1,10 @@
 export { useBandejaPedidos } from "./hooks/use-bandeja-pedidos";
+export { useHistorial } from "./hooks/use-historial";
+export { ReprogramarDialog } from "./components/reprogramar-dialog";
+export { historialService } from "./services/historial.service";
+export { solicitudesCambioService } from "./services/solicitudes-cambio.service";
+export type { SolicitudCambio, SolicitudesCambioResponse } from "./change-requests.types";
+export type { HistorialDespacho, HistorialParams, HistorialResponse, EstadoFinalDespacho } from "./historial.types";
 export { useCambiarPrioridad } from "./hooks/use-cambiar-prioridad";
 export { useDispatchEvents } from "./hooks/use-dispatch-events";
 export { useTableroKanban } from "./hooks/use-tablero-kanban";

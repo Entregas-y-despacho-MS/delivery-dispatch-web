@@ -26,6 +26,26 @@ export interface AprobarPromesasPayload {
   removeDispatchIds?: number[];
 }
 
+/** Cuerpo de POST /route-batches/:id/approve-final. */
+export interface AprobarLoteFinalPayload {
+  version: number;
+  dispatches: VersionDespacho[];
+}
+
+export interface AprobacionFinalLote {
+  routeBatchId: number;
+  version: number;
+  driverId: number;
+  vehicleId: number;
+  dispatchIds: number[];
+}
+
+export interface CorregirLotePayload {
+  version: number;
+  driverId?: number;
+  vehicleId?: number;
+}
+
 /** Resultado del correo de promesa de cada despacho aprobado. */
 export type ResultadoCorreo = "sent" | "bounced" | "failed" | "skipped";
 

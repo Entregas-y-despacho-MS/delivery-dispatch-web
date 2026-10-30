@@ -15,6 +15,8 @@ interface PortalRoute {
 export const PORTAL_ROUTES = {
   tablero: { path: "tablero", roles: BOTH },
   despachos: { path: "despachos", roles: BOTH },
+  historial: { path: "historial", roles: BOTH },
+  solicitudesCambio: { path: "solicitudes-cambio", roles: BOTH },
   despachoDetalle: { path: "despachos/:id", roles: BOTH },
   planificacion: { path: "planificacion", roles: COORDINATOR },
   recojos: { path: "recojos", roles: COORDINATOR },

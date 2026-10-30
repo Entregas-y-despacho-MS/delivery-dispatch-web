@@ -2,7 +2,7 @@ import {
   LayoutDashboard, ClipboardList, Route, RotateCcw,
   Map, Truck, Users, AlertTriangle, BarChart3,
   UserCog, MapPin, Gauge, ListX, CalendarClock, CarFront,
-  ScrollText, Settings, PanelsTopLeft, SlidersHorizontal, type LucideIcon,
+  ScrollText, Settings, PanelsTopLeft, SlidersHorizontal, History, MessageSquareText, type LucideIcon,
 } from "lucide-react";
 import { PORTAL_ROUTES, portalHref, type PortalRouteKey } from "@/config/portal-routes";
 import type { RoleId } from "@/config/roles";
@@ -50,6 +50,8 @@ export const NAV_GROUPS: NavGroup[] = [
     icon: AlertTriangle,
     items: [
       navItem("incidencias", "Incidencias", AlertTriangle),
+      navItem("historial", "Historial", History),
+      navItem("solicitudesCambio", "Solicitudes de cambio", MessageSquareText),
       navItem("reportes", "Reportes", BarChart3),
     ],
   },

@@ -24,6 +24,11 @@ const ESTADOS: { value: EstadoOperativoVehiculo; label: string }[] = [
   { value: "out_of_service", label: "Fuera de servicio" },
 ];
 
+const ESTADO_LOTE_LABEL: Record<string, string> = {
+  confirmed: "Confirmado",
+  in_execution: "En ejecución",
+};
+
 interface CambiarEstadoDialogProps {
   abierto: boolean;
   vehiculo: Vehiculo | null;
@@ -141,7 +146,7 @@ export function CambiarEstadoDialog({
               <ul className="space-y-1 text-sm">
                 {lotes.map((lote) => (
                   <li key={lote.id} className="space-y-1">
-                    <p>Lote #{lote.id} · {lote.shiftDate}{lote.status ? ` · ${lote.status}` : ""}</p>
+                    <p>Lote #{lote.id} · {lote.shiftDate}{lote.status ? ` · ${ESTADO_LOTE_LABEL[lote.status] ?? lote.status}` : ""}</p>
                     {lote.status === "in_execution" && (
                       <Link className="text-primary underline underline-offset-4" to="/app/mapa">
                         Abrir mapa para reasignar

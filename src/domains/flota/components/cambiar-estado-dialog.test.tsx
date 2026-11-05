@@ -83,7 +83,7 @@ describe("CambiarEstadoDialog", () => {
     await user.type(screen.getByRole("textbox", { name: "Motivo" }), "Ingreso a taller");
     await user.click(screen.getByRole("button", { name: "Guardar estado" }));
 
-    expect((await screen.findByRole("alert", { name: "Lotes que impiden cambiar el estado" })).textContent).toContain("Lote #42 · 2026-11-06 · in_execution");
+    expect((await screen.findByRole("alert", { name: "Lotes que impiden cambiar el estado" })).textContent).toContain("Lote #42 · 2026-11-06 · En ejecución");
     expect(screen.getByRole("link", { name: "Abrir mapa para reasignar" }).getAttribute("href")).toBe("/app/mapa");
   });
 

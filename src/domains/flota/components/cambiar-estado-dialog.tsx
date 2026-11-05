@@ -148,12 +148,17 @@ export function CambiarEstadoDialog({
                   <li key={lote.id} className="space-y-1">
                     <p>Lote #{lote.id} · {lote.shiftDate}{lote.status ? ` · ${ESTADO_LOTE_LABEL[lote.status] ?? lote.status}` : ""}</p>
                     {lote.status === "in_execution" && (
-                      <Link className="text-primary underline underline-offset-4" to="/app/mapa">
+                      <Link className="text-primary underline underline-offset-4" to={`/app/mapa?loteId=${lote.id}`}>
                         Abrir mapa para reasignar
                       </Link>
                     )}
                     {lote.status === "confirmed" && (
-                      <p className="text-xs text-muted-foreground">El lote confirmado no permite cambiar el vehículo desde esta pantalla.</p>
+                      <Link
+                        className="text-primary underline underline-offset-4"
+                        to={`/app/planificacion?loteId=${lote.id}&accion=cambiar-vehiculo`}
+                      >
+                        Cambiar vehículo del lote
+                      </Link>
                     )}
                     {!consultandoLotes && !lote.status && (
                       <p className="text-xs text-muted-foreground">No se pudo consultar el estado del lote; conserva la referencia para revisarlo.</p>

@@ -6655,7 +6655,7 @@
         ]
       },
       "put": {
-        "description": "Partially updates a vehicle: only the fields sent are changed, and `null` is rejected. This is also how the operational status is changed (`vehicleStatusId`: 1 = active, 2 = maintenance, 3 = out_of_service; an unknown ID is a 400 INVALID_VEHICLE_STATUS). A changed plate must not belong to another vehicle (409). Requires supervisor or coordinator role, or root.",
+        "description": "Partially updates vehicle details: only the fields sent are changed, and `null` is rejected. Operational status cannot be changed here; use `PATCH /vehicles/{id}/status` with a required reason. A changed plate must not belong to another vehicle (409). Requires supervisor or coordinator role, or root.",
         "operationId": "VehiclesController_update",
         "parameters": [
           {
@@ -6703,7 +6703,7 @@
                     },
                     "error": {
                       "type": "string",
-                      "description": "One of: Bad Request, Bad Request, INVALID_VEHICLE_STATUS"
+                      "description": "One of: Bad Request, VEHICLE_STATUS_CHANGE_REQUIRES_PATCH"
                     },
                     "message": {
                       "oneOf": [
@@ -6751,14 +6751,14 @@
                       "timestamp": "2026-01-01T00:00:00.000Z"
                     }
                   },
-                  "INVALID_VEHICLE_STATUS": {
-                    "summary": "INVALID_VEHICLE_STATUS — business rule (message is a string)",
+                  "VEHICLE_STATUS_CHANGE_REQUIRES_PATCH": {
+                    "summary": "Status changes must use the PATCH endpoint and include a reason",
                     "value": {
                       "statusCode": 400,
-                      "error": "INVALID_VEHICLE_STATUS",
-                      "message": "The given vehicle status does not exist.",
-                      "path": "/api/resource",
-                      "timestamp": "2026-01-01T00:00:00.000Z"
+                      "error": "VEHICLE_STATUS_CHANGE_REQUIRES_PATCH",
+                      "message": "Use PATCH /vehicles/:id/status to change a vehicle status and provide a reason.",
+                      "path": "/api/vehicles/1",
+                      "timestamp": "2026-11-05T12:00:00.000Z"
                     }
                   }
                 }
@@ -6841,7 +6841,7 @@
         ]
       },
       "delete": {
-        "description": "Soft-deletes the vehicle: historical dispatches and maintenances keep referencing it, but it stops appearing in lists and its plate can be reused. To only take it out of service temporarily, change its status instead (PUT `vehicleStatusId`). Requires supervisor or coordinator role, or root.",
+        "description": "Soft-deletes the vehicle: historical dispatches and maintenances keep referencing it, but it stops appearing in lists and its plate can be reused. To only take it out of service temporarily, change its status instead (`PATCH /vehicles/{id}/status` with a required reason). Requires supervisor or coordinator role, or root.",
         "operationId": "VehiclesController_remove",
         "parameters": [
           {
@@ -8115,21 +8115,220 @@
         "operationId": "DispatchesController_findKanbanFilters",
         "summary": "List catalog options for kanban filters",
         "description": "Returns all active, non-deleted drivers and all dispatch types, independent of the dispatches currently loaded on the board. Requires coordinator or supervisor role, or root.",
-        "tags": ["Dispatches"],
-        "security": [{ "access-token": [] }],
+        "tags": [
+          "Dispatches"
+        ],
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
         "parameters": [],
         "responses": {
           "200": {
             "description": "Available driver and dispatch-type filter options.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/DispatchKanbanFiltersResponseDto" }
+                "schema": {
+                  "$ref": "#/components/schemas/DispatchKanbanFiltersResponseDto"
+                }
               }
             }
           },
-          "401": { "description": "Invalid or expired token." },
-          "403": { "description": "Requires one of: coordinator, supervisor." }
+          "401": {
+            "description": "Invalid or expired token."
+          },
+          "403": {
+            "description": "Requires one of: coordinator, supervisor."
+          }
         }
+      }
+    },
+    "/api/vehicles/{id}/status": {
+      "patch": {
+        "summary": "Change a vehicle operational status",
+        "description": "Changes a vehicle status with a required reason. A vehicle cannot be moved to `maintenance` or `out_of_service` while it has a `confirmed` or `in_execution` route batch. Each actual status transition is recorded in `audit_logs`. Requires supervisor or coordinator role, or root.",
+        "operationId": "VehiclesController_changeStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Vehicle ID (a whole number from 1 to 2147483647, as returned by the list endpoint). Anything else is a 400.",
+            "schema": {
+              "example": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeVehicleStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VehicleDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 400
+                    },
+                    "error": {
+                      "type": "string",
+                      "description": "One of: Bad Request"
+                    },
+                    "message": {
+                      "oneOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      ],
+                      "description": "An array of field errors on validation failures, a single text otherwise."
+                    },
+                    "path": {
+                      "type": "string"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                },
+                "examples": {
+                  "VALIDATION_FAILED": {
+                    "summary": "Status or reason is missing/invalid",
+                    "value": {
+                      "statusCode": 400,
+                      "error": "Bad Request",
+                      "message": [
+                        "Status must be active, maintenance, or out_of_service.",
+                        "Reason is required."
+                      ],
+                      "path": "/api/vehicles/1/status",
+                      "timestamp": "2026-11-05T12:00:00.000Z"
+                    }
+                  },
+                  "INVALID_ID": {
+                    "summary": "The :id in the URL is not a number (message is a string)",
+                    "value": {
+                      "statusCode": 400,
+                      "error": "Bad Request",
+                      "message": "Validation failed (numeric string is expected)",
+                      "path": "/api/resource",
+                      "timestamp": "2026-01-01T00:00:00.000Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "statusCode": 401,
+                    "error": "INVALID_TOKEN",
+                    "message": "Invalid or expired token.",
+                    "path": "/api/resource",
+                    "timestamp": "2026-01-01T00:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requires one of: supervisor, coordinator.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "statusCode": 403,
+                    "error": "INSUFFICIENT_PERMISSIONS",
+                    "message": "You do not have permission to perform this action.",
+                    "path": "/api/resource",
+                    "timestamp": "2026-01-01T00:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "statusCode": 404,
+                    "error": "VEHICLE_NOT_FOUND",
+                    "message": "Vehicle not found.",
+                    "path": "/api/resource",
+                    "timestamp": "2026-01-01T00:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Vehicle status change conflicts with active route batches. `details.batches` contains batch IDs and shift dates.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "statusCode": 409,
+                    "error": "VEHICLE_HAS_ACTIVE_BATCHES",
+                    "message": "The vehicle cannot be moved to this status while it has confirmed or in-execution route batches.",
+                    "details": {
+                      "batches": [
+                        {
+                          "id": 42,
+                          "shiftDate": "2026-11-06"
+                        }
+                      ]
+                    },
+                    "path": "/api/vehicles/1/status",
+                    "timestamp": "2026-11-05T12:00:00.000Z"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "tags": [
+          "Vehicles"
+        ]
       }
     }
   },
@@ -9615,11 +9814,6 @@
             "minimum": 0,
             "maximum": 99999999.99,
             "description": "New maximum load volume in m3 (greater than zero, up to 2 decimals). null is rejected"
-          },
-          "vehicleStatusId": {
-            "type": "integer",
-            "example": 2,
-            "description": "New operational status: 1 = active (available for routes), 2 = maintenance, 3 = out_of_service. Any other ID is a 400 INVALID_VEHICLE_STATUS. null is rejected"
           }
         }
       },
@@ -10157,26 +10351,81 @@
       "DispatchKanbanFilterOptionDto": {
         "type": "object",
         "properties": {
-          "id": { "type": "number", "description": "Catalog item identifier." },
-          "name": { "type": "string", "description": "Human-readable catalog label." }
+          "id": {
+            "type": "number",
+            "description": "Catalog item identifier."
+          },
+          "name": {
+            "type": "string",
+            "description": "Human-readable catalog label."
+          }
         },
-        "required": ["id", "name"]
+        "required": [
+          "id",
+          "name"
+        ]
       },
       "DispatchKanbanDriverFilterOptionDto": {
         "type": "object",
         "properties": {
-          "id": { "type": "number", "description": "Driver user identifier." },
-          "fullName": { "type": "string", "description": "Driver full name." }
+          "id": {
+            "type": "number",
+            "description": "Driver user identifier."
+          },
+          "fullName": {
+            "type": "string",
+            "description": "Driver full name."
+          }
         },
-        "required": ["id", "fullName"]
+        "required": [
+          "id",
+          "fullName"
+        ]
       },
       "DispatchKanbanFiltersResponseDto": {
         "type": "object",
         "properties": {
-          "drivers": { "type": "array", "items": { "$ref": "#/components/schemas/DispatchKanbanDriverFilterOptionDto" } },
-          "dispatchTypes": { "type": "array", "items": { "$ref": "#/components/schemas/DispatchKanbanFilterOptionDto" } }
+          "drivers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DispatchKanbanDriverFilterOptionDto"
+            }
+          },
+          "dispatchTypes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DispatchKanbanFilterOptionDto"
+            }
+          }
         },
-        "required": ["drivers", "dispatchTypes"]
+        "required": [
+          "drivers",
+          "dispatchTypes"
+        ]
+      },
+      "ChangeVehicleStatusDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "maintenance",
+              "out_of_service"
+            ],
+            "example": "maintenance",
+            "description": "New operational status of the vehicle."
+          },
+          "reason": {
+            "type": "string",
+            "example": "Preventive maintenance scheduled after inspection.",
+            "description": "Required reason for changing the vehicle status."
+          }
+        },
+        "required": [
+          "status",
+          "reason"
+        ]
       }
     }
   },

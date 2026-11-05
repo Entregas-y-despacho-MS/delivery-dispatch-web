@@ -189,7 +189,9 @@ describe("bandeja de solicitudes de cambio (ST-224.3)", () => {
     const dialogo = await screen.findByRole("dialog");
     const formulario = await within(dialogo).findByRole("form", { name: "Datos de la reprogramación" });
     await usuario.clear(within(formulario).getByLabelText("Nueva fecha pactada"));
-    await usuario.type(within(formulario).getByLabelText("Nueva fecha pactada"), "2026-10-28");
+    // Siempre una fecha futura: el modal no deja reprogramar a un día anterior a hoy.
+    const enUnaSemana = new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString().slice(0, 10);
+    await usuario.type(within(formulario).getByLabelText("Nueva fecha pactada"), enUnaSemana);
     await usuario.selectOptions(within(formulario).getByLabelText("Franja"), "14:00-16:00");
     await usuario.selectOptions(within(formulario).getByLabelText("Motivo"), "RES-CLI-SELF");
     await usuario.click(within(dialogo).getByRole("button", { name: /^Reprogramar/ }));

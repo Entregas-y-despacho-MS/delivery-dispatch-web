@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Boxes, RefreshCw, Route } from "lucide-react";
 
@@ -30,6 +30,7 @@ export default function PlanificacionPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const loteParam = Number(searchParams.get("loteId"));
   const loteId = Number.isSafeInteger(loteParam) && loteParam > 0 ? loteParam : null;
+  const accionVehiculoSolicitada = searchParams.get("accion") === "cambiar-vehiculo";
   const seleccionarLote = (id: number | null) => {
     setSearchParams((actuales) => {
       const siguientes = new URLSearchParams(actuales);
@@ -38,6 +39,13 @@ export default function PlanificacionPage() {
       return siguientes;
     }, { replace: true });
   };
+  const consumirAccionVehiculo = useCallback(() => {
+    setSearchParams((actuales) => {
+      const siguientes = new URLSearchParams(actuales);
+      siguientes.delete("accion");
+      return siguientes;
+    }, { replace: true });
+  }, [setSearchParams]);
 
   const params = useMemo(() => ({
     page: 1,
@@ -66,7 +74,7 @@ export default function PlanificacionPage() {
         eyebrow="Operación"
         title="Planificación"
         icon={Route}
-        description="Lotes provisionales que armó el sistema. Revisa los pedidos y aprueba las promesas antes de que el cliente reciba su fecha."
+        description="Revisa los lotes provisionales y abre un lote confirmado desde Flota para reemplazar su vehículo."
       />
 
       <section className="grid gap-4 lg:grid-cols-[minmax(18rem,22rem)_1fr]" aria-label="Lotes provisionales">
@@ -123,6 +131,8 @@ export default function PlanificacionPage() {
                 usuarioId={usuarioId}
                 vehiculos={opcionesVehiculo}
                 revisores={revisores}
+                accionVehiculoSolicitada={accionVehiculoSolicitada}
+                onAccionVehiculoConsumida={consumirAccionVehiculo}
                 onCerrar={() => seleccionarLote(null)}
               />
             )}

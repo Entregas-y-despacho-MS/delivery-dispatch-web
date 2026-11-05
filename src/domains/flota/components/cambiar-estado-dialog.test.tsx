@@ -84,10 +84,10 @@ describe("CambiarEstadoDialog", () => {
     await user.click(screen.getByRole("button", { name: "Guardar estado" }));
 
     expect((await screen.findByRole("alert", { name: "Lotes que impiden cambiar el estado" })).textContent).toContain("Lote #42 · 2026-11-06 · En ejecución");
-    expect(screen.getByRole("link", { name: "Abrir mapa para reasignar" }).getAttribute("href")).toBe("/app/mapa");
+    expect(screen.getByRole("link", { name: "Abrir mapa para reasignar" }).getAttribute("href")).toBe("/app/mapa?loteId=42");
   });
 
-  it("muestra el aviso de lote confirmado sin ofrecer una acción de cambio no soportada", async () => {
+  it("enlaza el lote confirmado a su detalle con la acción de cambio de vehículo", async () => {
     const user = userEvent.setup();
     vi.spyOn(vehiculosService, "getRouteBatchStatus").mockResolvedValue("confirmed");
     const onConfirmar = vi.fn().mockRejectedValue({
@@ -107,7 +107,7 @@ describe("CambiarEstadoDialog", () => {
     await user.type(screen.getByRole("textbox", { name: "Motivo" }), "Ingreso a taller");
     await user.click(screen.getByRole("button", { name: "Guardar estado" }));
 
-    expect((await screen.findByRole("alert", { name: "Lotes que impiden cambiar el estado" })).textContent).toContain("El lote confirmado no permite cambiar el vehículo desde esta pantalla.");
-    expect(screen.queryByRole("link", { name: /Cambiar vehículo/ })).toBeNull();
+    expect((await screen.findByRole("link", { name: "Cambiar vehículo del lote" })).getAttribute("href"))
+      .toBe("/app/planificacion?loteId=52&accion=cambiar-vehiculo");
   });
 });

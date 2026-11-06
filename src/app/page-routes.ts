@@ -4,6 +4,8 @@ import type { PortalRouteKey } from "@/config/portal-routes";
 // ── Operación ──
 const TableroPage = lazy(() => import("@/pages/dashboard/tablero-page"));
 const DespachosPage = lazy(() => import("@/pages/dashboard/despachos-page"));
+const HistorialPage = lazy(() => import("@/pages/dashboard/historial-page"));
+const SolicitudesCambioPage = lazy(() => import("@/pages/dashboard/solicitudes-cambio-page"));
 const DespachoDetallePage = lazy(() => import("@/pages/dashboard/despacho-detalle-page"));
 const HistorialPage = lazy(() => import("@/pages/dashboard/historial-page"));
 const SolicitudesPage = lazy(() => import("@/pages/dashboard/solicitudes-page"));
@@ -37,6 +39,8 @@ const TiposIncidenteVehiculoPage = lazy(() => import("@/pages/dashboard/catalogo
 export const PAGE_ROUTES = [
   ["tablero", TableroPage],
   ["despachos", DespachosPage],
+  ["historial", HistorialPage],
+  ["solicitudesCambio", SolicitudesCambioPage],
   ["despachoDetalle", DespachoDetallePage],
   ["historial", HistorialPage],
   ["solicitudes", SolicitudesPage],

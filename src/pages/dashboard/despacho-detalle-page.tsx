@@ -1,3 +1,8 @@
+import { useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import { ArrowLeft, CalendarClock, FileSearch, PackageSearch } from "lucide-react";
+
+import { DespachoFicha, ReprogramarDialog, useDespachoDetalle } from "@/domains/despachos";
 import { useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, CalendarClock, FileSearch, PackageSearch } from "lucide-react";
@@ -29,6 +34,7 @@ export default function DespachoDetallePage() {
   const despachoId = Number(id);
   const valido = Number.isInteger(despachoId) && despachoId > 0;
   const detalle = useDespachoDetalle(valido ? despachoId : null);
+  const [resolutionOpen, setResolutionOpen] = useState(false);
   const noExiste = !valido || (detalle.isError && parseApiError(detalle.error).status === 404);
 
   const [reprogramando, setReprogramando] = useState(false);
@@ -76,6 +82,13 @@ export default function DespachoDetallePage() {
         ) : detalle.isError ? (
           <ErrorAlert error={detalle.error} onRetry={() => detalle.refetch()} isRetrying={detalle.isFetching} />
         ) : (
+          <div className="space-y-4">
+            {detalle.data.status.name !== "delivered" && detalle.data.status.name !== "returned" && detalle.data.route?.shiftDate && (
+              <Button variant="outline" size="sm" onClick={() => setResolutionOpen(true)}><CalendarClock aria-hidden /> Reprogramar / devolver</Button>
+            )}
+            <DespachoFicha despacho={detalle.data} onRenovar={() => void detalle.refetch()} renovando={detalle.isFetching} />
+            {detalle.data.route?.shiftDate && <ReprogramarDialog open={resolutionOpen} onOpenChange={setResolutionOpen} despachoId={detalle.data.id} fecha={detalle.data.route.shiftDate} onComplete={() => void detalle.refetch()} />}
+          </div>
           <>
             <DespachoFicha
               despacho={detalle.data}

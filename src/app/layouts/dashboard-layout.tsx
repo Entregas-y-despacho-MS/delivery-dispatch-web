@@ -14,6 +14,7 @@ import { SidebarProvider } from "@/shared/components/ui/sidebar";
 export function DashboardLayout() {
   const { pathname } = useLocation();
   const user = useAuthStore((s) => s.user);
+  const isTablero = pathname === "/app/tablero";
 
   if (!user) return null;
   const roleId = user.rol.id;
@@ -33,8 +34,8 @@ export function DashboardLayout() {
       <div className="flex min-h-screen w-full flex-1 flex-col bg-background">
         <DashboardTopbar user={user} currentNavItem={currentNavItem} />
 
-        <main className="flex-1 p-4 sm:p-6 lg:p-8">
-          <div className="mx-auto max-w-7xl">
+        <main className="min-w-0 flex-1 overflow-x-hidden p-4 sm:p-6 lg:p-8">
+          <div className={isTablero ? "mx-auto w-full min-w-0 max-w-none" : "mx-auto max-w-7xl"}>
             <Suspense fallback={<PageSkeleton />}>
               <PageErrorBoundary />
             </Suspense>

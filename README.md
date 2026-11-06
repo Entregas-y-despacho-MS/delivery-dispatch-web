@@ -49,6 +49,12 @@ están en la [guía de incidentes vehiculares](docs/VEHICLE_INCIDENTS.md).
 | `npm run lint` | oxlint, incluidas las reglas de frontera entre capas |
 | `npm run preview` | Sirve el `dist/` ya compilado |
 
+### Ejecutar con el Compose local
+
+Desde la carpeta contenedora del workspace, ejecuta `docker compose up -d --build`. La web queda
+disponible en <http://localhost:8080> y usa la API del backend en <http://localhost:3000/api>.
+Para reconstruir solo la web, ejecuta `docker compose build web` y luego reinicia ese servicio.
+
 ### Cómo probar el panel sin backend
 
 Si el backend no está ejecutándose, no puedes loguearte de verdad. Para previsualizar

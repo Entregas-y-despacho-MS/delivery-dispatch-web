@@ -4,8 +4,9 @@ import type { PortalRouteKey } from "@/config/portal-routes";
 // ── Operación ──
 const TableroPage = lazy(() => import("@/pages/dashboard/tablero-page"));
 const DespachosPage = lazy(() => import("@/pages/dashboard/despachos-page"));
-const DespachoDetallePage = lazy(() => import("@/pages/dashboard/despacho-detalle-page"));
 const HistorialPage = lazy(() => import("@/pages/dashboard/historial-page"));
+const SolicitudesCambioPage = lazy(() => import("@/pages/dashboard/solicitudes-cambio-page"));
+const DespachoDetallePage = lazy(() => import("@/pages/dashboard/despacho-detalle-page"));
 const SolicitudesPage = lazy(() => import("@/pages/dashboard/solicitudes-page"));
 const PlanificacionPage = lazy(() => import("@/pages/dashboard/planificacion-page"));
 const RecojosPage = lazy(() => import("@/pages/dashboard/recojos-page"));
@@ -13,6 +14,9 @@ const RecojosPage = lazy(() => import("@/pages/dashboard/recojos-page"));
 // ── Flota ──
 const MapaFlotaPage = lazy(() => import("@/pages/dashboard/mapa-flota-page"));
 const FlotaPage = lazy(() => import("@/pages/dashboard/flota-page"));
+const KpisPortalPage = lazy(() => import("@/pages/dashboard/kpis-portal-page"));
+const AlertasPortalPage = lazy(() => import("@/pages/dashboard/alertas-portal-page"));
+const UmbralesPortalPage = lazy(() => import("@/pages/dashboard/umbrales-portal-page"));
 const FlotaMantenimientoPage = lazy(() => import("@/pages/dashboard/flota-mantenimiento-page"));
 const RepartidoresPage = lazy(() => import("@/pages/dashboard/repartidores-page"));
 
@@ -37,13 +41,17 @@ const TiposIncidenteVehiculoPage = lazy(() => import("@/pages/dashboard/catalogo
 export const PAGE_ROUTES = [
   ["tablero", TableroPage],
   ["despachos", DespachosPage],
-  ["despachoDetalle", DespachoDetallePage],
   ["historial", HistorialPage],
+  ["solicitudesCambio", SolicitudesCambioPage],
+  ["despachoDetalle", DespachoDetallePage],
   ["solicitudes", SolicitudesPage],
   ["planificacion", PlanificacionPage],
   ["recojos", RecojosPage],
   ["mapa", MapaFlotaPage],
   ["flota", FlotaPage],
+  ["kpis", KpisPortalPage],
+  ["alertas", AlertasPortalPage],
+  ["umbrales", UmbralesPortalPage],
   ["flotaMantenimiento", FlotaMantenimientoPage],
   ["repartidores", RepartidoresPage],
   ["incidencias", IncidenciasPage],

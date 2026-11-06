@@ -2,10 +2,11 @@ import {
   LayoutDashboard, ClipboardList, Route, RotateCcw,
   Map, Truck, Users, AlertTriangle, BarChart3,
   UserCog, MapPin, Gauge, ListX, CalendarClock, CarFront,
-  ScrollText, Settings, History, MessageSquareWarning, PanelsTopLeft, SlidersHorizontal, type LucideIcon,
+  ScrollText, Settings, PanelsTopLeft, SlidersHorizontal, History, MessageSquareText, type LucideIcon,
+  MessageSquareWarning,
 } from "lucide-react";
 import { PORTAL_ROUTES, portalHref, type PortalRouteKey } from "@/config/portal-routes";
-import type { RoleId } from "@/config/roles";
+import { hasRole, ROLES, type RoleId } from "@/config/roles";
 
 export interface NavItem {
   title: string;
@@ -52,6 +53,8 @@ export const NAV_GROUPS: NavGroup[] = [
     icon: AlertTriangle,
     items: [
       navItem("incidencias", "Incidencias", AlertTriangle),
+      navItem("historial", "Historial", History),
+      navItem("solicitudesCambio", "Solicitudes de cambio", MessageSquareText),
       navItem("reportes", "Reportes", BarChart3),
     ],
   },
@@ -78,3 +81,28 @@ export const NAV_GROUPS: NavGroup[] = [
     ],
   },
 ];
+
+const SUPERVISOR_NAV_GROUPS: NavGroup[] = [
+  {
+    label: "Supervisión",
+    icon: Truck,
+    items: [
+      navItem("mapa", "Mapa", Map),
+      navItem("flota", "Flota", Truck),
+      navItem("kpis", "KPIs", BarChart3),
+      navItem("alertas", "Alertas", AlertTriangle),
+      navItem("tablero", "Tablero", LayoutDashboard),
+      navItem("despachos", "Despachos", ClipboardList),
+      navItem("reportes", "Reportes", BarChart3),
+      navItem("umbrales", "Umbrales", SlidersHorizontal),
+    ],
+  },
+];
+
+/** Devuelve el menú permitido; el Supervisor tiene una vista reducida según ES-59. */
+export function navigationForRole(roleId: number): NavGroup[] {
+  const groups = roleId === ROLES.SUPERVISOR ? SUPERVISOR_NAV_GROUPS : NAV_GROUPS;
+  return groups
+    .map((group) => ({ ...group, items: group.items.filter((item) => hasRole(roleId, item.roles)) }))
+    .filter((group) => group.items.length > 0);
+}

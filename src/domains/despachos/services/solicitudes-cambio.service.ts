@@ -8,7 +8,7 @@ import type {
 } from "../solicitudes-cambio.types";
 
 /** Bandeja de solicitudes de cambio del cliente (ST-224.1). Solo lectura: { data, meta } → ListResult. */
-export const solicitudesCambioService = createCrudService<
+const solicitudesCambioCrudService = createCrudService<
   SolicitudCambio,
   SolicitudCambio,
   never,
@@ -35,3 +35,8 @@ export async function revelarEnlaceSeguimiento(dispatchId: number): Promise<Enla
   const { data } = await api.post<EnlaceSeguimiento>(`/dispatches/change-requests/${dispatchId}/tracking-link`, undefined, { skipErrorToast: true });
   return data;
 }
+
+export const solicitudesCambioService = {
+  ...solicitudesCambioCrudService,
+  revealTrackingLink: revelarEnlaceSeguimiento,
+};

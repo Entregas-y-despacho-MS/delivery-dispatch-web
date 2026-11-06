@@ -1,10 +1,11 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Boxes, RefreshCw, Route } from "lucide-react";
 
 import { useVehiculos } from "@/domains/flota";
 import {
   LoteProvisionalDetalle,
+  LoteAprobacionFinal,
   LoteResumenCard,
   useLotes,
   type OpcionRevisor,
@@ -30,11 +31,29 @@ export default function PlanificacionPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const loteParam = Number(searchParams.get("loteId"));
   const loteId = Number.isSafeInteger(loteParam) && loteParam > 0 ? loteParam : null;
+  const accionVehiculoSolicitada = searchParams.get("accion") === "cambiar-vehiculo";
   const seleccionarLote = (id: number | null) => {
     setSearchParams((actuales) => {
       const siguientes = new URLSearchParams(actuales);
       if (id === null) siguientes.delete("loteId");
       else siguientes.set("loteId", String(id));
+      return siguientes;
+    }, { replace: true });
+  };
+  const consumirAccionVehiculo = useCallback(() => {
+    setSearchParams((actuales) => {
+      const siguientes = new URLSearchParams(actuales);
+      siguientes.delete("accion");
+      return siguientes;
+    }, { replace: true });
+  }, [setSearchParams]);
+  const loteFinalParam = Number(searchParams.get("loteFinalId"));
+  const loteFinalId = Number.isSafeInteger(loteFinalParam) && loteFinalParam > 0 ? loteFinalParam : null;
+  const seleccionarLoteFinal = (id: number | null) => {
+    setSearchParams((actuales) => {
+      const siguientes = new URLSearchParams(actuales);
+      if (id === null) siguientes.delete("loteFinalId");
+      else siguientes.set("loteFinalId", String(id));
       return siguientes;
     }, { replace: true });
   };
@@ -47,6 +66,7 @@ export default function PlanificacionPage() {
     ...(filtro === "sin-revisor" ? { withoutReviewer: true } : {}),
   }), [filtro, usuarioId]);
   const lotes = useLotes(params);
+  const lotesFinales = useLotes({ page: 1, limit: 50, status: "pending_final_review" });
 
   const vehiculos = useVehiculos(VEHICULOS_PARAMS);
   const opcionesVehiculo = useMemo<OpcionVehiculo[]>(() => vehiculos.data
@@ -57,6 +77,9 @@ export default function PlanificacionPage() {
   const revisores = useMemo<OpcionRevisor[]>(() => (usuarios.data?.items ?? [])
     .filter((u) => u.activo && ROLES_REVISORES[u.rol.nombre])
     .map((u) => ({ id: u.id, nombre: u.nombreCompleto, rol: ROLES_REVISORES[u.rol.nombre] })), [usuarios.data]);
+  const conductores = useMemo<OpcionRevisor[]>(() => (usuarios.data?.items ?? [])
+    .filter((u) => u.activo && u.rol.nombre === "driver")
+    .map((u) => ({ id: u.id, nombre: u.nombreCompleto, rol: "Repartidor" })), [usuarios.data]);
 
   const items = lotes.data?.items ?? [];
 
@@ -66,7 +89,7 @@ export default function PlanificacionPage() {
         eyebrow="Operación"
         title="Planificación"
         icon={Route}
-        description="Lotes provisionales que armó el sistema. Revisa los pedidos y aprueba las promesas antes de que el cliente reciba su fecha."
+        description="Revisa los lotes provisionales y abre un lote confirmado desde Flota para reemplazar su vehículo."
       />
 
       <section className="grid gap-4 lg:grid-cols-[minmax(18rem,22rem)_1fr]" aria-label="Lotes provisionales">
@@ -123,10 +146,26 @@ export default function PlanificacionPage() {
                 usuarioId={usuarioId}
                 vehiculos={opcionesVehiculo}
                 revisores={revisores}
+                accionVehiculoSolicitada={accionVehiculoSolicitada}
+                onAccionVehiculoConsumida={consumirAccionVehiculo}
                 onCerrar={() => seleccionarLote(null)}
               />
             )}
         </div>
+      </section>
+
+      <section className="space-y-4 border-t pt-6" aria-label="Lotes para aprobación final">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div><h2 className="text-lg font-semibold">Aprobación final</h2><p className="text-sm text-muted-foreground">Revisa los lotes validados antes de confirmar conductor, vehículo y pedidos.</p></div>
+          <Button type="button" size="icon" variant="outline" onClick={() => void lotesFinales.refetch()} disabled={lotesFinales.isFetching} aria-label="Actualizar lotes para aprobación final"><RefreshCw className={lotesFinales.isFetching ? "animate-spin" : undefined} aria-hidden /></Button>
+        </div>
+        {lotesFinales.isLoading && <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3"><Skeleton className="h-32" /><Skeleton className="h-32" /></div>}
+        {lotesFinales.isError && <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm">No se pudieron cargar los lotes de aprobación final.</p>}
+        {!lotesFinales.isLoading && !lotesFinales.isError && (lotesFinales.data?.items.length ?? 0) === 0 && <p className="rounded-lg border border-dashed p-5 text-sm text-muted-foreground">No hay lotes esperando aprobación final.</p>}
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {(lotesFinales.data?.items ?? []).map((lote) => <LoteResumenCard key={lote.id} titulo={`Lote #${lote.id} · Revisión final`} zona={lote.zone?.name ?? null} fecha={lote.shiftDate} vehiculo={lote.vehicle?.plate ?? null} cantidadPedidos={lote.dispatchCount} ocupacion={lote.occupancy ? Math.max(lote.occupancy.weight.usedPercent, lote.occupancy.volume.usedPercent) : null} revisor={lote.reviewer?.fullName ?? null} seleccionado={lote.id === loteFinalId} onSeleccionar={() => seleccionarLoteFinal(lote.id)} />)}
+        </div>
+        {loteFinalId !== null && <LoteAprobacionFinal key={loteFinalId} loteId={loteFinalId} vehiculos={opcionesVehiculo} conductores={conductores} onCerrar={() => seleccionarLoteFinal(null)} />}
       </section>
     </div>
   );

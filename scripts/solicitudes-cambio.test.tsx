@@ -11,6 +11,7 @@ const toastExito = vi.fn();
 const toastError = vi.fn();
 vi.mock("sonner", () => ({ toast: { success: (m: string) => toastExito(m), error: (m: string) => toastError(m) } }));
 const { default: api } = await import("@/shared/lib/axios");
+const { useAuthStore } = await import("@/shared/store/use-auth-store");
 // oxlint-disable-next-line no-restricted-imports -- las pruebas revisan el hook directamente.
 const { useEnlaceSeguimiento, useSolicitudesCambio } = await import("@/domains/despachos/hooks/use-solicitudes-cambio");
 // oxlint-disable-next-line no-restricted-imports -- las pruebas revisan el componente directamente.
@@ -49,6 +50,8 @@ const conflicto = (code: string) => Object.assign(new Error(code), {
 let enlaceFalla: string | null = null;
 
 beforeEach(() => {
+  // «Reprogramar» solo se muestra al coordinador (RequireRole, ST-59.2).
+  useAuthStore.setState({ user: { id: 1, rol: { id: 1, nombre: "coordinator" } } as never });
   lista = [SOLICITUD, CON_CORREO];
   enlaceFalla = null;
   toastExito.mockReset();

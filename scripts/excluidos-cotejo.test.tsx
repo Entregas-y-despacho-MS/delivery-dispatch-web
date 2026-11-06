@@ -235,11 +235,12 @@ describe("cancelar desde la ficha 360° (ST-241.4)", () => {
     expect(screen.getByText(/Solo se cancela antes de que salga la ruta/)).toBeTruthy();
   });
 
-  it("el supervisor no ve la acción", async () => {
+  it("el supervisor no ve las acciones del coordinador", async () => {
     detalle = DETALLE;
     usuario(2);
     abrirFicha();
-    await screen.findByRole("button", { name: /Reprogramar/ });
+    await screen.findByRole("heading", { name: "SO-1042" });
+    expect(screen.queryByRole("button", { name: /Reprogramar/ })).toBeNull();
     expect(screen.queryByRole("button", { name: /Cancelar despacho/ })).toBeNull();
   });
 });

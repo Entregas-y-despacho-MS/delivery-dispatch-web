@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
+import { RequireRole } from "@/shared/guards/require-role";
+import { ROLES } from "@/config/roles";
 import { formatearFechaHoraExacta, formatearFechaTurnoDetalle, formatearVentana } from "../despacho-detalle.format";
 import type { SolicitudCambio } from "../solicitudes-cambio.types";
 
@@ -45,9 +47,11 @@ export function SolicitudesCambioLista({ data, puedeResolver, onResolver, onMost
                 </Button>
               )}
               {puedeResolver && (
-                <Button type="button" size="sm" onClick={() => onResolver(s)}>
-                  <CalendarClock aria-hidden /> Reprogramar
-                </Button>
+                <RequireRole roles={[ROLES.COORDINADOR]}>
+                  <Button type="button" size="sm" onClick={() => onResolver(s)}>
+                    <CalendarClock aria-hidden /> Reprogramar
+                  </Button>
+                </RequireRole>
               )}
             </div>
           </div>

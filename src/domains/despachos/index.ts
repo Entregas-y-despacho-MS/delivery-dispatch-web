@@ -1,4 +1,8 @@
 export { useBandejaPedidos } from "./hooks/use-bandeja-pedidos";
+export { useHistorial } from "./hooks/use-historial";
+export { ReprogramarDialog } from "./components/reprogramar-dialog";
+export { historialService } from "./services/historial.service";
+export type { HistorialDespacho, HistorialParams, HistorialResponse, EstadoFinalDespacho } from "./historial.types";
 export { useCambiarPrioridad } from "./hooks/use-cambiar-prioridad";
 export { useDispatchEvents } from "./hooks/use-dispatch-events";
 export { useTableroKanban } from "./hooks/use-tablero-kanban";
@@ -21,7 +25,7 @@ export { exportarHistorialCsv, historialDespachosService, nombreArchivoCsv } fro
 export { escribirFiltrosHistorial, FILTROS_HISTORIAL_INICIALES, leerFiltrosHistorial, paramsHistorial, rangoInvertido } from "./historial.url";
 export type { FiltrosHistorial } from "./historial.url";
 export { ESTADOS_FINALES, ORDENES_HISTORIAL } from "./historial.types";
-export type { DespachoHistorial, EstadoFinal, HistorialParams, OrdenHistorial } from "./historial.types";
+export type { DespachoHistorial, EstadoFinal, OrdenHistorial } from "./historial.types";
 export { solicitudesCambioKeys, useEnlaceSeguimiento, useSolicitudesCambio } from "./hooks/use-solicitudes-cambio";
 export { SolicitudesCambioToolbar } from "./components/solicitudes-cambio-toolbar";
 export { SolicitudesCambioLista } from "./components/solicitudes-cambio-lista";
@@ -32,7 +36,7 @@ export { revelarEnlaceSeguimiento, solicitudesCambioService } from "./services/s
 export { errorEnlace } from "./solicitudes-cambio.reglas";
 export { escribirFiltrosSolicitudes, leerFiltrosSolicitudes, paramsSolicitudes } from "./solicitudes-cambio.url";
 export type { FiltrosSolicitudes } from "./solicitudes-cambio.url";
-export type { EnlaceSeguimiento, PedidoDeCambio, SolicitudCambio, SolicitudesCambioParams } from "./solicitudes-cambio.types";
+export type { EnlaceSeguimiento, PedidoDeCambio, SolicitudCambio, SolicitudesCambioParams, SolicitudesCambioResponse } from "./solicitudes-cambio.types";
 export { excluidosCotejoKeys, useCancelarDespacho, useExcluidosCotejo, useResolverCotejo } from "./hooks/use-excluidos-cotejo";
 export { ExcluidosCotejoPanel } from "./components/excluidos-cotejo-panel";
 export { CancelarDespachoDialog } from "./components/cancelar-despacho-dialog";

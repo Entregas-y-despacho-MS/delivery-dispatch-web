@@ -4,7 +4,7 @@ import { ExternalLink, MessageSquareText, RefreshCw, Search, CalendarClock } fro
 import { toast } from "sonner";
 
 import { ReprogramarDialog, solicitudesCambioService, type SolicitudCambio } from "@/domains/despachos";
-import { useAuthStore } from "@/shared/store/use-auth-store";
+import { RequireRole } from "@/shared/guards/require-role";
 import { ROLES } from "@/config/roles";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
@@ -33,8 +33,6 @@ function SolicitudCard({ item }: { item: SolicitudCambio }) {
 
 export default function SolicitudesCambioPage() {
   const queryClient = useQueryClient();
-  const roleId = useAuthStore((state) => state.user?.rol.id);
-  const isCoordinator = roleId === ROLES.COORDINADOR;
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<SolicitudCambio | null>(null);
@@ -46,9 +44,9 @@ export default function SolicitudesCambioPage() {
       <Button variant="outline" onClick={() => void query.refetch()} disabled={query.isFetching}><RefreshCw aria-hidden /> Actualizar</Button>
     </div>
     {query.isPending ? <div className="rounded-xl border p-10 text-center text-sm text-muted-foreground">Cargando solicitudes…</div> : query.isError ? <div role="alert" className="rounded-xl border border-destructive/30 p-6 text-sm">No se pudieron cargar las solicitudes. Verifica tu conexión y vuelve a actualizar.</div> : query.data.data.length === 0 ? <div className="rounded-xl border border-dashed p-10 text-center"><p className="font-medium">No hay solicitudes pendientes</p><p className="mt-1 text-sm text-muted-foreground">Las nuevas solicitudes de los clientes aparecerán aquí.</p></div> : <>
-      <div className="grid min-w-0 gap-3 lg:grid-cols-2">{query.data.data.map((item) => <div key={item.dispatchId} className="min-w-0 space-y-2"><SolicitudCard item={item} />{isCoordinator && <Button className="w-full" disabled={!item.deliveryDate} onClick={() => setSelected(item)}><CalendarClock aria-hidden /> {item.deliveryDate ? "Resolver solicitud" : "Despacho sin fecha de ruta"}</Button>}</div>)}</div>
+      <div className="grid min-w-0 gap-3 lg:grid-cols-2">{query.data.data.map((item) => <div key={item.dispatchId} className="min-w-0 space-y-2"><SolicitudCard item={item} /><RequireRole roles={[ROLES.COORDINADOR]}><Button className="w-full" disabled={!item.deliveryDate} onClick={() => setSelected(item)}><CalendarClock aria-hidden /> {item.deliveryDate ? "Resolver solicitud" : "Despacho sin fecha de ruta"}</Button></RequireRole></div>)}</div>
       <div className="flex flex-wrap items-center justify-between gap-3 text-sm"><span className="text-muted-foreground">{query.data.total} solicitudes</span><div className="flex gap-2"><Button variant="outline" size="sm" disabled={page <= 1 || query.isFetching} onClick={() => setPage((current) => current - 1)}>Anterior</Button><span className="px-2 py-2">Página {page} de {Math.max(1, Math.ceil(query.data.total / query.data.limit))}</span><Button variant="outline" size="sm" disabled={page * query.data.limit >= query.data.total || query.isFetching} onClick={() => setPage((current) => current + 1)}>Siguiente</Button></div></div>
     </>}
-    {selected?.deliveryDate && <ReprogramarDialog open={!!selected} onOpenChange={(open) => { if (!open) setSelected(null); }} despachoId={selected.dispatchId} fecha={selected.deliveryDate} onComplete={() => { setSelected(null); void queryClient.invalidateQueries({ queryKey: ["dispatch-change-requests"] }); }} />}
+    <RequireRole roles={[ROLES.COORDINADOR]}>{selected?.deliveryDate && <ReprogramarDialog open={!!selected} onOpenChange={(open) => { if (!open) setSelected(null); }} despachoId={selected.dispatchId} fecha={selected.deliveryDate} onComplete={() => { setSelected(null); void queryClient.invalidateQueries({ queryKey: ["dispatch-change-requests"] }); }} />}</RequireRole>
   </div>;
 }

@@ -18,6 +18,8 @@ import { ErrorAlert } from "@/shared/components/feedback/error-alert";
 import { Button } from "@/shared/components/ui/button";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { parseApiError } from "@/shared/lib/api-error";
+import { ROLES } from "@/config/roles";
+import { RequireRole } from "@/shared/guards/require-role";
 
 const MOTIVOS_PARAMS = { page: 1, limit: 100, active: true };
 /** Valor por defecto de max_delivery_attempts si el parámetro todavía no está definido. */
@@ -82,26 +84,30 @@ export default function DespachoDetallePage() {
               onRenovar={() => void detalle.refetch()}
               renovando={detalle.isFetching}
               acciones={puedeReprogramar(detalle.data.status.name) && (
-                <Button type="button" onClick={() => abrir(true)}>
-                  <CalendarClock aria-hidden /> Reprogramar
-                </Button>
+                <RequireRole roles={[ROLES.COORDINADOR]}>
+                  <Button type="button" onClick={() => abrir(true)}>
+                    <CalendarClock aria-hidden /> Reprogramar
+                  </Button>
+                </RequireRole>
               )}
             />
-            <ReprogramarDespachoDialog
-              abierto={reprogramando}
-              onOpenChange={abrir}
-              despacho={detalle.data}
-              motivos={motivos}
-              franjas={franjas}
-              limiteIntentos={limiteIntentos}
-              enviando={reprogramar.isPending}
-              devolviendo={devolver.isPending}
-              error={errorAccion ? mensajeErrorReprogramacion(parseApiError(errorAccion)) : null}
-              onReprogramar={(payload) => reprogramar.mutate(payload, { onSuccess: () => setReprogramando(false) })}
-              onDevolver={(notas) => devolver.mutate(notas, { onSuccess: () => setReprogramando(false) })}
-              onRenovarFotos={() => void detalle.refetch()}
-              renovandoFotos={detalle.isFetching}
-            />
+            <RequireRole roles={[ROLES.COORDINADOR]}>
+              <ReprogramarDespachoDialog
+                abierto={reprogramando}
+                onOpenChange={abrir}
+                despacho={detalle.data}
+                motivos={motivos}
+                franjas={franjas}
+                limiteIntentos={limiteIntentos}
+                enviando={reprogramar.isPending}
+                devolviendo={devolver.isPending}
+                error={errorAccion ? mensajeErrorReprogramacion(parseApiError(errorAccion)) : null}
+                onReprogramar={(payload) => reprogramar.mutate(payload, { onSuccess: () => setReprogramando(false) })}
+                onDevolver={(notas) => devolver.mutate(notas, { onSuccess: () => setReprogramando(false) })}
+                onRenovarFotos={() => void detalle.refetch()}
+                renovandoFotos={detalle.isFetching}
+              />
+            </RequireRole>
           </>
         )}
       </div>

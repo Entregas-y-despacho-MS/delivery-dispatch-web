@@ -16,6 +16,7 @@ import {
 } from "@/domains/despachos";
 import { PageHeader } from "@/shared/components/common/page-header";
 import { PaginationControls } from "@/shared/components/common/pagination-controls";
+import { RequireRole } from "@/shared/guards/require-role";
 import { useAuthStore } from "@/shared/store/use-auth-store";
 
 const ZONAS_PARAMS = { page: 1, limit: 100 };
@@ -94,14 +95,16 @@ export default function SolicitudesPage() {
         )}
       </section>
 
-      <ResolverSolicitudDialog
-        dispatchId={resolviendo?.dispatchId ?? null}
-        trackingCode={resolviendo?.trackingCode}
-        onCerrar={() => setResolviendo(null)}
-        motivos={motivos}
-        franjas={franjas}
-        limiteIntentos={limiteIntentos}
-      />
+      <RequireRole roles={[ROLES.COORDINADOR]}>
+        <ResolverSolicitudDialog
+          dispatchId={resolviendo?.dispatchId ?? null}
+          trackingCode={resolviendo?.trackingCode}
+          onCerrar={() => setResolviendo(null)}
+          motivos={motivos}
+          franjas={franjas}
+          limiteIntentos={limiteIntentos}
+        />
+      </RequireRole>
       <EnlaceSeguimientoDialog enlace={enlace.pendienteDeCopiar} onCerrar={enlace.olvidar} />
     </div>
   );

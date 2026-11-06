@@ -12,6 +12,7 @@ export { useMotivosIncidencia } from "./hooks/use-motivos";
 
 export { MotivoReprogramacionForm } from "./components/motivo-reprogramacion-form";
 export { MotivosReprogramacionTable } from "./components/motivos-reprogramacion-table";
+export { useMotivosReprogramacion } from "./hooks/use-motivos-reprogramacion";
 export { useMotivosReprogramacionScreen } from "./hooks/use-motivos-reprogramacion-screen";
 export { useMotivosReprogramacion } from "./hooks/use-motivos-reprogramacion";
 export { MOTIVO_REPROGRAMACION_CATEGORIAS } from "./motivos-reprogramacion.constants";

@@ -3,6 +3,7 @@ import {
   Map, Truck, Users, AlertTriangle, BarChart3,
   UserCog, MapPin, Gauge, ListX, CalendarClock, CarFront,
   ScrollText, Settings, PanelsTopLeft, SlidersHorizontal, History, MessageSquareText, type LucideIcon,
+  ScrollText, Settings, History, MessageSquareWarning, PanelsTopLeft, SlidersHorizontal, type LucideIcon,
 } from "lucide-react";
 import { PORTAL_ROUTES, portalHref, type PortalRouteKey } from "@/config/portal-routes";
 import type { RoleId } from "@/config/roles";
@@ -32,6 +33,8 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       navItem("tablero", "Tablero", LayoutDashboard),
       navItem("despachos", "Despachos", ClipboardList),
+      navItem("historial", "Historial", History),
+      navItem("solicitudes", "Solicitudes de cambio", MessageSquareWarning),
       navItem("planificacion", "Planificación", Route),
       navItem("recojos", "Recojos", RotateCcw),
     ],

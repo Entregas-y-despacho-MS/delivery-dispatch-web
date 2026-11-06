@@ -7,6 +7,8 @@ const DespachosPage = lazy(() => import("@/pages/dashboard/despachos-page"));
 const HistorialPage = lazy(() => import("@/pages/dashboard/historial-page"));
 const SolicitudesCambioPage = lazy(() => import("@/pages/dashboard/solicitudes-cambio-page"));
 const DespachoDetallePage = lazy(() => import("@/pages/dashboard/despacho-detalle-page"));
+const HistorialPage = lazy(() => import("@/pages/dashboard/historial-page"));
+const SolicitudesPage = lazy(() => import("@/pages/dashboard/solicitudes-page"));
 const PlanificacionPage = lazy(() => import("@/pages/dashboard/planificacion-page"));
 const RecojosPage = lazy(() => import("@/pages/dashboard/recojos-page"));
 
@@ -40,6 +42,8 @@ export const PAGE_ROUTES = [
   ["historial", HistorialPage],
   ["solicitudesCambio", SolicitudesCambioPage],
   ["despachoDetalle", DespachoDetallePage],
+  ["historial", HistorialPage],
+  ["solicitudes", SolicitudesPage],
   ["planificacion", PlanificacionPage],
   ["recojos", RecojosPage],
   ["mapa", MapaFlotaPage],

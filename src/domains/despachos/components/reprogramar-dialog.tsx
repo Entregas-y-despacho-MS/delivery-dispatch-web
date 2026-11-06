@@ -14,6 +14,8 @@ import { reprogramacionInternaService } from "../services/reprogramacion-interna
 import { despachoDetalleKeys } from "../hooks/use-despacho-detalle";
 import { DISPATCHES_KANBAN_QUERY_KEY } from "../hooks/use-dispatch-events";
 
+const FECHA_HOY_BOLIVIA = new Intl.DateTimeFormat("en-CA", { timeZone: "America/La_Paz", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+
 /** Acciones de coordinación ligadas al contador de intentos que calcula el servidor (ST-52.1). */
 export function ReprogramarDialog({ open, onOpenChange, despachoId, fecha, onComplete }: {
   open: boolean; onOpenChange: (open: boolean) => void; despachoId: number; fecha: string; onComplete?: () => void;
@@ -21,8 +23,7 @@ export function ReprogramarDialog({ open, onOpenChange, despachoId, fecha, onCom
   const client = useQueryClient();
   const settings = useParametrosOperativos();
   const [reasonCode, setReasonCode] = useState("");
-  const todayLocal = new Intl.DateTimeFormat("en-CA", { timeZone: "America/La_Paz", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
-  const [deliveryDate, setDeliveryDate] = useState(todayLocal);
+  const [deliveryDate, setDeliveryDate] = useState(FECHA_HOY_BOLIVIA);
   const [slotKey, setSlotKey] = useState("");
   const [instructions, setInstructions] = useState("");
   const motivos = useMotivosReprogramacion({ page: 1, limit: 100, active: true });

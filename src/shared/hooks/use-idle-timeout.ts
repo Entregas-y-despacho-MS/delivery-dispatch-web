@@ -61,9 +61,8 @@ export function useIdleTimeout({ timeoutMs, warningMs, onTimeout, enabled = true
 
   useEffect(() => {
     if (!enabled) return;
-    let active = true;
     // Reiniciar después de suscribir los eventos evita una actualización síncrona en el efecto.
-    queueMicrotask(() => { if (active) reset(); });
+    const resetTimer = window.setTimeout(reset, 0);
 
     let ultimoRegistro = 0;
     const onActividad = () => {
@@ -103,7 +102,7 @@ export function useIdleTimeout({ timeoutMs, warningMs, onTimeout, enabled = true
     }, 1000);
 
     return () => {
-      active = false;
+      window.clearTimeout(resetTimer);
       EVENTOS_ACTIVIDAD.forEach((ev) => window.removeEventListener(ev, onActividad, { capture: true }));
       window.removeEventListener("storage", onStorage);
       window.clearInterval(intervalo);

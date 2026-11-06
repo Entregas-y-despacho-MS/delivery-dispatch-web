@@ -1,7 +1,7 @@
 import { BarChart3, Lock } from "lucide-react";
 
 import { hasRole, ROLES } from "@/config/roles";
-import { FiltroPeriodoSla, ReporteSlaVista, useReporteSla } from "@/domains/reportes";
+import { ExportarReporteSla, FiltroPeriodoSla, ReporteSlaVista, useReporteSla } from "@/domains/reportes";
 import { PageHeader } from "@/shared/components/common/page-header";
 import { EmptyState } from "@/shared/components/feedback/empty-state";
 import { useAuthStore } from "@/shared/store/use-auth-store";
@@ -47,6 +47,12 @@ export default function ReportesPage() {
               problemaRango={sla.problemaRango}
               onRefrescar={sla.refrescar}
               refrescando={reporte.isFetching}
+              acciones={(
+                <ExportarReporteSla
+                  reporte={reporte.data}
+                  deshabilitado={sla.problemaRango !== null || reporte.isFetching || reporte.isError}
+                />
+              )}
             />
           </div>
 

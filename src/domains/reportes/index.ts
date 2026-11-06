@@ -24,3 +24,6 @@ export { obtenerReporteSla } from "./services/reportes.service";
 export { reporteSlaKeys, useReporteSla } from "./hooks/use-reportes";
 export { FiltroPeriodoSla } from "./components/filtro-periodo";
 export { ReporteSlaVista } from "./components/reporte-sla-vista";
+export { ExportarReporteSla } from "./components/exportar-reporte";
+export { celdaCsv, COLUMNAS_METRICAS, generarCsv, nombreArchivoSla, tablaExportacion } from "./reportes.exportar";
+export type { Celda } from "./reportes.exportar";

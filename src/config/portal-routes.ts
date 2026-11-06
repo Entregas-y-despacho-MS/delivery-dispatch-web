@@ -16,6 +16,8 @@ export const PORTAL_ROUTES = {
   tablero: { path: "tablero", roles: BOTH },
   despachos: { path: "despachos", roles: BOTH },
   despachoDetalle: { path: "despachos/:id", roles: BOTH },
+  historial: { path: "historial", roles: BOTH },
+  solicitudes: { path: "solicitudes", roles: BOTH },
   planificacion: { path: "planificacion", roles: COORDINATOR },
   recojos: { path: "recojos", roles: COORDINATOR },
   mapa: { path: "mapa", roles: BOTH },

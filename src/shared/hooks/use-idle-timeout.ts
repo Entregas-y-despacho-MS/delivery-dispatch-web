@@ -32,6 +32,7 @@ export interface IdleTimeoutState {
  */
 export function useIdleTimeout({ timeoutMs, warningMs, onTimeout, enabled = true }: UseIdleTimeoutOptions): IdleTimeoutState {
   const ultimaActividad = useRef(0);
+  const ultimoRegistro = useRef(0);
   const enAviso = useRef(false);
   const [isWarning, setIsWarning] = useState(false);
   const [remainingMs, setRemainingMs] = useState(timeoutMs - warningMs);
@@ -64,12 +65,11 @@ export function useIdleTimeout({ timeoutMs, warningMs, onTimeout, enabled = true
     // Reiniciar después de suscribir los eventos evita una actualización síncrona en el efecto.
     const resetTimer = window.setTimeout(reset, 0);
 
-    let ultimoRegistro = 0;
     const onActividad = () => {
       if (enAviso.current) return; // con el aviso abierto solo cuenta la decisión explícita
       const ahora = Date.now();
-      if (ahora - ultimoRegistro < THROTTLE_MS) return;
-      ultimoRegistro = ahora;
+      if (ahora - ultimoRegistro.current < THROTTLE_MS) return;
+      ultimoRegistro.current = ahora;
       registrarActividad();
     };
 

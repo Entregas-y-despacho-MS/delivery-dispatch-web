@@ -98,7 +98,7 @@ export default function SolicitudesPage() {
       <RequireRole roles={[ROLES.COORDINADOR]}>
         <ResolverSolicitudDialog
           dispatchId={resolviendo?.dispatchId ?? null}
-          trackingCode={resolviendo?.trackingCode}
+          trackingCode={resolviendo?.trackingCode ?? undefined}
           onCerrar={() => setResolviendo(null)}
           motivos={motivos}
           franjas={franjas}

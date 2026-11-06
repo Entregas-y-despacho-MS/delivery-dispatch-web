@@ -49,7 +49,8 @@ export function portalHref(key: PortalRouteKey): string {
   return `/app/${PORTAL_ROUTES[key].path}`;
 }
 
-/** El administrador no dispone del tablero operativo: su inicio es Usuarios. */
+/** El supervisor inicia en el mapa; el administrador en Usuarios. */
 export function portalHomeHref(roleId: number): string {
+  if (roleId === ROLES.SUPERVISOR) return portalHref("mapa");
   return portalHref(roleId === ROLES.ADMIN ? "usuarios" : "tablero");
 }

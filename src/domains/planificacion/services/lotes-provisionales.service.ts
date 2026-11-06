@@ -2,6 +2,9 @@ import api from "@/shared/lib/axios";
 import type {
   AprobacionPromesas,
   AprobarPromesasPayload,
+  AprobarLoteFinalPayload,
+  AprobacionFinalLote,
+  CorregirLotePayload,
   AsignacionVehiculoLote,
   AsignarVehiculoPayload,
   ReasignarRevisorPayload,
@@ -19,6 +22,21 @@ import type {
  */
 export async function aprobarPromesasLote(id: number, payload: AprobarPromesasPayload): Promise<AprobacionPromesas> {
   const { data } = await api.post<AprobacionPromesas>(`/route-batches/${id}/approve-promises`, payload, { skipErrorToast: true });
+  return data;
+}
+
+/** Confirma de forma atómica el lote, los despachos y sus recursos asignados. */
+export async function aprobarLoteFinal(id: number, payload: AprobarLoteFinalPayload): Promise<AprobacionFinalLote> {
+  const { data } = await api.post<AprobacionFinalLote>(`/route-batches/${id}/approve-final`, payload, { skipErrorToast: true });
+  return data;
+}
+
+/** Cambia conductor o vehículo propuestos; el backend vuelve a validar el lote. */
+export async function corregirLoteFinal(id: number, payload: CorregirLotePayload): Promise<unknown> {
+  const { version, driverId, vehicleId } = payload;
+  const campo = driverId === undefined ? "vehicle" : "driver";
+  const asignado = driverId ?? vehicleId;
+  const { data } = await api.patch(`/route-batches/${id}/${campo}`, { version, [campo === "driver" ? "driverId" : "vehicleId"]: asignado }, { skipErrorToast: true });
   return data;
 }
 

@@ -1,4 +1,10 @@
 export { useBandejaPedidos } from "./hooks/use-bandeja-pedidos";
+export { useHistorial } from "./hooks/use-historial";
+export { ReprogramarDialog } from "./components/reprogramar-dialog";
+export { historialService } from "./services/historial.service";
+export { solicitudesCambioService } from "./services/solicitudes-cambio.service";
+export type { SolicitudCambio, SolicitudesCambioResponse } from "./change-requests.types";
+export type { HistorialDespacho, HistorialParams, HistorialResponse, EstadoFinalDespacho } from "./historial.types";
 export { useCambiarPrioridad } from "./hooks/use-cambiar-prioridad";
 export { useDispatchEvents } from "./hooks/use-dispatch-events";
 export { useTableroKanban } from "./hooks/use-tablero-kanban";
@@ -12,6 +18,27 @@ export { BandejaPedidosVista } from "./components/bandeja-pedidos-vista";
 export { PedidoBadges, PrioridadBadge } from "./components/pedido-badges";
 export { PrioridadSelector } from "./components/prioridad-selector";
 export { formatearFranja, formatearKilos, formatearMetrosCubicos } from "./despachos.format";
+export { useHistorialDespachos } from "./hooks/use-historial-despachos";
+export { HistorialDespachosToolbar } from "./components/historial-despachos-toolbar";
+export type { ConductorOpcion } from "./components/historial-despachos-toolbar";
+export { HistorialDespachosTabla } from "./components/historial-despachos-tabla";
+export { HistorialDespachosVista } from "./components/historial-despachos-vista";
+export { exportarHistorialCsv, historialDespachosService, nombreArchivoCsv } from "./services/historial-despachos.service";
+export { escribirFiltrosHistorial, FILTROS_HISTORIAL_INICIALES, leerFiltrosHistorial, paramsHistorial, rangoInvertido } from "./historial.url";
+export type { FiltrosHistorial } from "./historial.url";
+export { ESTADOS_FINALES, ORDENES_HISTORIAL } from "./historial.types";
+export type { DespachoHistorial, EstadoFinal, HistorialParams, OrdenHistorial } from "./historial.types";
+export { solicitudesCambioKeys, useEnlaceSeguimiento, useSolicitudesCambio } from "./hooks/use-solicitudes-cambio";
+export { SolicitudesCambioToolbar } from "./components/solicitudes-cambio-toolbar";
+export { SolicitudesCambioLista } from "./components/solicitudes-cambio-lista";
+export { SolicitudesCambioVista } from "./components/solicitudes-cambio-vista";
+export { ResolverSolicitudDialog } from "./components/resolver-solicitud-dialog";
+export { EnlaceSeguimientoDialog } from "./components/enlace-seguimiento-dialog";
+export { revelarEnlaceSeguimiento, solicitudesCambioService } from "./services/solicitudes-cambio.service";
+export { errorEnlace } from "./solicitudes-cambio.reglas";
+export { escribirFiltrosSolicitudes, leerFiltrosSolicitudes, paramsSolicitudes } from "./solicitudes-cambio.url";
+export type { FiltrosSolicitudes } from "./solicitudes-cambio.url";
+export type { EnlaceSeguimiento, PedidoDeCambio, SolicitudCambio, SolicitudesCambioParams } from "./solicitudes-cambio.types";
 export { DespachoFicha } from "./components/despacho-ficha";
 export type { PestanaFicha } from "./components/despacho-ficha";
 export { EvidenciaVisor } from "./components/evidencia-visor";
@@ -20,6 +47,23 @@ export { FichaGeneral } from "./components/ficha-general";
 export { FichaIncidencias } from "./components/ficha-incidencias";
 export { FichaLineaTiempo } from "./components/ficha-linea-tiempo";
 export { despachoDetalleKeys, useDespachoDetalle } from "./hooks/use-despacho-detalle";
+export { useReprogramacionDespacho } from "./hooks/use-reprogramacion-despacho";
+export { ReprogramarDespachoDialog } from "./components/reprogramar-despacho-dialog";
+export type { MotivoOpcion } from "./components/reprogramar-despacho-dialog";
+export {
+  contarIntentos,
+  estadoIntentos,
+  generarFranjas,
+  hoyEnBolivia,
+  mensajeErrorReprogramacion,
+  puedeDevolver,
+  puedeReprogramar,
+  requiereRecargar,
+  ventanaUtc,
+} from "./reprogramacion.reglas";
+export type { EstadoIntentos, Franja } from "./reprogramacion.reglas";
+export { devolverAlAlmacen, reprogramarDespacho } from "./services/reprogramacion.service";
+export type { DevolucionHecha, ReprogramacionHecha, ReprogramarPayload } from "./services/reprogramacion.service";
 export { obtenerDetalleDespacho } from "./services/despacho-detalle.service";
 export {
   enlaceMapa,

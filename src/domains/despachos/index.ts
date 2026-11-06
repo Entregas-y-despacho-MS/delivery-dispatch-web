@@ -2,7 +2,6 @@ export { useBandejaPedidos } from "./hooks/use-bandeja-pedidos";
 export { useHistorial } from "./hooks/use-historial";
 export { ReprogramarDialog } from "./components/reprogramar-dialog";
 export { historialService } from "./services/historial.service";
-export { solicitudesCambioService } from "./services/solicitudes-cambio.service";
 export type { SolicitudCambio, SolicitudesCambioResponse } from "./change-requests.types";
 export type { HistorialDespacho, HistorialParams, HistorialResponse, EstadoFinalDespacho } from "./historial.types";
 export { useCambiarPrioridad } from "./hooks/use-cambiar-prioridad";
@@ -27,7 +26,7 @@ export { exportarHistorialCsv, historialDespachosService, nombreArchivoCsv } fro
 export { escribirFiltrosHistorial, FILTROS_HISTORIAL_INICIALES, leerFiltrosHistorial, paramsHistorial, rangoInvertido } from "./historial.url";
 export type { FiltrosHistorial } from "./historial.url";
 export { ESTADOS_FINALES, ORDENES_HISTORIAL } from "./historial.types";
-export type { DespachoHistorial, EstadoFinal, HistorialParams, OrdenHistorial } from "./historial.types";
+export type { DespachoHistorial, EstadoFinal, OrdenHistorial } from "./historial.types";
 export { solicitudesCambioKeys, useEnlaceSeguimiento, useSolicitudesCambio } from "./hooks/use-solicitudes-cambio";
 export { SolicitudesCambioToolbar } from "./components/solicitudes-cambio-toolbar";
 export { SolicitudesCambioLista } from "./components/solicitudes-cambio-lista";

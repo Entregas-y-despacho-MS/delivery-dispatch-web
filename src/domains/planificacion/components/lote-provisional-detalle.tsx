@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { AlertTriangle, CheckCheck, RefreshCw, Truck, UserRoundCog } from "lucide-react";
+import { Link } from "react-router-dom";
 
 import { Button } from "@/shared/components/ui/button";
 import { Skeleton } from "@/shared/components/ui/skeleton";
@@ -20,15 +21,26 @@ interface LoteProvisionalDetalleProps {
   usuarioId: number | null;
   vehiculos: OpcionVehiculo[];
   revisores: OpcionRevisor[];
+  /** Enlace desde Flota: abre el cambio del vehículo del lote confirmado. */
+  accionVehiculoSolicitada?: boolean;
+  onAccionVehiculoConsumida?: () => void;
   /** El lote dejó de existir o de estar provisional: la página vuelve a la lista. */
   onCerrar: () => void;
 }
 
 /**
- * Detalle del lote provisional y 1.ª aprobación (ST-215.1): pedidos con su franja propuesta,
- * ocupación del vehículo, sacar pedidos, cambiar vehículo, reasignar y aprobar las promesas.
+ * Detalle del lote provisional y 1.ª aprobación (ST-215.1). Para lotes confirmados permite únicamente
+ * sustituir el vehículo, operación de recuperación enlazada desde Flota (ES-288).
  */
-export function LoteProvisionalDetalle({ loteId, usuarioId, vehiculos, revisores, onCerrar }: LoteProvisionalDetalleProps) {
+export function LoteProvisionalDetalle({
+  loteId,
+  usuarioId,
+  vehiculos,
+  revisores,
+  accionVehiculoSolicitada = false,
+  onAccionVehiculoConsumida,
+  onCerrar,
+}: LoteProvisionalDetalleProps) {
   const lote = useLote(loteId);
   const [sacados, setSacados] = useState<ReadonlySet<number>>(new Set());
   const [aSacar, setASacar] = useState<PedidoLote | null>(null);
@@ -38,7 +50,9 @@ export function LoteProvisionalDetalle({ loteId, usuarioId, vehiculos, revisores
       // El lote vigente es otro: lo marcado para sacar ya no aplica.
       setSacados(new Set());
       setDialogo(null);
-      void lote.refetch().then(({ data }) => { if (!data || data.status !== "provisional") onCerrar(); });
+      void lote.refetch().then(({ data }) => {
+        if (!data || !["provisional", "confirmed", "in_execution"].includes(data.status)) onCerrar();
+      });
     },
   });
 
@@ -59,6 +73,9 @@ export function LoteProvisionalDetalle({ loteId, usuarioId, vehiculos, revisores
   const datos = lote.data;
   const esMio = datos.reviewer === null || datos.reviewer.id === usuarioId;
   const puedeOperar = datos.status === "provisional" && esMio && !acciones.ocupado;
+  const puedeCambiarVehiculo = (puedeOperar || datos.status === "confirmed") && !acciones.ocupado;
+  const abrirCambioVehiculo = dialogo === "vehiculo" || (accionVehiculoSolicitada && datos.status === "confirmed");
+  const loteEnEjecucion = accionVehiculoSolicitada && datos.status === "in_execution";
   const puedeEditarPedidos = puedeOperar && !datos.dispatches.every((p) => p.status !== "in_planning");
   const aprobados = datos.dispatches.filter((p) => !sacados.has(p.dispatchId));
   // 1.ª aprobación hecha: los pedidos ya están programados y el lote espera el corte de D-1.
@@ -88,6 +105,12 @@ export function LoteProvisionalDetalle({ loteId, usuarioId, vehiculos, revisores
 
   return (
     <div className="space-y-4">
+      {loteEnEjecucion && (
+        <p role="alert" className="rounded-md border border-warning/30 bg-warning/10 p-3 text-sm text-warning">
+          El lote ya está en ejecución. Para atender la contingencia, abre el mapa y reasigna sus paradas.
+          {" "}<Link className="underline underline-offset-4" to={`/app/mapa?loteId=${datos.id}`}>Abrir mapa</Link>
+        </p>
+      )}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h3 className="text-base font-semibold">{`Lote #${datos.id} · ${datos.zone?.name ?? "Sin zona"}`}</h3>
@@ -96,7 +119,7 @@ export function LoteProvisionalDetalle({ loteId, usuarioId, vehiculos, revisores
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button type="button" size="sm" variant="outline" onClick={() => setDialogo("vehiculo")} disabled={!puedeOperar}>
+          <Button type="button" size="sm" variant="outline" onClick={() => setDialogo("vehiculo")} disabled={!puedeCambiarVehiculo}>
             <Truck aria-hidden /> Cambiar vehículo
           </Button>
           <Button type="button" size="sm" variant="outline" onClick={() => setDialogo("revisor")} disabled={!puedeOperar}>
@@ -151,14 +174,21 @@ export function LoteProvisionalDetalle({ loteId, usuarioId, vehiculos, revisores
         onConfirmar={aprobar}
       />
       <CambiarVehiculoDialog
-        abierto={dialogo === "vehiculo"}
-        onOpenChange={(abierto) => setDialogo(abierto ? "vehiculo" : null)}
+        abierto={abrirCambioVehiculo}
+        onOpenChange={(abierto) => {
+          setDialogo(abierto ? "vehiculo" : null);
+          if (!abierto && accionVehiculoSolicitada) onAccionVehiculoConsumida?.();
+        }}
         vehiculoActualId={datos.vehicle?.id ?? null}
         opciones={vehiculos}
         guardando={acciones.cambiandoVehiculo}
-        onConfirmar={(vehicleId) => acciones.cambiarVehiculo(
-          { loteId: datos.id, vehicleId, version: datos.version },
-          { onSuccess: () => setDialogo(null) },
+        requiereMotivo={datos.status === "confirmed"}
+        onConfirmar={(vehicleId, reason) => acciones.cambiarVehiculo(
+          { loteId: datos.id, vehicleId, version: datos.version, ...(reason ? { reason } : {}) },
+          { onSuccess: () => {
+            setDialogo(null);
+            if (accionVehiculoSolicitada) onAccionVehiculoConsumida?.();
+          } },
         )}
       />
       <ReasignarLoteDialog

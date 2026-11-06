@@ -1,4 +1,4 @@
-import { Pencil } from "lucide-react";
+import { Pencil, Power } from "lucide-react";
 
 import type { Column } from "@/shared/components/common/data-table";
 import { ResponsiveList } from "@/shared/components/common/responsive-list";
@@ -29,11 +29,13 @@ export function VehiculosTable({
   data,
   loading,
   onEdit,
+  onChangeStatus,
   searchActive = false,
 }: {
   data: Vehiculo[];
   loading?: boolean;
   onEdit: (vehiculo: Vehiculo) => void;
+  onChangeStatus: (vehiculo: Vehiculo) => void;
   searchActive?: boolean;
 }) {
   const columns: Column<Vehiculo>[] = [
@@ -70,18 +72,30 @@ export function VehiculosTable({
     {
       header: "",
       cell: (vehiculo) => (
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          onClick={() => onEdit(vehiculo)}
-          aria-label={`Editar ${vehiculo.plate}`}
-          title="Editar vehículo"
-        >
-          <Pencil aria-hidden />
-        </Button>
+        <div className="flex justify-end gap-1">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => onChangeStatus(vehiculo)}
+            aria-label={`Cambiar estado de ${vehiculo.plate}`}
+            title="Cambiar estado"
+          >
+            <Power aria-hidden />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => onEdit(vehiculo)}
+            aria-label={`Editar ${vehiculo.plate}`}
+            title="Editar vehículo"
+          >
+            <Pencil aria-hidden />
+          </Button>
+        </div>
       ),
-      className: "w-12 text-right",
+      className: "w-24 text-right",
     },
   ];
 
@@ -97,16 +111,28 @@ export function VehiculosTable({
               <p className="font-mono text-sm font-semibold tracking-tight">{vehiculo.plate}</p>
               <h3 className="truncate font-medium">{vehiculo.type} · {vehiculo.model}</h3>
             </div>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              onClick={() => onEdit(vehiculo)}
-              aria-label={`Editar ${vehiculo.plate}`}
-              title="Editar vehículo"
-            >
-              <Pencil aria-hidden />
-            </Button>
+            <div className="flex gap-1">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                onClick={() => onChangeStatus(vehiculo)}
+                aria-label={`Cambiar estado de ${vehiculo.plate}`}
+                title="Cambiar estado"
+              >
+                <Power aria-hidden />
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                onClick={() => onEdit(vehiculo)}
+                aria-label={`Editar ${vehiculo.plate}`}
+                title="Editar vehículo"
+              >
+                <Pencil aria-hidden />
+              </Button>
+            </div>
           </div>
           <div className="mt-4 flex items-center justify-between gap-4 border-t pt-3">
             <div className="flex gap-4 text-xs text-muted-foreground">

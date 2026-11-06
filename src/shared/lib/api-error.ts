@@ -21,14 +21,27 @@ export interface ApiError {
   message: string;
   /** Mensajes individuales de class-validator, si el backend devolvió una lista. */
   validationMessages: string[];
+  /** Datos estructurados del conflicto para que la vista pueda presentar el recurso afectado. */
+  details?: ApiErrorDetails;
   /** Solo los fallos transitorios pueden reintentarse automáticamente. */
   retryable: boolean;
 }
 
+export interface ApiErrorDetails {
+  batches?: { id: number; shiftDate: string }[];
+}
+
 const DEFAULT_MESSAGE = "Ocurrió un error inesperado. Inténtalo de nuevo.";
 
-function apiError(kind: ApiErrorKind, message: string, status?: number, code?: string, validationMessages: string[] = []): ApiError {
-  return { kind, status, code, message, validationMessages, retryable: kind === "network" || kind === "server" };
+function apiError(
+  kind: ApiErrorKind,
+  message: string,
+  status?: number,
+  code?: string,
+  validationMessages: string[] = [],
+  details?: ApiErrorDetails,
+): ApiError {
+  return { kind, status, code, message, validationMessages, details, retryable: kind === "network" || kind === "server" };
 }
 
 /**
@@ -55,7 +68,7 @@ export function parseApiError(error: unknown): ApiError {
 
   const data = error.response?.data;
   const body = data && typeof data === "object" && !Array.isArray(data)
-    ? data as { error?: unknown; message?: unknown }
+    ? data as { error?: unknown; message?: unknown; details?: unknown }
     : undefined;
   const code = typeof body?.error === "string" ? body.error : undefined;
   const validationMessages = Array.isArray(body?.message)
@@ -71,7 +84,25 @@ export function parseApiError(error: unknown): ApiError {
   if (status === 401) return apiError("unauthorized", "No autorizado. Inicia sesión de nuevo si es necesario.", status, code);
   if (status === 403) return apiError("forbidden", "No tienes permisos para esta acción.", status, code);
   if (status === 404) return apiError("not-found", "El recurso solicitado ya no existe.", status, code);
-  if (status === 409) return apiError("conflict", "La operación entra en conflicto con datos existentes.", status, code);
+  if (status === 409) {
+    const details = body?.details && typeof body.details === "object" && !Array.isArray(body.details)
+      ? body.details as { batches?: unknown }
+      : undefined;
+    const batches = Array.isArray(details?.batches)
+      ? details.batches.filter((batch): batch is { id: number; shiftDate: string } =>
+          batch !== null && typeof batch === "object" &&
+          typeof (batch as { id?: unknown }).id === "number" &&
+          typeof (batch as { shiftDate?: unknown }).shiftDate === "string")
+      : undefined;
+    return apiError(
+      "conflict",
+      "La operación entra en conflicto con datos existentes.",
+      status,
+      code,
+      [],
+      batches ? { batches } : undefined,
+    );
+  }
   if (status === 429) return apiError("rate-limit", "Demasiadas solicitudes. Espera un momento e inténtalo de nuevo.", status, code);
   if (status >= 500) return apiError("server", "El servidor no pudo completar la operación. Inténtalo más tarde.", status, code);
 

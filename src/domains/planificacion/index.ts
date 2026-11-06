@@ -1,6 +1,8 @@
 export {
+  aprobarLoteFinal,
   aprobarPromesasLote,
   asignarVehiculoLote,
+  corregirLoteFinal,
   reasignarRevisorLote,
 } from "./services/lotes-provisionales.service";
 export { mensajeErrorLote, requiereRecargarLote } from "./planificacion.errores";
@@ -9,6 +11,7 @@ export { useAccionesLote } from "./hooks/use-acciones-lote";
 export { useLote, useLotes } from "./hooks/use-lotes";
 export { listarLotes, obtenerLote } from "./services/lotes.service";
 export { LoteProvisionalDetalle } from "./components/lote-provisional-detalle";
+export { LoteAprobacionFinal } from "./components/lote-aprobacion-final";
 export { LotePedidosTable } from "./components/lote-pedidos-table";
 export type {
   HallazgoValidacion,
@@ -35,6 +38,9 @@ export {
 export type {
   AprobacionPromesas,
   AprobarPromesasPayload,
+  AprobarLoteFinalPayload,
+  AprobacionFinalLote,
+  CorregirLotePayload,
   AsignacionVehiculoLote,
   AsignarVehiculoPayload,
   CorreoPromesa,

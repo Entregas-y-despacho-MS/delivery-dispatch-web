@@ -4,6 +4,13 @@ export interface EstadoVehiculo {
   name: "active" | "maintenance" | "out_of_service";
 }
 
+export type EstadoOperativoVehiculo = EstadoVehiculo["name"];
+
+export type CambiarEstadoVehiculoInput = {
+  status: EstadoOperativoVehiculo;
+  reason: string;
+};
+
 export interface Vehiculo {
   id: number;
   type: string;
@@ -31,10 +38,8 @@ export type VehiculoInput = {
   capacityM3: number;
 };
 
-/** Coincide con UpdateVehicleDto — todos los campos opcionales. */
-export type VehiculoUpdateInput = Partial<VehiculoInput> & {
-  vehicleStatusId?: number;
-};
+/** Coincide con UpdateVehicleDto; el estado se modifica solo por PATCH dedicado con motivo. */
+export type VehiculoUpdateInput = Partial<VehiculoInput>;
 
 export interface VehiclesResponse {
   data: Vehiculo[];

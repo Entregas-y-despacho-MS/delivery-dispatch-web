@@ -15,20 +15,26 @@ interface PortalRoute {
 export const PORTAL_ROUTES = {
   tablero: { path: "tablero", roles: BOTH },
   despachos: { path: "despachos", roles: BOTH },
+  historial: { path: "historial", roles: COORDINATOR },
+  solicitudesCambio: { path: "solicitudes-cambio", roles: COORDINATOR },
   despachoDetalle: { path: "despachos/:id", roles: BOTH },
+  solicitudes: { path: "solicitudes", roles: COORDINATOR },
   planificacion: { path: "planificacion", roles: COORDINATOR },
   recojos: { path: "recojos", roles: COORDINATOR },
   mapa: { path: "mapa", roles: BOTH },
   flota: { path: "flota", roles: SUPERVISOR },
+  kpis: { path: "kpis", roles: SUPERVISOR },
+  alertas: { path: "alertas", roles: SUPERVISOR },
+  umbrales: { path: "umbrales", roles: SUPERVISOR },
   flotaMantenimiento: { path: "flota/:id/mantenimiento", roles: SUPERVISOR },
-  repartidores: { path: "repartidores", roles: BOTH },
-  incidencias: { path: "incidencias", roles: BOTH },
+  repartidores: { path: "repartidores", roles: COORDINATOR },
+  incidencias: { path: "incidencias", roles: COORDINATOR },
   reportes: { path: "reportes", roles: BOTH },
   zonas: { path: "catalogos/zonas", roles: COORDINATOR },
   nivelesServicio: { path: "catalogos/niveles-servicio", roles: COORDINATOR },
   motivosIncidencia: { path: "catalogos/motivos-incidencia", roles: COORDINATOR },
   motivosReprogramacion: { path: "catalogos/motivos-reprogramacion", roles: COORDINATOR },
-  tiposIncidenteVehiculo: { path: "catalogos/tipos-incidente-vehiculo", roles: BOTH },
+  tiposIncidenteVehiculo: { path: "catalogos/tipos-incidente-vehiculo", roles: COORDINATOR },
   usuarios: { path: "usuarios", roles: USER_READERS },
   auditoria: { path: "auditoria", roles: COORDINATOR },
   configuracion: { path: "configuracion", roles: ADMIN },
@@ -43,7 +49,8 @@ export function portalHref(key: PortalRouteKey): string {
   return `/app/${PORTAL_ROUTES[key].path}`;
 }
 
-/** El administrador no dispone del tablero operativo: su inicio es Usuarios. */
+/** El supervisor inicia en el mapa; el administrador en Usuarios. */
 export function portalHomeHref(roleId: number): string {
+  if (roleId === ROLES.SUPERVISOR) return portalHref("mapa");
   return portalHref(roleId === ROLES.ADMIN ? "usuarios" : "tablero");
 }

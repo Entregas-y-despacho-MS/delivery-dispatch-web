@@ -90,13 +90,19 @@ export interface CambiarVehiculo {
   vehicleId: number;
   /** Versión del lote que se revisó. */
   version: number;
+  /** Obligatorio en lotes confirmados; el backend valida el estado y lo audita. */
+  reason?: string;
 }
 
 export function opcionesAsignarVehiculo(base: Base & {
   asignar: (id: number, payload: AsignarVehiculoPayload) => Promise<AsignacionVehiculoLote>;
 }): MutationOptions<AsignacionVehiculoLote, unknown, CambiarVehiculo> {
   return {
-    mutationFn: ({ loteId, vehicleId, version }) => base.asignar(loteId, { vehicleId, version }),
+    mutationFn: ({ loteId, vehicleId, version, reason }) => base.asignar(loteId, {
+      vehicleId,
+      version,
+      ...(reason ? { reason } : {}),
+    }),
     onSuccess: ({ capacity }) => {
       const ocupacion = Math.round(Math.max(capacity.weight.usedPercent, capacity.volume.usedPercent));
       base.avisar.exito(`Vehículo cambiado. La carga ocupa el ${ocupacion} % de su capacidad.`);

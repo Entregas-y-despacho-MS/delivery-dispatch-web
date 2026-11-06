@@ -59,14 +59,14 @@ function TarjetaDespacho({ dispatch, draggable, overlay = false, onOpenDetail }:
       style={style}
       {...(draggable && !overlay ? { ...attributes, ...listeners } : {})}
       aria-label={`${dispatch.sourceOrderRef}, ${dispatch.dispatchType.name}`}
-      className={`space-y-3 rounded-lg border bg-card p-3 shadow-sm transition-shadow ${
+      className={`min-w-0 space-y-3 rounded-xl border bg-card p-3 shadow-sm transition-[box-shadow,border-color,opacity] ${
         draggable ? "cursor-grab touch-none active:cursor-grabbing focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" : ""
       } ${isDragging ? "opacity-40" : ""} ${overlay ? "w-72 rotate-1 shadow-lg" : ""}`}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="break-all text-sm font-semibold leading-5">{dispatch.sourceOrderRef}</p>
-          {dispatch.trackingCode && <p className="break-all text-xs text-muted-foreground">Seguimiento {dispatch.trackingCode}</p>}
+          <p className="break-words text-sm font-semibold leading-5 [overflow-wrap:anywhere]">{dispatch.sourceOrderRef}</p>
+          {dispatch.trackingCode && <p className="break-words text-xs text-muted-foreground [overflow-wrap:anywhere]">Seguimiento {dispatch.trackingCode}</p>}
         </div>
         <PrioridadBadge priority={esUrgente ? "urgent" : "normal"} />
       </div>
@@ -117,17 +117,26 @@ interface ColumnaProps {
 function ColumnaTablero({ columna, arrastrando, onOpenDetail }: ColumnaProps) {
   const habilitada = arrastrando && destinoAbreRevision(columna.key);
   const { isOver, setNodeRef } = useDroppable({ id: columna.key, disabled: !habilitada });
+  const acento = columna.key === "incident"
+    ? "border-t-destructive"
+    : columna.key === "delivered" || columna.key === "returned"
+      ? "border-t-success"
+      : columna.key === "rescheduled" || columna.key === "returned_to_warehouse"
+        ? "border-t-warning"
+        : columna.key === "in_transit" || columna.key === "out_for_delivery" || columna.key === "picked_up_in_transit"
+          ? "border-t-info"
+          : "border-t-primary";
 
   return (
     <section
       ref={setNodeRef}
       aria-label={columna.label}
       data-column-key={columna.key}
-      className={`flex h-[min(66vh,46rem)] min-h-[22rem] w-[17rem] shrink-0 flex-col rounded-xl border bg-muted/30 transition-colors ${
+      className={`flex h-[min(68vh,48rem)] min-h-[24rem] w-[min(19rem,calc(100vw-2rem))] shrink-0 flex-col overflow-hidden rounded-xl border border-t-4 bg-muted/30 transition-colors sm:w-[18rem] ${acento} ${
         habilitada ? "border-primary/60 bg-primary/5" : ""
       } ${isOver ? "ring-2 ring-primary" : ""}`}
     >
-      <header className="sticky top-0 z-10 space-y-2 rounded-t-xl border-b bg-card px-3 py-3">
+      <header className="sticky top-0 z-10 space-y-2 border-b bg-card/95 px-3 py-3 backdrop-blur supports-[backdrop-filter]:bg-card/85">
         <div className="flex items-start justify-between gap-2">
           <h2 className="text-sm font-semibold leading-5">{columna.label}</h2>
           <Badge variant="secondary" className="tabular-nums">{columna.ordersCount}</Badge>
@@ -135,7 +144,7 @@ function ColumnaTablero({ columna, arrastrando, onOpenDetail }: ColumnaProps) {
         <p className="text-xs tabular-nums text-muted-foreground">{columna.ordersCount} órdenes · {formatearMetrosCubicos(columna.volumeM3)} m³</p>
         {habilitada && <p className="text-xs font-medium text-primary">Soltar aquí abre la revisión del lote</p>}
       </header>
-      <div className="min-h-0 flex-1 space-y-2 overflow-y-auto p-2" aria-live="polite">
+      <div className="min-h-0 min-w-0 flex-1 space-y-2 overflow-y-auto overscroll-y-contain p-2" aria-live="polite">
         {columna.dispatches.length === 0
           ? <p className="rounded-md border border-dashed bg-background/70 p-3 text-center text-xs text-muted-foreground">Sin despachos</p>
           : columna.dispatches.map((dispatch) => (
@@ -158,7 +167,7 @@ function FiltroSelect({ label, value, onChange, options }: {
   options: { id: number; name: string }[];
 }) {
   return (
-    <div className="min-w-40 flex-1 space-y-1">
+    <div className="min-w-0 flex-[1_1_12rem] space-y-1 sm:min-w-48">
       <label className="text-xs font-medium text-muted-foreground">{label}</label>
       <Select value={value} onValueChange={onChange}>
         <SelectTrigger className="w-full bg-background" aria-label={label}><SelectValue /></SelectTrigger>
@@ -172,7 +181,7 @@ function FiltroSelect({ label, value, onChange, options }: {
 }
 
 function BoardSkeleton() {
-  return <div className="flex gap-3 overflow-hidden" aria-label="Cargando tablero">
+  return <div className="flex min-w-0 gap-3 overflow-x-auto overscroll-x-contain pb-3" aria-label="Cargando tablero">
     {COLUMNAS_OPERATIVAS.map(({ key, label }) => <div key={key} className="h-[min(66vh,46rem)] w-[17rem] shrink-0 animate-pulse rounded-xl border bg-muted/40" aria-label={`Cargando ${label}`} />)}
   </div>;
 }
@@ -206,10 +215,10 @@ export function TableroKanban({
   };
 
   return (
-    <div className="space-y-4">
-      <section className="space-y-4 rounded-xl border bg-card p-4" aria-label="Filtros del tablero">
-        <div className="flex flex-wrap items-end gap-3">
-          <div className="min-w-40 flex-1 space-y-1">
+    <div className="min-w-0 w-full space-y-5">
+      <section className="min-w-0 space-y-4 rounded-2xl border bg-card p-3 shadow-sm sm:p-4" aria-label="Filtros del tablero">
+        <div className="flex min-w-0 flex-wrap items-end gap-3">
+          <div className="min-w-0 flex-[1_1_12rem] space-y-1 sm:min-w-48">
             <label htmlFor="tablero-date" className="text-xs font-medium text-muted-foreground">Fecha operativa</label>
             <div className="relative"><CalendarDays className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
               <Input id="tablero-date" type="date" value={date} onChange={(event) => onDateChange(event.target.value)} className="pl-9" />
@@ -218,21 +227,21 @@ export function TableroKanban({
           <FiltroSelect label="Zona logística" value={deliveryZoneId} onChange={onDeliveryZoneChange} options={zonas.data.map(({ id, name }) => ({ id, name }))} />
           <FiltroSelect label="Conductor" value={driverId} onChange={onDriverChange} options={drivers} />
           <FiltroSelect label="Tipo de despacho" value={dispatchTypeId} onChange={onDispatchTypeChange} options={dispatchTypes} />
-          <div className="flex min-h-10 items-center gap-2 rounded-md border px-3">
+          <div className="flex min-h-10 min-w-0 flex-[1_1_12rem] items-center gap-2 rounded-md border px-3 sm:flex-none">
             <Switch id="reverse-logistics" checked={logisticaInversa} onCheckedChange={onLogisticaInversaChange} />
             <label htmlFor="reverse-logistics" className="cursor-pointer text-sm font-medium">Logística inversa</label>
           </div>
         </div>
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t pt-3 text-sm">
-          <p className="font-medium tabular-nums">{totalOrdenes} órdenes · {formatearMetrosCubicos(totalVolumen)} m³</p>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground" aria-live="polite">
+        <div className="flex min-w-0 flex-wrap items-center justify-between gap-3 border-t pt-3 text-sm">
+          <p className="font-medium tabular-nums">{totalOrdenes} órdenes <span className="text-muted-foreground">· {formatearMetrosCubicos(totalVolumen)} m³</span></p>
+          <div className="flex min-w-0 items-center gap-2 text-xs text-muted-foreground" aria-live="polite">
             {socketConnected ? <><Wifi className="size-4 text-success" aria-hidden />Actualización en vivo</> : <><WifiOff className="size-4 text-warning" aria-hidden />Sin conexión en vivo · consulta cada 15 s</>}
             {isFetching && <span>Actualizando…</span>}
           </div>
         </div>
       </section>
 
-      <p className="text-sm text-muted-foreground">Arrastrar nunca cambia el estado. Solo puedes abrir la revisión del lote al soltar en Programado o Asignado; las demás etapas las gestiona el repartidor.</p>
+      <p className="-mt-2 flex items-start gap-2 text-sm text-muted-foreground"><span className="mt-1 size-2 shrink-0 rounded-full bg-info" aria-hidden />Arrastrar nunca cambia el estado. Al soltar en Programado o Asignado se abre la revisión del lote; las demás etapas las gestiona el repartidor.</p>
 
       {isError && <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm">
         <span className="flex items-center gap-2"><CircleAlert className="size-4 text-destructive" aria-hidden />No se pudo cargar el tablero.</span>
@@ -241,7 +250,7 @@ export function TableroKanban({
       {isLoading && <BoardSkeleton />}
       {!isLoading && !isError && (
         <DndContext sensors={sensors} onDragStart={dragStart} onDragEnd={dragEnd} onDragCancel={() => setDispatchDragging(null)}>
-          <div className="flex gap-3 overflow-x-auto pb-3" aria-busy={isFetching}>
+          <div className="flex min-w-0 w-full gap-3 overflow-x-auto overscroll-x-contain rounded-2xl border bg-muted/20 p-2 pb-3 sm:gap-4 sm:p-3" aria-label="Columnas de despachos" aria-busy={isFetching}>
             {columnasVisibles.map((columna) => <ColumnaTablero key={columna.key} columna={columna} arrastrando={Boolean(dispatchDragging)} onOpenDetail={onOpenDetail} />)}
           </div>
           <DragOverlay>{dispatchDragging && <TarjetaDespacho dispatch={dispatchDragging} draggable={false} overlay />}</DragOverlay>

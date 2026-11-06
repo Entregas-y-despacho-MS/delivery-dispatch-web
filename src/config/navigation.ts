@@ -3,7 +3,7 @@ import {
   Map, Truck, Users, AlertTriangle, BarChart3,
   UserCog, MapPin, Gauge, ListX, CalendarClock, CarFront,
   ScrollText, Settings, PanelsTopLeft, SlidersHorizontal, History, MessageSquareText, type LucideIcon,
-  ScrollText, Settings, History, MessageSquareWarning, PanelsTopLeft, SlidersHorizontal, type LucideIcon,
+  MessageSquareWarning,
 } from "lucide-react";
 import { PORTAL_ROUTES, portalHref, type PortalRouteKey } from "@/config/portal-routes";
 import type { RoleId } from "@/config/roles";

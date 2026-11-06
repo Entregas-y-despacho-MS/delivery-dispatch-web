@@ -3,8 +3,7 @@ import { useLocation } from "react-router-dom";
 
 import { DashboardSidebar } from "@/app/layouts/dashboard-sidebar";
 import { DashboardTopbar } from "@/app/layouts/dashboard-topbar";
-import { NAV_GROUPS } from "@/config/navigation";
-import { hasRole } from "@/config/roles";
+import { navigationForRole } from "@/config/navigation";
 import { IdleWarningDialog } from "@/domains/auth";
 import { useAuthStore } from "@/shared/store/use-auth-store";
 import { PageErrorBoundary } from "@/shared/components/feedback/page-error-boundary";
@@ -18,12 +17,8 @@ export function DashboardLayout() {
 
   if (!user) return null;
   const roleId = user.rol.id;
-  const currentNavItem = NAV_GROUPS
-    .flatMap((group) =>
-      group.items
-        .filter((item) => hasRole(roleId, item.roles))
-        .map((item) => ({ ...item, groupLabel: group.label }))
-    )
+  const currentNavItem = navigationForRole(roleId)
+    .flatMap((group) => group.items.map((item) => ({ ...item, groupLabel: group.label })))
     .filter((item) => pathname === item.href || pathname.startsWith(`${item.href}/`))
     .sort((a, b) => b.href.length - a.href.length)[0];
 

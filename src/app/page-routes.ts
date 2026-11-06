@@ -14,6 +14,9 @@ const RecojosPage = lazy(() => import("@/pages/dashboard/recojos-page"));
 // ── Flota ──
 const MapaFlotaPage = lazy(() => import("@/pages/dashboard/mapa-flota-page"));
 const FlotaPage = lazy(() => import("@/pages/dashboard/flota-page"));
+const KpisPortalPage = lazy(() => import("@/pages/dashboard/kpis-portal-page"));
+const AlertasPortalPage = lazy(() => import("@/pages/dashboard/alertas-portal-page"));
+const UmbralesPortalPage = lazy(() => import("@/pages/dashboard/umbrales-portal-page"));
 const FlotaMantenimientoPage = lazy(() => import("@/pages/dashboard/flota-mantenimiento-page"));
 const RepartidoresPage = lazy(() => import("@/pages/dashboard/repartidores-page"));
 
@@ -46,6 +49,9 @@ export const PAGE_ROUTES = [
   ["recojos", RecojosPage],
   ["mapa", MapaFlotaPage],
   ["flota", FlotaPage],
+  ["kpis", KpisPortalPage],
+  ["alertas", AlertasPortalPage],
+  ["umbrales", UmbralesPortalPage],
   ["flotaMantenimiento", FlotaMantenimientoPage],
   ["repartidores", RepartidoresPage],
   ["incidencias", IncidenciasPage],

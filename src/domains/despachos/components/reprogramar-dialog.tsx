@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, CalendarClock, RotateCcw, Warehouse } from "lucide-react";
 import { toast } from "sonner";
@@ -14,7 +14,9 @@ import { reprogramacionInternaService } from "../services/reprogramacion-interna
 import { despachoDetalleKeys } from "../hooks/use-despacho-detalle";
 import { DISPATCHES_KANBAN_QUERY_KEY } from "../hooks/use-dispatch-events";
 
-const FECHA_HOY_BOLIVIA = new Intl.DateTimeFormat("en-CA", { timeZone: "America/La_Paz", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+function obtenerFechaBoliviaHoy() {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "America/La_Paz", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+}
 
 /** Acciones de coordinación ligadas al contador de intentos que calcula el servidor (ST-52.1). */
 export function ReprogramarDialog({ open, onOpenChange, despachoId, fecha, onComplete }: {
@@ -23,7 +25,8 @@ export function ReprogramarDialog({ open, onOpenChange, despachoId, fecha, onCom
   const client = useQueryClient();
   const settings = useParametrosOperativos();
   const [reasonCode, setReasonCode] = useState("");
-  const [deliveryDate, setDeliveryDate] = useState(FECHA_HOY_BOLIVIA);
+  const [fechaMinima, setFechaMinima] = useState("");
+  const [deliveryDate, setDeliveryDate] = useState("");
   const [slotKey, setSlotKey] = useState("");
   const [instructions, setInstructions] = useState("");
   const motivos = useMotivosReprogramacion({ page: 1, limit: 100, active: true });
@@ -32,6 +35,12 @@ export function ReprogramarDialog({ open, onOpenChange, despachoId, fecha, onCom
     queryFn: ({ signal }) => obtenerTableroKanban({ date: fecha }, signal),
     enabled: open,
   });
+  useEffect(() => {
+    if (!open) return;
+    const fechaHoy = obtenerFechaBoliviaHoy();
+    setFechaMinima(fechaHoy);
+    setDeliveryDate(fechaHoy);
+  }, [open]);
   const dispatch = board.data?.columns.flatMap((column) => column.dispatches).find((item) => item.id === despachoId);
   const intentosAgotados = !!dispatch && dispatch.attemptCount >= dispatch.attemptLimit;
   const opciones = useMemo(() => motivos.data.filter((item) => item.active), [motivos.data]);
@@ -71,7 +80,7 @@ export function ReprogramarDialog({ open, onOpenChange, despachoId, fecha, onCom
     onError: () => toast.error("No se pudo devolver el despacho. Puede haber cambiado su estado; actualiza la ficha."),
   });
   const busy = reprogramar.isPending || devolver.isPending;
-  function close() { onOpenChange(false); setReasonCode(""); setSlotKey(""); setDeliveryDate(FECHA_HOY_BOLIVIA); setInstructions(""); }
+  function close() { onOpenChange(false); setReasonCode(""); setSlotKey(""); setFechaMinima(""); setDeliveryDate(""); setInstructions(""); }
   async function invalidate() {
     await Promise.all([
       client.invalidateQueries({ queryKey: despachoDetalleKeys.detail(despachoId) }),
@@ -98,7 +107,7 @@ export function ReprogramarDialog({ open, onOpenChange, despachoId, fecha, onCom
           </Select>
         </div>
         {!intentosAgotados && <div className="grid gap-3 sm:grid-cols-2">
-          <div className="space-y-2"><Label htmlFor="new-window-date">Nueva fecha</Label><input id="new-window-date" type="date" min={FECHA_HOY_BOLIVIA} value={deliveryDate} onChange={(e) => { setDeliveryDate(e.target.value); setSlotKey(""); }} className="h-10 w-full rounded-md border bg-background px-3 text-sm" /></div>
+          <div className="space-y-2"><Label htmlFor="new-window-date">Nueva fecha</Label><input id="new-window-date" type="date" min={fechaMinima} value={deliveryDate} onChange={(e) => { setDeliveryDate(e.target.value); setSlotKey(""); }} className="h-10 w-full rounded-md border bg-background px-3 text-sm" /></div>
           <div className="space-y-2"><Label htmlFor="new-window-slot">Franja disponible</Label><Select value={slotKey} onValueChange={setSlotKey}><SelectTrigger id="new-window-slot"><SelectValue placeholder={slots.length ? "Selecciona una franja" : "Configura las franjas operativas"} /></SelectTrigger><SelectContent>{slots.map((slot) => <SelectItem key={slot.key} value={slot.key}>{slot.start}–{slot.end}</SelectItem>)}</SelectContent></Select></div>
         </div>}
         <div className="space-y-2"><Label htmlFor="resolution-instructions">Instrucciones <span className="font-normal text-muted-foreground">(opcional)</span></Label><textarea id="resolution-instructions" value={instructions} onChange={(e) => setInstructions(e.target.value)} maxLength={500} rows={3} className="w-full rounded-md border bg-background px-3 py-2 text-sm" /></div>

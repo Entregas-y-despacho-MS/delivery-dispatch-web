@@ -115,6 +115,8 @@ export interface AsignacionVehiculoLote {
 export interface AsignarVehiculoPayload {
   vehicleId: number;
   version: number;
+  /** Solo para cambiar un vehículo después de confirmar el lote. */
+  reason?: string;
 }
 
 /** Respuesta de PATCH /route-batches/:id/reviewer. */

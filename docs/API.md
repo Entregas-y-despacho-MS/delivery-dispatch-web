@@ -1,8 +1,8 @@
 # API de Delivery Dispatch
 
-Referencia para implementar clientes y reutilizar en otros chats del mismo proyecto. Fuente: `../../backend/delivery-dispatch-svc/src`, commit `3c08b7b`; generada el 2026-10-19. La especificación completa está en [openapi.json](openapi.json).
+Referencia para implementar clientes y reutilizar en otros chats del mismo proyecto. Fuente: `../../backend/delivery-dispatch-svc/src`, commit `61c5d3f`; generada el 2026-11-05. La especificación completa está en [openapi.json](openapi.json).
 
-**Cobertura:** 53 operaciones HTTP, 35 rutas y 65 esquemas. Se contrastaron las rutas y modelos con el Swagger disponible y los decoradores del backend. Los ejemplos se generaron desde los DTO; no se ejecutaron operaciones contra la base de datos.
+**Cobertura:** 55 operaciones HTTP, 37 rutas y 69 esquemas. Se contrastaron las rutas y modelos con el Swagger disponible y los decoradores del backend. Los ejemplos se generaron desde los DTO; no se ejecutaron operaciones contra la base de datos.
 
 Las descripciones de reglas y campos conservan el texto original de Swagger en inglés; el índice, la estructura y las notas de uso están en español.
 
@@ -96,6 +96,8 @@ Los IDs de roles se consultan con `GET /api/roles`; usa el `id` devuelto para `r
 | `PUT` | [`/api/vehicle-incident-types/{id}`](#put-apivehicle-incident-typesid) | Actualizar tipo de incidente vehicular | supervisor, coordinator (o root) |
 | `POST` | [`/api/vehicle-maintenances`](#post-apivehicle-maintenances) | Registrar incidente de vehículo | supervisor, coordinator (o root) |
 | `GET` | [`/api/dispatches/kanban`](#get-apidispatcheskanban) | Listar despachos agrupados para el tablero Kanban | coordinator, supervisor |
+| `GET` | [`/api/dispatches/kanban/filters`](#get-apidispatcheskanbanfilters) | List catalog options for kanban filters | coordinator, supervisor (o root) |
+| `PATCH` | [`/api/vehicles/{id}/status`](#patch-apivehiclesidstatus) | Change a vehicle operational status | supervisor, coordinator (o root) |
 
 ## Endpoints
 
@@ -2573,7 +2575,7 @@ Ejemplo ilustrativo armado con los ejemplos de campos del Swagger:
 
 #### PUT /api/vehicles/{id}
 
-**Función.** Partially updates a vehicle: only the fields sent are changed, and `null` is rejected. This is also how the operational status is changed (`vehicleStatusId`: 1 = active, 2 = maintenance, 3 = out_of_service; an unknown ID is a 400 INVALID_VEHICLE_STATUS). A changed plate must not belong to another vehicle (409). Requires supervisor or coordinator role, or root.
+**Función.** Partially updates vehicle details: only the fields sent are changed, and `null` is rejected. Operational status cannot be changed here; use `PATCH /vehicles/{id}/status` with a required reason. A changed plate must not belong to another vehicle (409). Requires supervisor or coordinator role, or root.
 
 **Acceso:** JWT Bearer; roles: supervisor, coordinator (o root).
 
@@ -2592,7 +2594,6 @@ Ejemplo ilustrativo armado con los ejemplos de campos del Swagger:
 | `plate` | `string` | No | New plate, trimmed and uppercased. Must not belong to another vehicle. null or empty is rejected; longitud máx. 15; ejemplo: "1234-ABC" |
 | `capacityKg` | `number (double)` | No | New maximum load weight in kg (greater than zero, up to 2 decimals). null is rejected; mín. 0; máx. 99999999.99; ejemplo: 1200.5 |
 | `capacityM3` | `number (double)` | No | New maximum load volume in m3 (greater than zero, up to 2 decimals). null is rejected; mín. 0; máx. 99999999.99; ejemplo: 8.5 |
-| `vehicleStatusId` | `integer` | No | New operational status: 1 = active (available for routes), 2 = maintenance, 3 = out_of_service. Any other ID is a 400 INVALID_VEHICLE_STATUS. null is rejected; ejemplo: 2 |
 
 Ejemplo ilustrativo armado con los ejemplos de campos del Swagger:
 
@@ -2641,7 +2642,7 @@ Ejemplo ilustrativo armado con los ejemplos de campos del Swagger:
 | --- | --- | --- |
 | `400` | `Bad Request` | Capacity in m3 must be greater than zero. |
 | `400` | `Bad Request` | Validation failed (numeric string is expected) |
-| `400` | `INVALID_VEHICLE_STATUS` | The given vehicle status does not exist. |
+| `400` | `VEHICLE_STATUS_CHANGE_REQUIRES_PATCH` | Use PATCH /vehicles/:id/status to change a vehicle status and provide a reason. |
 | `401` | `INVALID_TOKEN` | Invalid or expired token. |
 | `403` | `INSUFFICIENT_PERMISSIONS` | You do not have permission to perform this action. |
 | `404` | `VEHICLE_NOT_FOUND` | Vehicle not found. |
@@ -2649,7 +2650,7 @@ Ejemplo ilustrativo armado con los ejemplos de campos del Swagger:
 
 #### DELETE /api/vehicles/{id}
 
-**Función.** Soft-deletes the vehicle: historical dispatches and maintenances keep referencing it, but it stops appearing in lists and its plate can be reused. To only take it out of service temporarily, change its status instead (PUT `vehicleStatusId`). Requires supervisor or coordinator role, or root.
+**Función.** Soft-deletes the vehicle: historical dispatches and maintenances keep referencing it, but it stops appearing in lists and its plate can be reused. To only take it out of service temporarily, change its status instead (`PATCH /vehicles/{id}/status` with a required reason). Requires supervisor or coordinator role, or root.
 
 **Acceso:** JWT Bearer; roles: supervisor, coordinator (o root).
 
@@ -3199,13 +3200,120 @@ Ejemplo ilustrativo armado con los ejemplos de campos del Swagger:
 
 #### GET /api/dispatches/kanban/filters
 
-**Función.** List catalog options for kanban filters
+**Función.** Returns all active, non-deleted drivers and all dispatch types, independent of the dispatches currently loaded on the board. Requires coordinator or supervisor role, or root.
 
 **Acceso:** JWT Bearer; roles: coordinator, supervisor (o root).
 
-**Respuesta correcta:** `200` → `{ drivers: [{ id, fullName }], dispatchTypes: [{ id, name }] }`. Incluye conductores activos y no eliminados, y todos los tipos de despacho, aunque no tengan órdenes en el tablero actual.
+**Respuesta correcta:** `200` → `DispatchKanbanFiltersResponseDto` (Available driver and dispatch-type filter options.).
 
-**Errores:** `401` token inválido o vencido; `403` rol insuficiente.
+| Campo JSON | Tipo | Obligatorio | Descripción y reglas |
+| --- | --- | --- | --- |
+| `drivers` | `DispatchKanbanDriverFilterOptionDto[]` | Sí |  |
+| `drivers[].id` | `number` | Sí | Driver user identifier. |
+| `drivers[].fullName` | `string` | Sí | Driver full name. |
+| `dispatchTypes` | `DispatchKanbanFilterOptionDto[]` | Sí |  |
+| `dispatchTypes[].id` | `number` | Sí | Catalog item identifier. |
+| `dispatchTypes[].name` | `string` | Sí | Human-readable catalog label. |
+
+Ejemplo ilustrativo armado con los ejemplos de campos del Swagger:
+
+```json
+{
+  "drivers": [
+    {
+      "id": 0,
+      "fullName": "texto"
+    }
+  ],
+  "dispatchTypes": [
+    {
+      "id": 0,
+      "name": "texto"
+    }
+  ]
+}
+```
+
+**Errores y códigos:**
+
+| HTTP | `error` | `message` de ejemplo |
+| --- | --- | --- |
+| `401` | `—` | Invalid or expired token. |
+| `403` | `—` | Requires one of: coordinator, supervisor. |
+
+### Vehicles
+
+#### PATCH /api/vehicles/{id}/status
+
+**Función.** Changes a vehicle status with a required reason. A vehicle cannot be moved to `maintenance` or `out_of_service` while it has a `confirmed` or `in_execution` route batch. Each actual status transition is recorded in `audit_logs`. Requires supervisor or coordinator role, or root.
+
+**Acceso:** JWT Bearer; roles: supervisor, coordinator (o root).
+
+**Parámetros:**
+
+| Lugar | Nombre | Tipo | Obligatorio | Descripción | Restricciones / ejemplo |
+| --- | --- | --- | --- | --- | --- |
+| path | `id` | `integer` | Sí | Vehicle ID (a whole number from 1 to 2147483647, as returned by the list endpoint). Anything else is a 400. | ejemplo: 1 |
+
+**Cuerpo de solicitud:** `application/json`; esquema [`ChangeVehicleStatusDto`](#changevehiclestatusdto).
+
+| Campo JSON | Tipo | Obligatorio | Descripción y reglas |
+| --- | --- | --- | --- |
+| `status` | `string: active, maintenance, out_of_service` | Sí | New operational status of the vehicle; ejemplo: "maintenance" |
+| `reason` | `string` | Sí | Required reason for changing the vehicle status; ejemplo: "Preventive maintenance scheduled after inspection." |
+
+Ejemplo ilustrativo armado con los ejemplos de campos del Swagger:
+
+```json
+{
+  "status": "maintenance",
+  "reason": "Preventive maintenance scheduled after inspection."
+}
+```
+
+**Respuesta correcta:** `200` → `VehicleDto`.
+
+| Campo JSON | Tipo | Obligatorio | Descripción y reglas |
+| --- | --- | --- | --- |
+| `id` | `integer` | Sí | Vehicle ID; ejemplo: 1 |
+| `type` | `string` | Sí | Kind of vehicle; ejemplo: "camioneta" |
+| `model` | `string` | Sí | Make and model; ejemplo: "Toyota Hilux 2022" |
+| `plate` | `string` | Sí | License plate, uppercase, unique among vehicles; ejemplo: "1234-ABC" |
+| `capacityKg` | `number (double)` | Sí | Maximum load weight, in kg; ejemplo: 1200.5 |
+| `capacityM3` | `number (double)` | Sí | Maximum load volume, in m3; ejemplo: 8.5 |
+| `vehicleStatus` | `VehicleStatusDto` | Sí | Current operational status |
+| `vehicleStatus.id` | `integer` | Sí | Status ID: 1 = active, 2 = maintenance, 3 = out_of_service. Use it as `vehicleStatusId`; ejemplo: 1 |
+| `vehicleStatus.name` | `string: active, maintenance, out_of_service` | Sí | active = available for route assignment · maintenance = temporarily unavailable · out_of_service = withdrawn; ejemplo: "active" |
+| `createdAt` | `string (date-time)` | Sí | Creation timestamp (UTC); ejemplo: "2024-01-01T00:00:00.000Z" |
+
+Ejemplo ilustrativo armado con los ejemplos de campos del Swagger:
+
+```json
+{
+  "id": 1,
+  "type": "camioneta",
+  "model": "Toyota Hilux 2022",
+  "plate": "1234-ABC",
+  "capacityKg": 1200.5,
+  "capacityM3": 8.5,
+  "vehicleStatus": {
+    "id": 1,
+    "name": "active"
+  },
+  "createdAt": "2024-01-01T00:00:00.000Z"
+}
+```
+
+**Errores y códigos:**
+
+| HTTP | `error` | `message` de ejemplo |
+| --- | --- | --- |
+| `400` | `Bad Request` | Status must be active, maintenance, or out_of_service.; Reason is required. |
+| `400` | `Bad Request` | Validation failed (numeric string is expected) |
+| `401` | `INVALID_TOKEN` | Invalid or expired token. |
+| `403` | `INSUFFICIENT_PERMISSIONS` | You do not have permission to perform this action. |
+| `404` | `VEHICLE_NOT_FOUND` | Vehicle not found. |
+| `409` | `VEHICLE_HAS_ACTIVE_BATCHES` | The vehicle cannot be moved to this status while it has confirmed or in-execution route batches. |
 
 ## Claves de configuración
 
@@ -3650,7 +3758,6 @@ Los campos y restricciones siguientes provienen de Swagger. `openapi.json` conti
 | `plate` | `string` | No | New plate, trimmed and uppercased. Must not belong to another vehicle. null or empty is rejected; longitud máx. 15 |
 | `capacityKg` | `number (double)` | No | New maximum load weight in kg (greater than zero, up to 2 decimals). null is rejected; mín. 0; máx. 99999999.99 |
 | `capacityM3` | `number (double)` | No | New maximum load volume in m3 (greater than zero, up to 2 decimals). null is rejected; mín. 0; máx. 99999999.99 |
-| `vehicleStatusId` | `integer` | No | New operational status: 1 = active (available for routes), 2 = maintenance, 3 = out_of_service. Any other ID is a 400 INVALID_VEHICLE_STATUS. null is rejected |
 
 ### SettingDto
 
@@ -3807,23 +3914,30 @@ Los campos y restricciones siguientes provienen de Swagger. `openapi.json` conti
 | `date` | `string (date)` | Sí |  |
 | `columns` | `DispatchKanbanColumnDto[]` | Sí |  |
 
-### DispatchKanbanFiltersResponseDto
+### DispatchKanbanFilterOptionDto
 
 | Campo | Tipo | Obligatorio | Descripción y reglas |
 | --- | --- | --- | --- |
-| `drivers` | `DispatchKanbanDriverFilterOptionDto[]` | Sí | Conductores activos y no eliminados. |
-| `dispatchTypes` | `DispatchKanbanFilterOptionDto[]` | Sí | Todos los tipos de despacho. |
+| `id` | `number` | Sí | Catalog item identifier. |
+| `name` | `string` | Sí | Human-readable catalog label. |
 
 ### DispatchKanbanDriverFilterOptionDto
 
 | Campo | Tipo | Obligatorio | Descripción y reglas |
 | --- | --- | --- | --- |
-| `id` | `number` | Sí | ID del usuario conductor. |
-| `fullName` | `string` | Sí | Nombre completo del conductor. |
+| `id` | `number` | Sí | Driver user identifier. |
+| `fullName` | `string` | Sí | Driver full name. |
 
-### DispatchKanbanFilterOptionDto
+### DispatchKanbanFiltersResponseDto
 
 | Campo | Tipo | Obligatorio | Descripción y reglas |
 | --- | --- | --- | --- |
-| `id` | `number` | Sí | ID del tipo de despacho. |
-| `name` | `string` | Sí | Nombre del tipo de despacho. |
+| `drivers` | `DispatchKanbanDriverFilterOptionDto[]` | Sí |  |
+| `dispatchTypes` | `DispatchKanbanFilterOptionDto[]` | Sí |  |
+
+### ChangeVehicleStatusDto
+
+| Campo | Tipo | Obligatorio | Descripción y reglas |
+| --- | --- | --- | --- |
+| `status` | `string: active, maintenance, out_of_service` | Sí | New operational status of the vehicle. |
+| `reason` | `string` | Sí | Required reason for changing the vehicle status. |

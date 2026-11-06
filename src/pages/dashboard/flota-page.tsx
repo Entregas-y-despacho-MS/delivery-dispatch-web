@@ -1,9 +1,10 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Plus, Truck } from "lucide-react";
 
 import {
   VehiculosTable,
   VehiculoForm,
+  CambiarEstadoDialog,
   useVehiculos,
   type Vehiculo,
   type VehiculoFormValues,
@@ -26,6 +27,7 @@ const PAGE_SIZE = 10;
 export default function FlotaPage() {
   const { search, debouncedSearch, page, setPage, setSearch, hasFilters } = useListFilters({});
   const editor = useEditorDialog<Vehiculo>();
+  const [vehiculoEstado, setVehiculoEstado] = useState<Vehiculo | null>(null);
   const params = useMemo(() => ({
     page,
     limit: PAGE_SIZE,
@@ -78,6 +80,7 @@ export default function FlotaPage() {
               loading={flota.isLoading}
               searchActive={hasFilters}
               onEdit={editor.openEdit}
+              onChangeStatus={setVehiculoEstado}
             />
           </div>
         )}
@@ -104,6 +107,18 @@ export default function FlotaPage() {
           />
         </DialogContent>
       </Dialog>
+
+      {vehiculoEstado && (
+        <CambiarEstadoDialog
+          abierto
+          vehiculo={vehiculoEstado}
+          guardando={flota.isChangingStatus}
+          onOpenChange={(abierto) => { if (!abierto) setVehiculoEstado(null); }}
+          onConfirmar={async (data) => {
+            await flota.changeStatus({ id: vehiculoEstado.id, data });
+          }}
+        />
+      )}
     </div>
   );
 }

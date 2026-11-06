@@ -1,5 +1,7 @@
 import { createCrudService } from "@/shared/lib/base.service";
+import api from "@/shared/lib/axios";
 import type {
+  CambiarEstadoVehiculoInput,
   Vehiculo,
   VehiculoInput,
   VehiculoListParams,
@@ -7,7 +9,7 @@ import type {
   VehiclesResponse,
 } from "../flota.types";
 
-export const vehiculosService = createCrudService<
+const crudService = createCrudService<
   Vehiculo,
   Vehiculo,
   VehiculoInput,
@@ -26,3 +28,15 @@ export const vehiculosService = createCrudService<
     pages: meta.pages,
   }),
 });
+
+export const vehiculosService = {
+  ...crudService,
+  changeStatus: async (id: number, payload: CambiarEstadoVehiculoInput) => {
+    const { data } = await api.patch<Vehiculo>(`/vehicles/${id}/status`, payload, { skipErrorToast: true });
+    return data;
+  },
+  getRouteBatchStatus: async (id: number) => {
+    const { data } = await api.get<{ status: string }>(`/route-batches/${id}`, { skipErrorToast: true });
+    return data.status;
+  },
+};

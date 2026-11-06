@@ -11,6 +11,7 @@ import {
 } from "@/shared/components/ui/dialog";
 import { Label } from "@/shared/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
+import { Textarea } from "@/shared/components/ui/textarea";
 import { formatearKilos, formatearMetrosCubicos } from "../planificacion.format";
 
 /** Vehículo que se puede elegir; la página lo arma con los datos de flota. */
@@ -29,7 +30,9 @@ interface CambiarVehiculoDialogProps {
   /** Solo vehículos activos. */
   opciones: OpcionVehiculo[];
   guardando: boolean;
-  onConfirmar: (vehicleId: number) => void;
+  /** En un lote confirmado el cambio exige motivo y revoca una aceptación previa. */
+  requiereMotivo?: boolean;
+  onConfirmar: (vehicleId: number, reason?: string) => void;
 }
 
 /**
@@ -51,19 +54,37 @@ function Contenido({
   vehiculoActualId,
   opciones,
   guardando,
+  requiereMotivo = false,
   onConfirmar,
   onCerrar,
 }: Omit<CambiarVehiculoDialogProps, "abierto" | "onOpenChange"> & { onCerrar: () => void }) {
   const [elegido, setElegido] = useState(vehiculoActualId ? String(vehiculoActualId) : "");
+  const [motivo, setMotivo] = useState("");
+  const [validacion, setValidacion] = useState("");
   const vehiculo = opciones.find((opcion) => String(opcion.id) === elegido);
   const sinCambios = elegido === "" || Number(elegido) === vehiculoActualId;
+
+  const confirmar = () => {
+    setValidacion("");
+    if (requiereMotivo && !motivo.trim()) {
+      setValidacion("Escribe el motivo del cambio de vehículo.");
+      return;
+    }
+    onConfirmar(Number(elegido), motivo.trim() || undefined);
+  };
 
   return (
     <>
       <DialogHeader>
         <DialogTitle>Cambiar vehículo del lote</DialogTitle>
-        <DialogDescription>Al guardar se valida que el peso, el volumen y las medidas de los bultos entren.</DialogDescription>
+        <DialogDescription>
+          {requiereMotivo
+            ? "El lote confirmado conserva sus paradas y repartidor. Si ya fue aceptado, el repartidor deberá aceptarlo de nuevo."
+            : "Al guardar se valida que el peso, el volumen y las medidas de los bultos entren."}
+        </DialogDescription>
       </DialogHeader>
+
+      {validacion && <p role="alert" className="text-sm text-destructive">{validacion}</p>}
 
       <div className="space-y-2">
         <Label htmlFor="vehiculo-lote">Vehículo</Label>
@@ -84,11 +105,25 @@ function Contenido({
         )}
       </div>
 
+      {requiereMotivo && (
+        <div className="space-y-2">
+          <Label htmlFor="motivo-cambio-vehiculo">Motivo</Label>
+          <Textarea
+            id="motivo-cambio-vehiculo"
+            value={motivo}
+            onChange={(event) => setMotivo(event.target.value)}
+            aria-invalid={!!validacion && !motivo.trim()}
+            placeholder="Explica por qué se reemplaza el vehículo"
+            required
+          />
+        </div>
+      )}
+
       <DialogFooter>
         <Button type="button" variant="outline" onClick={onCerrar} disabled={guardando}>
           Cancelar
         </Button>
-        <Button type="button" onClick={() => onConfirmar(Number(elegido))} disabled={guardando || sinCambios}>
+        <Button type="button" onClick={confirmar} disabled={guardando || sinCambios}>
           {guardando ? "Validando..." : "Cambiar vehículo"}
         </Button>
       </DialogFooter>

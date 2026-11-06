@@ -10,6 +10,10 @@ import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { PageHeader } from "@/shared/components/common/page-header";
 
+function obtenerFechaBoliviaHoy() {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "America/La_Paz", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+}
+
 function SolicitudCard({ item }: { item: SolicitudCambio }) {
   const [url, setUrl] = useState("");
   const reveal = useMutation({ mutationFn: () => solicitudesCambioService.revealTrackingLink(item.dispatchId), onSuccess: (data) => setUrl(data.trackingUrl), onError: () => toast.error("El enlace ya no está disponible o el permiso cambió. Actualiza la bandeja.") });
@@ -35,7 +39,7 @@ export default function SolicitudesCambioPage() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
-  const [selected, setSelected] = useState<SolicitudCambio | null>(null);
+  const [selected, setSelected] = useState<{ solicitud: SolicitudCambio; fechaMinima: string } | null>(null);
   const query = useQuery({ queryKey: ["dispatch-change-requests", { page, search }], queryFn: ({ signal }) => solicitudesCambioService.list({ page, limit: 20, ...(search.trim() ? { search: search.trim() } : {}) }, signal), staleTime: 10_000 });
   return <div className="min-w-0 space-y-6">
     <PageHeader eyebrow="Atención al cliente" title="Solicitudes de cambio" icon={MessageSquareText} description="Revisa las solicitudes que llegaron desde el seguimiento y su promesa de entrega." />
@@ -44,9 +48,9 @@ export default function SolicitudesCambioPage() {
       <Button variant="outline" onClick={() => void query.refetch()} disabled={query.isFetching}><RefreshCw aria-hidden /> Actualizar</Button>
     </div>
     {query.isPending ? <div className="rounded-xl border p-10 text-center text-sm text-muted-foreground">Cargando solicitudes…</div> : query.isError ? <div role="alert" className="rounded-xl border border-destructive/30 p-6 text-sm">No se pudieron cargar las solicitudes. Verifica tu conexión y vuelve a actualizar.</div> : query.data.items.length === 0 ? <div className="rounded-xl border border-dashed p-10 text-center"><p className="font-medium">No hay solicitudes pendientes</p><p className="mt-1 text-sm text-muted-foreground">Las nuevas solicitudes de los clientes aparecerán aquí.</p></div> : <>
-      <div className="grid min-w-0 gap-3 lg:grid-cols-2">{query.data.items.map((item) => <div key={item.dispatchId} className="min-w-0 space-y-2"><SolicitudCard item={item} /><RequireRole roles={[ROLES.COORDINADOR]}><Button className="w-full" disabled={!item.deliveryDate} onClick={() => setSelected(item)}><CalendarClock aria-hidden /> {item.deliveryDate ? "Resolver solicitud" : "Despacho sin fecha de ruta"}</Button></RequireRole></div>)}</div>
+      <div className="grid min-w-0 gap-3 lg:grid-cols-2">{query.data.items.map((item) => <div key={item.dispatchId} className="min-w-0 space-y-2"><SolicitudCard item={item} /><RequireRole roles={[ROLES.COORDINADOR]}><Button className="w-full" disabled={!item.deliveryDate} onClick={() => setSelected({ solicitud: item, fechaMinima: obtenerFechaBoliviaHoy() })}><CalendarClock aria-hidden /> {item.deliveryDate ? "Resolver solicitud" : "Despacho sin fecha de ruta"}</Button></RequireRole></div>)}</div>
       <div className="flex flex-wrap items-center justify-between gap-3 text-sm"><span className="text-muted-foreground">{query.data.total} solicitudes</span><div className="flex gap-2"><Button variant="outline" size="sm" disabled={page <= 1 || query.isFetching} onClick={() => setPage((current) => current - 1)}>Anterior</Button><span className="px-2 py-2">Página {page} de {Math.max(1, query.data.pages ?? Math.ceil(query.data.total / (query.data.pageSize ?? 20)))}</span><Button variant="outline" size="sm" disabled={page * (query.data.pageSize ?? 20) >= query.data.total || query.isFetching} onClick={() => setPage((current) => current + 1)}>Siguiente</Button></div></div>
     </>}
-    <RequireRole roles={[ROLES.COORDINADOR]}>{selected?.deliveryDate && <ReprogramarDialog open={!!selected} onOpenChange={(open) => { if (!open) setSelected(null); }} despachoId={selected.dispatchId} fecha={selected.deliveryDate} onComplete={() => { setSelected(null); void queryClient.invalidateQueries({ queryKey: ["dispatch-change-requests"] }); }} />}</RequireRole>
+    <RequireRole roles={[ROLES.COORDINADOR]}>{selected?.solicitud.deliveryDate && <ReprogramarDialog open={!!selected} onOpenChange={(open) => { if (!open) setSelected(null); }} despachoId={selected.solicitud.dispatchId} fecha={selected.solicitud.deliveryDate} fechaMinima={selected.fechaMinima} onComplete={() => { setSelected(null); void queryClient.invalidateQueries({ queryKey: ["dispatch-change-requests"] }); }} />}</RequireRole>
   </div>;
 }

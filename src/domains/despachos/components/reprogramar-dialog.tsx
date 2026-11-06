@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, CalendarClock, RotateCcw, Warehouse } from "lucide-react";
 import { toast } from "sonner";
@@ -14,19 +14,14 @@ import { reprogramacionInternaService } from "../services/reprogramacion-interna
 import { despachoDetalleKeys } from "../hooks/use-despacho-detalle";
 import { DISPATCHES_KANBAN_QUERY_KEY } from "../hooks/use-dispatch-events";
 
-function obtenerFechaBoliviaHoy() {
-  return new Intl.DateTimeFormat("en-CA", { timeZone: "America/La_Paz", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
-}
-
 /** Acciones de coordinación ligadas al contador de intentos que calcula el servidor (ST-52.1). */
-export function ReprogramarDialog({ open, onOpenChange, despachoId, fecha, onComplete }: {
-  open: boolean; onOpenChange: (open: boolean) => void; despachoId: number; fecha: string; onComplete?: () => void;
+export function ReprogramarDialog({ open, onOpenChange, despachoId, fecha, fechaMinima, onComplete }: {
+  open: boolean; onOpenChange: (open: boolean) => void; despachoId: number; fecha: string; fechaMinima: string; onComplete?: () => void;
 }) {
   const client = useQueryClient();
   const settings = useParametrosOperativos();
   const [reasonCode, setReasonCode] = useState("");
-  const [fechaMinima, setFechaMinima] = useState("");
-  const [deliveryDate, setDeliveryDate] = useState("");
+  const [deliveryDate, setDeliveryDate] = useState(fechaMinima);
   const [slotKey, setSlotKey] = useState("");
   const [instructions, setInstructions] = useState("");
   const motivos = useMotivosReprogramacion({ page: 1, limit: 100, active: true });
@@ -35,12 +30,6 @@ export function ReprogramarDialog({ open, onOpenChange, despachoId, fecha, onCom
     queryFn: ({ signal }) => obtenerTableroKanban({ date: fecha }, signal),
     enabled: open,
   });
-  useEffect(() => {
-    if (!open) return;
-    const fechaHoy = obtenerFechaBoliviaHoy();
-    setFechaMinima(fechaHoy);
-    setDeliveryDate(fechaHoy);
-  }, [open]);
   const dispatch = board.data?.columns.flatMap((column) => column.dispatches).find((item) => item.id === despachoId);
   const intentosAgotados = !!dispatch && dispatch.attemptCount >= dispatch.attemptLimit;
   const opciones = useMemo(() => motivos.data.filter((item) => item.active), [motivos.data]);
@@ -80,7 +69,7 @@ export function ReprogramarDialog({ open, onOpenChange, despachoId, fecha, onCom
     onError: () => toast.error("No se pudo devolver el despacho. Puede haber cambiado su estado; actualiza la ficha."),
   });
   const busy = reprogramar.isPending || devolver.isPending;
-  function close() { onOpenChange(false); setReasonCode(""); setSlotKey(""); setFechaMinima(""); setDeliveryDate(""); setInstructions(""); }
+  function close() { onOpenChange(false); setReasonCode(""); setSlotKey(""); setDeliveryDate(fechaMinima); setInstructions(""); }
   async function invalidate() {
     await Promise.all([
       client.invalidateQueries({ queryKey: despachoDetalleKeys.detail(despachoId) }),

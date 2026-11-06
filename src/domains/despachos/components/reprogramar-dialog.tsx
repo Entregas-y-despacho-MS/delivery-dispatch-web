@@ -15,14 +15,13 @@ import { despachoDetalleKeys } from "../hooks/use-despacho-detalle";
 import { DISPATCHES_KANBAN_QUERY_KEY } from "../hooks/use-dispatch-events";
 
 /** Acciones de coordinación ligadas al contador de intentos que calcula el servidor (ST-52.1). */
-export function ReprogramarDialog({ open, onOpenChange, despachoId, fecha, onComplete }: {
-  open: boolean; onOpenChange: (open: boolean) => void; despachoId: number; fecha: string; onComplete?: () => void;
+export function ReprogramarDialog({ open, onOpenChange, despachoId, fecha, fechaMinima, onComplete }: {
+  open: boolean; onOpenChange: (open: boolean) => void; despachoId: number; fecha: string; fechaMinima: string; onComplete?: () => void;
 }) {
   const client = useQueryClient();
   const settings = useParametrosOperativos();
   const [reasonCode, setReasonCode] = useState("");
-  const todayLocal = new Intl.DateTimeFormat("en-CA", { timeZone: "America/La_Paz", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
-  const [deliveryDate, setDeliveryDate] = useState(todayLocal);
+  const [deliveryDate, setDeliveryDate] = useState(fechaMinima);
   const [slotKey, setSlotKey] = useState("");
   const [instructions, setInstructions] = useState("");
   const motivos = useMotivosReprogramacion({ page: 1, limit: 100, active: true });
@@ -70,7 +69,7 @@ export function ReprogramarDialog({ open, onOpenChange, despachoId, fecha, onCom
     onError: () => toast.error("No se pudo devolver el despacho. Puede haber cambiado su estado; actualiza la ficha."),
   });
   const busy = reprogramar.isPending || devolver.isPending;
-  function close() { onOpenChange(false); setReasonCode(""); setSlotKey(""); setDeliveryDate(todayLocal); setInstructions(""); }
+  function close() { onOpenChange(false); setReasonCode(""); setSlotKey(""); setDeliveryDate(fechaMinima); setInstructions(""); }
   async function invalidate() {
     await Promise.all([
       client.invalidateQueries({ queryKey: despachoDetalleKeys.detail(despachoId) }),
@@ -97,7 +96,7 @@ export function ReprogramarDialog({ open, onOpenChange, despachoId, fecha, onCom
           </Select>
         </div>
         {!intentosAgotados && <div className="grid gap-3 sm:grid-cols-2">
-          <div className="space-y-2"><Label htmlFor="new-window-date">Nueva fecha</Label><input id="new-window-date" type="date" min={todayLocal} value={deliveryDate} onChange={(e) => { setDeliveryDate(e.target.value); setSlotKey(""); }} className="h-10 w-full rounded-md border bg-background px-3 text-sm" /></div>
+          <div className="space-y-2"><Label htmlFor="new-window-date">Nueva fecha</Label><input id="new-window-date" type="date" min={fechaMinima} value={deliveryDate} onChange={(e) => { setDeliveryDate(e.target.value); setSlotKey(""); }} className="h-10 w-full rounded-md border bg-background px-3 text-sm" /></div>
           <div className="space-y-2"><Label htmlFor="new-window-slot">Franja disponible</Label><Select value={slotKey} onValueChange={setSlotKey}><SelectTrigger id="new-window-slot"><SelectValue placeholder={slots.length ? "Selecciona una franja" : "Configura las franjas operativas"} /></SelectTrigger><SelectContent>{slots.map((slot) => <SelectItem key={slot.key} value={slot.key}>{slot.start}–{slot.end}</SelectItem>)}</SelectContent></Select></div>
         </div>}
         <div className="space-y-2"><Label htmlFor="resolution-instructions">Instrucciones <span className="font-normal text-muted-foreground">(opcional)</span></Label><textarea id="resolution-instructions" value={instructions} onChange={(e) => setInstructions(e.target.value)} maxLength={500} rows={3} className="w-full rounded-md border bg-background px-3 py-2 text-sm" /></div>

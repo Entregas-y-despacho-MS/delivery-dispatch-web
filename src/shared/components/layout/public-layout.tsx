@@ -5,6 +5,8 @@ import { PageErrorBoundary } from "@/shared/components/feedback/page-error-bound
 import { ThemeToggle } from "@/shared/components/theme-toggle";
 import { Button } from "@/shared/components/ui/button";
 
+const CURRENT_YEAR = new Date().getFullYear();
+
 export function PublicLayout() {
   return (
     <div className="flex min-h-screen flex-col">
@@ -27,7 +29,7 @@ export function PublicLayout() {
       </main>
 
       <footer className="border-t py-6 text-center text-sm text-muted-foreground">
-        © {new Date().getFullYear()} delivery-dispatch-web
+        © {CURRENT_YEAR} delivery-dispatch-web
       </footer>
     </div>
   );

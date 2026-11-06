@@ -2,9 +2,8 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ChevronRight, LogOut, X } from "lucide-react";
 
-import { NAV_GROUPS } from "@/config/navigation";
+import { navigationForRole } from "@/config/navigation";
 import { portalHomeHref } from "@/config/portal-routes";
-import { hasRole } from "@/config/roles";
 import { useLogout } from "@/domains/auth";
 import { FlashPackLogo } from "@/shared/components/common/flash-pack-logo";
 import {
@@ -23,10 +22,7 @@ export function DashboardSidebar({ user }: { user: AuthUser }) {
   const { pathname } = useLocation();
   const { isMobile, state, setOpen, setOpenMobile } = useSidebar();
   const handleLogout = useLogout();
-  const visibleGroups = NAV_GROUPS.map((group) => ({
-    ...group,
-    items: group.items.filter((item) => hasRole(user.rol.id, item.roles)),
-  })).filter((group) => group.items.length > 0);
+  const visibleGroups = navigationForRole(user.rol.id);
   const currentGroup = visibleGroups.find((group) =>
     group.items.some((item) => isCurrentRoute(pathname, item.href))
   )?.label;

@@ -17,6 +17,7 @@ vi.mock("@/domains/despachos/services/tablero-kanban.service", () => ({
 }));
 
 vi.stubEnv("VITE_API_URL", "http://localhost:3001/api");
+vi.stubEnv("VITE_SOCKET_URL", "http://localhost:3010");
 const [{ QueryClient, QueryClientProvider }, { useAuthStore }, { useDispatchEvents, DISPATCH_LIVE_EVENTS }, { useTableroKanban }] = await Promise.all([
   import("@tanstack/react-query"),
   import("@/shared/store/use-auth-store"),
@@ -54,7 +55,7 @@ describe("sincronización del tablero", () => {
     const invalidate = vi.spyOn(client, "invalidateQueries");
     const { result } = renderHookInTest(() => useDispatchEvents(), { wrapper });
 
-    expect(socketIo).toHaveBeenCalledWith("http://localhost:3001/app", expect.objectContaining({ auth: { token: "access-token" } }));
+    expect(socketIo).toHaveBeenCalledWith("http://localhost:3010/app", expect.objectContaining({ auth: { token: "access-token" } }));
     expect(socketIo.mock.calls[0]?.[1]).toMatchObject({ reconnection: true, reconnectionAttempts: Infinity, reconnectionDelay: 1_000, reconnectionDelayMax: 30_000 });
     expect(DISPATCH_LIVE_EVENTS).toHaveLength(5);
     expect(DISPATCH_LIVE_EVENTS).not.toContain("dispatch.location.updated");

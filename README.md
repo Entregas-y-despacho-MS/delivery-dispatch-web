@@ -20,7 +20,7 @@ Una sola aplicación que sirve a **dos públicos distintos**:
 
 ```bash
 npm ci
-cp .env.example .env    # apunta VITE_API_URL a tu backend
+cp .env.example .env    # apunta VITE_API_URL y VITE_SOCKET_URL a tu backend
 npm run dev
 ```
 
@@ -54,6 +54,24 @@ están en la [guía de incidentes vehiculares](docs/VEHICLE_INCIDENTS.md).
 Desde la carpeta contenedora del workspace, ejecuta `docker compose up -d --build`. La web queda
 disponible en <http://localhost:8080> y usa la API del backend en <http://localhost:3000/api>.
 Para reconstruir solo la web, ejecuta `docker compose build web` y luego reinicia ese servicio.
+
+### Construir y ejecutar la imagen Web
+
+La imagen recibe las direcciones públicas del API y de Socket.IO durante el build de Vite. Usa
+direcciones alcanzables desde el navegador del usuario (no `localhost` si el portal se abre desde
+otro equipo):
+
+```bash
+docker build \
+  --build-arg VITE_API_URL=https://api.example.com/api \
+  --build-arg VITE_SOCKET_URL=https://api.example.com \
+  -t delivery-dispatch-web .
+docker run --rm -p 8080:80 delivery-dispatch-web
+```
+
+Abre <http://localhost:8080>. El endpoint `/healthz` sirve para comprobar el contenedor y las rutas
+del portal, por ejemplo `/app/tablero`, devuelven la aplicación para que React Router resuelva la
+navegación.
 
 ### Cómo probar el panel sin backend
 

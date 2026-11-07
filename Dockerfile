@@ -3,7 +3,9 @@ FROM node:22-bookworm-slim@sha256:c3de60bf2f9dd0ac6370e6117950ff62d6e339527e7472
 WORKDIR /app
 
 ARG VITE_API_URL=http://localhost:3000/api
+ARG VITE_SOCKET_URL=http://localhost:3000
 ENV VITE_API_URL=${VITE_API_URL}
+ENV VITE_SOCKET_URL=${VITE_SOCKET_URL}
 
 COPY package*.json ./
 RUN npm ci

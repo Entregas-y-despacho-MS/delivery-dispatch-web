@@ -26,8 +26,7 @@ export function useDispatchEvents() {
   useEffect(() => {
     if (!accessToken) return;
 
-    const socketOrigin = new URL(env.VITE_API_URL).origin;
-    const socket = io(`${socketOrigin}/app`, {
+    const socket = io(`${env.VITE_SOCKET_URL}/app`, {
       auth: { token: accessToken },
       reconnection: true,
       reconnectionAttempts: Infinity,

@@ -26,6 +26,7 @@
     "test:reprogramacion": "vitest run scripts/reprogramacion-despacho.test.tsx",
     "test:historial": "vitest run scripts/historial-despachos.test.tsx",
     "test:solicitudes": "vitest run scripts/solicitudes-cambio.test.tsx",
+    "test:navegacion-rol": "vitest run scripts/navegacion-rol.test.tsx"
     "test:reportes-sla": "vitest run scripts/reportes-sla.test.tsx"
     "test:excluidos-cotejo": "vitest run scripts/excluidos-cotejo.test.tsx"
   },

@@ -11,6 +11,7 @@ const toastExito = vi.fn();
 const toastError = vi.fn();
 vi.mock("sonner", () => ({ toast: { success: (m: string) => toastExito(m), error: (m: string) => toastError(m) } }));
 const { default: api } = await import("@/shared/lib/axios");
+const { useAuthStore } = await import("@/shared/store/use-auth-store");
 // oxlint-disable-next-line no-restricted-imports -- las pruebas revisan el hook directamente.
 const { useEnlaceSeguimiento, useSolicitudesCambio } = await import("@/domains/despachos/hooks/use-solicitudes-cambio");
 // oxlint-disable-next-line no-restricted-imports -- las pruebas revisan el componente directamente.
@@ -49,6 +50,8 @@ const conflicto = (code: string) => Object.assign(new Error(code), {
 let enlaceFalla: string | null = null;
 
 beforeEach(() => {
+  // «Reprogramar» solo se muestra al coordinador (RequireRole, ST-59.2).
+  useAuthStore.setState({ user: { id: 1, rol: { id: 1, nombre: "coordinator" } } as never });
   lista = [SOLICITUD, CON_CORREO];
   enlaceFalla = null;
   toastExito.mockReset();
@@ -189,7 +192,9 @@ describe("bandeja de solicitudes de cambio (ST-224.3)", () => {
     const dialogo = await screen.findByRole("dialog");
     const formulario = await within(dialogo).findByRole("form", { name: "Datos de la reprogramación" });
     await usuario.clear(within(formulario).getByLabelText("Nueva fecha pactada"));
-    await usuario.type(within(formulario).getByLabelText("Nueva fecha pactada"), "2026-10-28");
+    // Siempre una fecha futura: el modal no deja reprogramar a un día anterior a hoy.
+    const enUnaSemana = new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString().slice(0, 10);
+    await usuario.type(within(formulario).getByLabelText("Nueva fecha pactada"), enUnaSemana);
     await usuario.selectOptions(within(formulario).getByLabelText("Franja"), "14:00-16:00");
     await usuario.selectOptions(within(formulario).getByLabelText("Motivo"), "RES-CLI-SELF");
     await usuario.click(within(dialogo).getByRole("button", { name: /^Reprogramar/ }));

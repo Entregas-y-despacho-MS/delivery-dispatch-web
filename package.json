@@ -27,6 +27,7 @@
     "test:historial": "vitest run scripts/historial-despachos.test.tsx",
     "test:solicitudes": "vitest run scripts/solicitudes-cambio.test.tsx",
     "test:reportes-sla": "vitest run scripts/reportes-sla.test.tsx"
+    "test:excluidos-cotejo": "vitest run scripts/excluidos-cotejo.test.tsx"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

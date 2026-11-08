@@ -105,6 +105,7 @@ export type {
 
 // Órdenes de recojo de devolución (ST-81.1).
 export { recojosService } from "./services/recojos.service";
+export { almacenesKeys, recojosKeys, useAccionesRecojo, useAlmacenes, useRecojos } from "./hooks/use-recojos";
 export {
   ESTADOS_RECOJO,
   ETIQUETA_ORIGEN,

@@ -4,10 +4,13 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { createServer } from "vite";
 import { fileURLToPath } from "node:url";
-import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
+
+// Windows no trae bash (salvo Git Bash en el PATH): ahí se salta la prueba del generador en vez de fallar.
+const HAY_BASH = spawnSync("bash", ["--version"]).status === 0;
 
 const server = await createServer({
   configFile: false,
@@ -43,7 +46,13 @@ test("admin, coordinador, supervisor y root llegan solo a sus pantallas", () => 
   assert.equal(can(ROLES.SUPERVISOR, "flota"), true);
   assert.equal(can(ROLES.SUPERVISOR, "usuarios"), false);
   assert.equal(can(ROLES.SUPERVISOR, "zonas"), false);
-  assert.equal(can(ROLES.SUPERVISOR, "tiposIncidenteVehiculo"), true);
+  // ES-59: el Supervisor solo tiene Mapa, Flota, KPIs, Alertas, Tablero, Despachos, Reportes y Umbrales.
+  assert.equal(can(ROLES.SUPERVISOR, "tiposIncidenteVehiculo"), false);
+  for (const key of ["mapa", "flota", "kpis", "alertas", "tablero", "despachos", "reportes", "umbrales"]) {
+    assert.equal(can(ROLES.SUPERVISOR, key), true, `El supervisor debería entrar a ${key}`);
+  }
+  assert.equal(can(ROLES.COORDINADOR, "kpis"), false);
+  assert.equal(can(ROLES.COORDINADOR, "umbrales"), false);
   assert.equal(can(ROLES.ROOT, "usuarios"), true);
   assert.equal(can(ROLES.ROOT, "flotaMantenimiento"), true);
   assert.equal(can(ROLES.ADMIN, "usuarios"), true);
@@ -54,6 +63,7 @@ test("admin, coordinador, supervisor y root llegan solo a sus pantallas", () => 
   assert.equal(hasRole(ROLES.ADMIN, ROLES_WEB), true);
   assert.equal(portalHomeHref(ROLES.ADMIN), portalHref("usuarios"));
   assert.equal(portalHomeHref(ROLES.COORDINADOR), portalHref("tablero"));
+  assert.equal(portalHomeHref(ROLES.SUPERVISOR), portalHref("mapa"));
   assert.deepEqual(PORTAL_ROUTES.despachoDetalle.roles, PORTAL_ROUTES.despachos.roles);
   assert.deepEqual(PORTAL_ROUTES.flotaMantenimiento.roles, PORTAL_ROUTES.flota.roles);
 });
@@ -76,14 +86,15 @@ test("el panel muestra los permisos de API de cada rol antes de asignarlo", () =
   assert.doesNotMatch(driver, /Usuarios/);
 });
 
-test("el generador registra una página nueva en rutas, permisos y menú", () => {
+test("el generador registra una página nueva en rutas, permisos y menú", { skip: !HAY_BASH && "sin bash en este equipo" }, () => {
   const root = mkdtempSync(join(tmpdir(), "dispatch-routes-"));
   try {
     for (const directory of ["scripts", "src/app", "src/config", "src/pages/dashboard"]) {
       mkdirSync(join(root, directory), { recursive: true });
     }
     for (const file of ["src/app/page-routes.ts", "src/config/portal-routes.ts", "src/config/navigation.ts", "scripts/nuevo-dominio.sh"]) {
-      copyFileSync(file, join(root, file));
+      // Con core.autocrlf el checkout de Windows deja CRLF y bash no acepta «set -euo pipefail\r».
+      writeFileSync(join(root, file), readFileSync(file, "utf8").replace(/\r\n/g, "\n"));
     }
     execFileSync("bash", ["scripts/nuevo-dominio.sh", "clientes", "supervisor"], { cwd: root });
     assert.match(readFileSync(join(root, "src/app/page-routes.ts"), "utf8"), /\["clientes", ClientesPage\]/);

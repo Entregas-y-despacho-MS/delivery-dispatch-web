@@ -1,15 +1,19 @@
 import { useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, CalendarClock, FileSearch, PackageSearch } from "lucide-react";
+import { ArrowLeft, Ban, CalendarClock, FileSearch, PackageSearch } from "lucide-react";
 
 import { useMotivosReprogramacion } from "@/domains/catalogos";
 import { useParametrosOperativos } from "@/domains/configuracion";
 import {
+  CancelarDespachoDialog,
   DespachoFicha,
   generarFranjas,
+  mensajeErrorAccionCotejo,
   mensajeErrorReprogramacion,
+  motivoNoCancelable,
   puedeReprogramar,
   ReprogramarDespachoDialog,
+  useCancelarDespacho,
   useDespachoDetalle,
   useReprogramacionDespacho,
 } from "@/domains/despachos";
@@ -25,7 +29,10 @@ const MOTIVOS_PARAMS = { page: 1, limit: 100, active: true };
 /** Valor por defecto de max_delivery_attempts si el parámetro todavía no está definido. */
 const LIMITE_POR_DEFECTO = 3;
 
-/** Ficha 360° del despacho (ST-56.1, RF-A09) con la reprogramación del coordinador (ST-52.1, RF-A05). */
+/**
+ * Ficha 360° del despacho (ST-56.1, RF-A09) con la reprogramación del coordinador (ST-52.1, RF-A05) y la
+ * cancelación antes de que salga la ruta (ST-241.4).
+ */
 export default function DespachoDetallePage() {
   const { id } = useParams<{ id: string }>();
   const despachoId = Number(id);
@@ -44,6 +51,12 @@ export default function DespachoDetallePage() {
     [motivosCatalogo.data],
   );
   const errorAccion = reprogramar.error ?? devolver.error;
+  const [cancelando, setCancelando] = useState(false);
+  const cancelar = useCancelarDespacho();
+  const abrirCancelar = (abierto: boolean) => {
+    cancelar.reset();
+    setCancelando(abierto);
+  };
 
   const abrir = (abierto: boolean) => {
     reprogramar.reset();
@@ -83,15 +96,26 @@ export default function DespachoDetallePage() {
               despacho={detalle.data}
               onRenovar={() => void detalle.refetch()}
               renovando={detalle.isFetching}
-              acciones={puedeReprogramar(detalle.data.status.name) && (
+              acciones={(
                 <RequireRole roles={[ROLES.COORDINADOR]}>
-                  <Button type="button" onClick={() => abrir(true)}>
-                    <CalendarClock aria-hidden /> Reprogramar
-                  </Button>
+                  {puedeReprogramar(detalle.data.status.name) && (
+                    <Button type="button" onClick={() => abrir(true)}>
+                      <CalendarClock aria-hidden /> Reprogramar
+                    </Button>
+                  )}
+                  <BotonCancelar motivo={motivoNoCancelable(detalle.data.status.name)} onClick={() => abrirCancelar(true)} />
                 </RequireRole>
               )}
             />
             <RequireRole roles={[ROLES.COORDINADOR]}>
+              <CancelarDespachoDialog
+                abierto={cancelando}
+                onOpenChange={abrirCancelar}
+                codigo={detalle.data.trackingCode ?? detalle.data.sourceOrderRef}
+                enviando={cancelar.isPending}
+                error={cancelar.error ? mensajeErrorAccionCotejo(parseApiError(cancelar.error)) : null}
+                onConfirmar={(causal) => cancelar.mutate({ id: despachoId, causal }, { onSuccess: () => setCancelando(false) })}
+              />
               <ReprogramarDespachoDialog
                 abierto={reprogramando}
                 onOpenChange={abrir}
@@ -112,5 +136,17 @@ export default function DespachoDetallePage() {
         )}
       </div>
     </div>
+  );
+}
+
+/** «Cancelar despacho»: deshabilitado (con el motivo a la vista) cuando la ruta ya salió. */
+function BotonCancelar({ motivo, onClick }: { motivo: string | null; onClick: () => void }) {
+  return (
+    <span className="flex flex-col items-start gap-1">
+      <Button type="button" variant="destructive" onClick={onClick} disabled={motivo !== null} aria-describedby={motivo ? "cancelar-motivo" : undefined}>
+        <Ban aria-hidden /> Cancelar despacho
+      </Button>
+      {motivo && <span id="cancelar-motivo" className="max-w-xs text-xs text-muted-foreground">{motivo}</span>}
+    </span>
   );
 }

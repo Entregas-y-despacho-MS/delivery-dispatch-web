@@ -31,6 +31,7 @@
     "test:excluidos-cotejo": "vitest run scripts/excluidos-cotejo.test.tsx",
     "test:seguimiento-en-vivo": "vitest run scripts/seguimiento-en-vivo.test.tsx",
     "test:mantenimiento-flota": "vitest run scripts/mantenimiento-flota.test.tsx"
+    "test:umbrales-alerta": "vitest run scripts/umbrales-alerta.test.tsx"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

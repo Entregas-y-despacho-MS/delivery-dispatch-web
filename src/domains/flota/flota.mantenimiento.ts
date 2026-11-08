@@ -106,3 +106,12 @@ export function errorMantenimiento(error: unknown): ErrorMantenimiento {
   if (apiError.kind === "validation") return { mensaje: apiError.message };
   return { mensaje: "No se pudo guardar. Revisa tu conexión e inténtalo de nuevo." };
 }
+
+const FORMATO_FECHA_HORA = new Intl.DateTimeFormat("es-BO", {
+  dateStyle: "short",
+  timeStyle: "short",
+  timeZone: "America/La_Paz",
+});
+
+/** Fecha y hora de Bolivia; «—» si no hay fecha. */
+export const formatearFechaHora = (iso: string | null) => (iso ? FORMATO_FECHA_HORA.format(new Date(iso)) : "—");

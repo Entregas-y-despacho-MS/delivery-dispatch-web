@@ -26,6 +26,9 @@ export const PORTAL_ROUTES = {
   kpis: { path: "kpis", roles: SUPERVISOR },
   alertas: { path: "alertas", roles: SUPERVISOR },
   umbrales: { path: "umbrales", roles: SUPERVISOR },
+  // Historial de toda la flota (ST-64.2). Desde un vehículo se entra por la ruta con :id, que abre este
+  // mismo historial con ese vehículo ya filtrado.
+  flotaMantenimientos: { path: "flota/mantenimiento", roles: SUPERVISOR },
   flotaMantenimiento: { path: "flota/:id/mantenimiento", roles: SUPERVISOR },
   repartidores: { path: "repartidores", roles: COORDINATOR },
   incidencias: { path: "incidencias", roles: COORDINATOR },

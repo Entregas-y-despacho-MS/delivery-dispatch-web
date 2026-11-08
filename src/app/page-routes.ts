@@ -52,6 +52,7 @@ export const PAGE_ROUTES = [
   ["kpis", KpisPortalPage],
   ["alertas", AlertasPortalPage],
   ["umbrales", UmbralesPortalPage],
+  ["flotaMantenimientos", FlotaMantenimientoPage],
   ["flotaMantenimiento", FlotaMantenimientoPage],
   ["repartidores", RepartidoresPage],
   ["incidencias", IncidenciasPage],

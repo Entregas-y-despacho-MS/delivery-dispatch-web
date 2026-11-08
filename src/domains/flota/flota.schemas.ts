@@ -19,3 +19,16 @@ export const vehiculoSchema = z.object({
 });
 
 export type VehiculoFormValues = z.infer<typeof vehiculoSchema>;
+
+/** Alta de una incidencia de vehículo (POST /vehicle-maintenances, ST-64.2). Los ids van como texto del select. */
+export const registrarMantenimientoSchema = z.object({
+  vehiculoId: z.string().min(1, "Elige el vehículo"),
+  tipoIncidenteId: z.string().min(1, "Elige el tipo de incidente"),
+  descripcion: z
+    .string()
+    .trim()
+    .min(1, "Describe qué pasó con el vehículo")
+    .max(1000, "Usa máximo 1000 caracteres"),
+});
+
+export type RegistrarMantenimientoFormValues = z.infer<typeof registrarMantenimientoSchema>;

@@ -1,6 +1,7 @@
 export { SeguimientoPublicoVista } from "./components/seguimiento-publico-vista";
 export { SeguimientoResumen } from "./components/seguimiento-resumen";
 export { EnCaminoCard } from "./components/en-camino-card";
+export { CalificarEntregaCard } from "./components/calificar-entrega-card";
 export { SeguimientoError } from "./components/seguimiento-error";
 export { AccionesAutoservicio } from "./components/acciones-autoservicio";
 export { SolicitarCambioForm, MAX_DETALLE_CAMBIO } from "./components/solicitar-cambio-form";

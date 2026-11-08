@@ -109,6 +109,7 @@ export { almacenesKeys, recojosKeys, useAccionesRecojo, useAlmacenes, useRecojos
 export { RecojosFiltros } from "./components/recojos-filtros";
 export { RecojosTable } from "./components/recojos-table";
 export { NuevoRecojoDialog } from "./components/nuevo-recojo-dialog";
+export { AnularRecojoDialog } from "./components/anular-recojo-dialog";
 export { aCrearRecojoInput, crearRecojoSchema, RECOJO_FORM_VACIO, type RecojoFormValues } from "./recojos.schemas";
 export {
   ESTADOS_RECOJO,

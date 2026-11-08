@@ -76,14 +76,14 @@ export interface Mantenimiento {
 }
 
 /** Filtros del historial. `from` y `to` son días de Bolivia (YYYY-MM-DD) sobre la fecha de registro. */
-export interface MantenimientoListParams {
+export type MantenimientoListParams = {
   page?: number;
   limit?: number;
   vehicleId?: number;
   status?: EstadoMantenimiento;
   from?: string;
   to?: string;
-}
+};
 
 export interface MantenimientosResponse {
   data: Mantenimiento[];

@@ -12,7 +12,8 @@ const opcional = (max: number) => z.string().trim().max(max, `Usa máximo ${max}
 const coordenada = (min: number, max: number, nombre: string) =>
   z.string().trim()
     .min(1, "Marca el punto en el mapa.")
-    .refine((v) => /^-?\d+(\.\d+)?$/.test(v) && Number(v) >= min && Number(v) <= max, `${nombre} debe estar entre ${min} y ${max}.`);
+    // Vacío ya lo avisa `min`: aquí solo se revisa el rango, para no mostrar dos errores a la vez.
+    .refine((v) => v === "" || (/^-?\d+(\.\d+)?$/.test(v) && Number(v) >= min && Number(v) <= max), `${nombre} debe estar entre ${min} y ${max}.`);
 
 /**
  * Formulario «Nuevo recojo» (ST-81.1), con las mismas reglas que CreatePickupOrderDto. Los campos van

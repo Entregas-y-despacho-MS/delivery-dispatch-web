@@ -3,8 +3,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { parseApiError } from "@/shared/lib/api-error";
 import { createQueryKeys } from "@/shared/lib/query-keys";
 import { intervaloRefresco } from "../seguimiento.en-vivo";
-import type { SeguimientoPublico } from "../seguimiento.types";
+import type { CalificacionEntrega, CalificarEntregaInput, SeguimientoPublico } from "../seguimiento.types";
 import {
+  calificarEntrega,
   confirmarEntrega,
   obtenerSeguimiento,
   solicitarCambio,
@@ -40,5 +41,16 @@ export function useRespuestaCliente(token: string) {
   const confirmar = useMutation({ mutationFn: () => confirmarEntrega(token), onSuccess: guardar, onError: recargar });
   const cambio = useMutation({ mutationFn: (detalle: string) => solicitarCambio(token, detalle), onSuccess: guardar, onError: recargar });
 
-  return { confirmar, cambio, guardar, recargar };
+  // El POST devuelve solo la calificación: se agrega al pedido en caché y ya no se puede volver a calificar.
+  const ponerCalificacion = (calificacion: CalificacionEntrega) =>
+    queryClient.setQueryData<SeguimientoPublico>(seguimientoKeys.detail(token), (pedido) =>
+      pedido ? { ...pedido, rating: calificacion, canRate: false } : pedido);
+  // Con un 409 (ya calificada o aún no entregada) se recarga: la vista muestra el estado real.
+  const calificar = useMutation({
+    mutationFn: (input: CalificarEntregaInput) => calificarEntrega(token, input),
+    onSuccess: ponerCalificacion,
+    onError: recargar,
+  });
+
+  return { confirmar, cambio, calificar, guardar, recargar };
 }

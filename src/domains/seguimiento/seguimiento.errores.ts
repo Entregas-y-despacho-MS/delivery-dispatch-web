@@ -25,6 +25,8 @@ const MENSAJES: Record<string, string> = {
   OSRM_UNAVAILABLE: "No pudimos calcular los horarios ahora. Intenta de nuevo en unos minutos.",
   CONFIRMATION_NOT_AVAILABLE: "Esta entrega ya no se puede confirmar desde el enlace.",
   CHANGE_REQUEST_NOT_AVAILABLE: "Ya no se puede solicitar un cambio para esta entrega.",
+  RATING_NOT_ALLOWED: "Todavía no puedes calificar: la entrega aún no se completó.",
+  RATING_ALREADY_SUBMITTED: "Esta entrega ya fue calificada. Gracias por tu opinión.",
 };
 
 /** Mensaje para el cliente. Nunca muestra el texto técnico del back. */

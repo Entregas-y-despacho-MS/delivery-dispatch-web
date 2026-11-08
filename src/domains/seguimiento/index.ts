@@ -9,6 +9,7 @@ export { useSeguimientoPublico, useRespuestaCliente, seguimientoKeys } from "./h
 export { useReprogramacion } from "./hooks/use-reprogramacion";
 export type { PasoReprogramacion } from "./hooks/use-reprogramacion";
 export {
+  calificarEntrega,
   confirmarEntrega,
   enviarCodigo,
   listarFranjas,
@@ -46,6 +47,8 @@ export {
 } from "./seguimiento.en-vivo";
 export type {
   Autoservicio,
+  CalificacionEntrega,
+  CalificarEntregaInput,
   EtaSeguimiento,
   FuenteEta,
   RepartidorSeguimiento,

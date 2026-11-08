@@ -46,8 +46,8 @@ export function ordenarRanking(filas: readonly FilaSla[], columna: ColumnaRankin
   });
 }
 
-const formatoDia = new Intl.DateTimeFormat("es-BO", { day: "2-digit", month: "2-digit", timeZone: "UTC" });
-const dia = (iso: string) => formatoDia.format(new Date(`${iso}T00:00:00Z`));
+/** «02/11» a partir de «2026-11-02», igual en cualquier navegador (Intl no siempre respeta los dos dígitos). */
+const dia = (iso: string) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}`;
 
 /** Texto del rango que devolvió el back: «Del 02/11 al 08/11» o un solo día. */
 export const textoRangoKpi = (desde: string, hasta: string) => (desde === hasta ? `Día ${dia(desde)}` : `Del ${dia(desde)} al ${dia(hasta)}`);

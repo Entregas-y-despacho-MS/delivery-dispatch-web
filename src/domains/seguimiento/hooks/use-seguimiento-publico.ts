@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { parseApiError } from "@/shared/lib/api-error";
 import { createQueryKeys } from "@/shared/lib/query-keys";
+import { intervaloRefresco } from "../seguimiento.en-vivo";
 import type { SeguimientoPublico } from "../seguimiento.types";
 import {
   confirmarEntrega,
@@ -14,7 +15,10 @@ export const seguimientoKeys = createQueryKeys("public-tracking");
 /** Ni 404 (enlace inválido) ni 429 (límite por IP) mejoran reintentando solos. */
 const reintentar = (fallos: number, error: unknown) => fallos < 2 && parseApiError(error).retryable;
 
-/** Pedido del enlace. Se recarga al volver a la pestaña: el estado cambia sin que el cliente haga nada. */
+/**
+ * Pedido del enlace. Se recarga al volver a la pestaña: el estado cambia sin que el cliente haga nada.
+ * Mientras va en camino se recarga cada 30 s (ST-40.2), solo con la pestaña visible.
+ */
 export function useSeguimientoPublico(token: string) {
   return useQuery({
     queryKey: seguimientoKeys.detail(token),
@@ -22,6 +26,8 @@ export function useSeguimientoPublico(token: string) {
     retry: reintentar,
     staleTime: 30_000,
     refetchOnWindowFocus: true,
+    refetchInterval: (query) => intervaloRefresco(query.state.data),
+    refetchIntervalInBackground: false,
   });
 }
 

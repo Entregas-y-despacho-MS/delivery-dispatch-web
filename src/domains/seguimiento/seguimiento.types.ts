@@ -34,7 +34,38 @@ export interface SeguimientoPublico {
   deliveryDate: string | null;
   windowStart: string | null;
   windowEnd: string | null;
+  /** Llegada estimada (ST-40.1). Solo en out_for_delivery e in_transit; null en otro caso. */
+  eta?: EtaSeguimiento | null;
+  /** Quién entrega. Solo en out_for_delivery e in_transit, y si la ruta tiene repartidor. */
+  driver?: RepartidorSeguimiento | null;
+  /** Última posición del repartidor. Solo en in_transit (es su turno) y si reportó una. */
+  location?: UbicacionRepartidor | null;
   selfService: Autoservicio;
+}
+
+/** `osrm`: tiempo de manejo desde la última posición. `window`: sin posición u OSRM caído, se usa la franja prometida. */
+export type FuenteEta = "osrm" | "window";
+
+export interface EtaSeguimiento {
+  /** Minutos que faltan (redondeado hacia arriba). Con `window`, los que faltan para el fin de la franja. */
+  minutes: number;
+  /** Cuándo se calculó: el back lo guarda hasta 60 s. */
+  calculatedAt: string;
+  source: FuenteEta;
+}
+
+export interface RepartidorSeguimiento {
+  name: string;
+  /** p. ej. «moto» o «camioneta»; null si la ruta no tiene vehículo. */
+  vehicleType: string | null;
+  vehiclePlate: string | null;
+}
+
+export interface UbicacionRepartidor {
+  latitude: number;
+  longitude: number;
+  /** Cuándo la registró el celular del repartidor. */
+  recordedAt: string;
 }
 
 export interface CodigoEnviado {

@@ -47,7 +47,8 @@ export function errorGuardadoUmbrales(error: unknown): ErrorUmbrales {
     const texto = [apiError.message, ...apiError.validationMessages].join(" ");
     const campo = CAMPOS_UMBRAL.find((c) => texto.includes(c) || texto.includes(CLAVE_BACK[c]));
     if (campo) return { campo, mensaje: MENSAJE_RANGO_UMBRAL[campo] };
-    return { mensaje: `El servidor rechazó los valores: ${apiError.message}` };
+    // parseApiError ya arma el texto («El servidor rechazó los datos. …»).
+    return { mensaje: apiError.message };
   }
   return { mensaje: "No se pudo guardar. Revisa tu conexión e inténtalo de nuevo." };
 }

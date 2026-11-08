@@ -102,3 +102,31 @@ export type {
   DespachoKanban,
   FiltrosTableroKanban,
 } from "./despachos.types";
+
+// Órdenes de recojo de devolución (ST-81.1).
+export { recojosService } from "./services/recojos.service";
+export {
+  ESTADOS_RECOJO,
+  ETIQUETA_ORIGEN,
+  MAX_MOTIVO_ANULACION,
+  RECOJOS_POR_PAGINA,
+  errorRecojo,
+  escribirFiltrosRecojos,
+  hayFiltrosRecojos,
+  leerFiltrosRecojos,
+  paramsRecojos,
+  rangoRecojosInvertido,
+  sePuedeAnular,
+  type CampoRecojo,
+  type ErrorRecojo,
+  type FiltrosRecojos,
+} from "./recojos.reglas";
+export type {
+  Almacen,
+  AlmacenDestino,
+  CrearRecojoInput,
+  OrigenRecojo,
+  Recojo,
+  RecojoListParams,
+  RecojosResponse,
+} from "./recojos.types";

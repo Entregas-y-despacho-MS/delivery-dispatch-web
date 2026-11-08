@@ -53,3 +53,20 @@ export interface VentanaGeneral {
 
 /** Cómo marcar el valor actual según la descripción que guarda el back. */
 export type EstadoValorParametro = "definido" | "propuesto" | "sin-definir";
+
+/** Umbrales de alerta del supervisor (ST-67.2, RF-A16): GET y PUT /settings/alert-thresholds. */
+export interface UmbralesAlerta {
+  /** % mínimo de entregas a tiempo; por debajo se alerta (0 a 100). */
+  slaAlertMinOnTimePct: number;
+  /** Minutos sin señal GPS de un repartidor antes de alertar (1 a 1440). */
+  gpsStaleAlertMinutes: number;
+  /** Incidencias de un repartidor en un día antes de alertar (1 a 100). */
+  driverIncidentAlertPerDay: number;
+}
+
+/** Lo que devuelve el back: los tres umbrales y la fecha del último cambio. */
+export interface UmbralesAlertaGuardados extends UmbralesAlerta {
+  updatedAt: string;
+}
+
+export type CampoUmbral = keyof UmbralesAlerta;

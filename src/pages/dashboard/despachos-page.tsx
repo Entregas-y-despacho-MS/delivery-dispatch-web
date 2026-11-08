@@ -169,6 +169,7 @@ export default function DespachosPage() {
             onSeleccionChange={bandeja.setSeleccion}
             onCambiarPrioridad={prioridad.cambiarPrioridad}
             cambiandoPrioridadId={prioridad.cambiandoId}
+            hrefFicha={hrefFicha}
           />
         </div>
 

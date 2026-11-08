@@ -9,6 +9,7 @@ import {
 } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import { createContext, useContext, useMemo } from "react";
+import { Link } from "react-router-dom";
 
 import { Checkbox } from "@/shared/components/ui/checkbox";
 import {
@@ -36,11 +37,27 @@ const features = tableFeatures({
 });
 const columna = createColumnHelper<typeof features, PedidoPendiente>();
 
-/** Las columnas se declaran fuera del componente: el cambio de prioridad les llega por contexto. */
+/** Las columnas se declaran fuera del componente: el cambio de prioridad y el link a la ficha les llegan por contexto. */
 const CambioPrioridadContext = createContext<{
   onCambiar?: (pedido: PedidoConPrioridad, prioridad: PrioridadPedido) => void;
   cambiandoId?: number;
+  hrefFicha?: (id: number) => string;
 }>({});
+
+/** N° de orden con link a la ficha 360° (ST-241.4); sin `hrefFicha` queda como texto. */
+function CeldaOrden({ pedido }: { pedido: PedidoPendiente }) {
+  const { hrefFicha } = useContext(CambioPrioridadContext);
+  if (!hrefFicha) return <p className="font-medium tabular-nums">{pedido.orderNumber}</p>;
+  return (
+    <Link
+      to={hrefFicha(pedido.id)}
+      className="block font-medium tabular-nums text-primary underline-offset-4 hover:underline"
+      aria-label={`Ver ficha del pedido ${pedido.orderNumber}`}
+    >
+      {pedido.orderNumber}
+    </Link>
+  );
+}
 
 function CeldaPrioridad({ pedido }: { pedido: PedidoPendiente }) {
   const { onCambiar, cambiandoId } = useContext(CambioPrioridadContext);
@@ -77,7 +94,7 @@ const columnas = columna.columns([
     header: "N° de orden",
     cell: ({ row }) => (
       <div className="min-w-36 max-w-52 space-y-1">
-        <p className="font-medium tabular-nums">{row.original.orderNumber}</p>
+        <CeldaOrden pedido={row.original} />
         {row.original.trackingCode && (
           <p className="font-mono text-xs text-muted-foreground">{row.original.trackingCode}</p>
         )}
@@ -158,6 +175,8 @@ export interface BandejaPedidosTableProps {
   onCambiarPrioridad?: (pedido: PedidoConPrioridad, prioridad: PrioridadPedido) => void;
   /** Pedido cuyo cambio de prioridad se está guardando. */
   cambiandoPrioridadId?: number;
+  /** Link a la ficha 360° de cada despacho; sin él el N° de orden no enlaza. */
+  hrefFicha?: (id: number) => string;
 }
 
 /** Tabla de la bandeja con TanStack Table v9. El orden lo resuelve el servidor (manualSorting). */
@@ -169,10 +188,11 @@ export function BandejaPedidosTable({
   onSeleccionChange,
   onCambiarPrioridad,
   cambiandoPrioridadId,
+  hrefFicha,
 }: BandejaPedidosTableProps) {
   const cambioPrioridad = useMemo(
-    () => ({ onCambiar: onCambiarPrioridad, cambiandoId: cambiandoPrioridadId }),
-    [onCambiarPrioridad, cambiandoPrioridadId],
+    () => ({ onCambiar: onCambiarPrioridad, cambiandoId: cambiandoPrioridadId, hrefFicha }),
+    [onCambiarPrioridad, cambiandoPrioridadId, hrefFicha],
   );
   const sorting: SortingState = orden ? [{ id: orden.sortBy, desc: orden.order === "desc" }] : [];
 

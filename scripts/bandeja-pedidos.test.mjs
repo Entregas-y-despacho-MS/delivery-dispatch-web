@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { after, test } from "node:test";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+import { MemoryRouter } from "react-router-dom";
 import { createServer } from "vite";
 import { fileURLToPath } from "node:url";
 
@@ -115,4 +116,24 @@ test("mientras carga se ve el skeleton y no la tabla ni el vacío", () => {
 test("la franja se muestra en hora de Bolivia", () => {
   assert.equal(formatearFranja("2026-10-12T12:00:00Z", "2026-10-12T14:00:00Z"), "08:00–10:00");
   assert.equal(formatearFranja(null, null), "Sin franja");
+});
+
+test("cada N° de orden enlaza a la ficha 360° del despacho (ST-241.4)", () => {
+  const hrefFicha = (id) => `/app/despachos/${id}`;
+  const html = renderToStaticMarkup(createElement(MemoryRouter, null, createElement(BandejaPedidosTable, {
+    data: [libre, reservado, enRevision],
+    orden: null,
+    onToggleOrden: () => {},
+    seleccion: {},
+    onSeleccionChange: () => {},
+    hrefFicha,
+  })));
+  const enlaces = filas(html).map((fila) => fila.match(/<a[^>]*href="([^"]+)"[^>]*>(SO-[A-Z]+)<\/a>/)?.slice(1));
+  // También los bloqueados y los de solo lectura: ver la ficha no necesita reservar el pedido.
+  assert.deepEqual(enlaces, [["/app/despachos/1", "SO-LIBRE"], ["/app/despachos/2", "SO-RESERVADO"], ["/app/despachos/4", "SO-REVISION"]]);
+  assert.match(html, /aria-label="Ver ficha del pedido SO-LIBRE"/);
+});
+
+test("sin hrefFicha el N° de orden queda como texto", () => {
+  assert.doesNotMatch(renderTabla(), /<a /);
 });

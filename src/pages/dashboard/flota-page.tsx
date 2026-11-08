@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { Plus, Truck } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Plus, Truck, Wrench } from "lucide-react";
 
 import {
   VehiculosTable,
@@ -9,6 +10,7 @@ import {
   type Vehiculo,
   type VehiculoFormValues,
 } from "@/domains/flota";
+import { portalHref } from "@/config/portal-routes";
 import { PageHeader } from "@/shared/components/common/page-header";
 import { FormDialogHeader } from "@/shared/components/common/form-dialog-header";
 import { PaginationControls } from "@/shared/components/common/pagination-controls";
@@ -23,6 +25,8 @@ import {
 } from "@/shared/components/ui/dialog";
 
 const PAGE_SIZE = 10;
+const hrefMantenimientos = (vehiculo: Vehiculo) =>
+  portalHref("flotaMantenimiento").replace(":id", String(vehiculo.id));
 
 export default function FlotaPage() {
   const { search, debouncedSearch, page, setPage, setSearch, hasFilters } = useListFilters({});
@@ -53,9 +57,14 @@ export default function FlotaPage() {
         icon={Truck}
         description="Gestiona los vehículos disponibles y su capacidad de carga."
         action={(
-          <Button onClick={editor.openCreate}>
-            <Plus aria-hidden /> Nuevo vehículo
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button asChild variant="outline">
+              <Link to={portalHref("flotaMantenimientos")}><Wrench aria-hidden /> Historial de mantenimiento</Link>
+            </Button>
+            <Button onClick={editor.openCreate}>
+              <Plus aria-hidden /> Nuevo vehículo
+            </Button>
+          </div>
         )}
       />
 
@@ -81,6 +90,7 @@ export default function FlotaPage() {
               searchActive={hasFilters}
               onEdit={editor.openEdit}
               onChangeStatus={setVehiculoEstado}
+              hrefMantenimientos={hrefMantenimientos}
             />
           </div>
         )}

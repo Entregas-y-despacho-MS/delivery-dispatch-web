@@ -1,4 +1,5 @@
-import { Pencil, Power } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Pencil, Power, Wrench } from "lucide-react";
 
 import type { Column } from "@/shared/components/common/data-table";
 import { ResponsiveList } from "@/shared/components/common/responsive-list";
@@ -30,14 +31,25 @@ export function VehiculosTable({
   loading,
   onEdit,
   onChangeStatus,
+  hrefMantenimientos,
   searchActive = false,
 }: {
   data: Vehiculo[];
   loading?: boolean;
   onEdit: (vehiculo: Vehiculo) => void;
   onChangeStatus: (vehiculo: Vehiculo) => void;
+  /** Enlace al historial de mantenimientos del vehículo (ST-64.2); sin él no se muestra el botón. */
+  hrefMantenimientos?: (vehiculo: Vehiculo) => string;
   searchActive?: boolean;
 }) {
+  const botonMantenimientos = (vehiculo: Vehiculo) => hrefMantenimientos && (
+    <Button asChild variant="ghost" size="icon-sm" title="Mantenimientos">
+      <Link to={hrefMantenimientos(vehiculo)} aria-label={`Mantenimientos de ${vehiculo.plate}`}>
+        <Wrench aria-hidden />
+      </Link>
+    </Button>
+  );
+
   const columns: Column<Vehiculo>[] = [
     {
       header: "Placa",
@@ -73,6 +85,7 @@ export function VehiculosTable({
       header: "",
       cell: (vehiculo) => (
         <div className="flex justify-end gap-1">
+          {botonMantenimientos(vehiculo)}
           <Button
             type="button"
             variant="ghost"
@@ -95,7 +108,7 @@ export function VehiculosTable({
           </Button>
         </div>
       ),
-      className: "w-24 text-right",
+      className: "w-32 text-right",
     },
   ];
 
@@ -112,6 +125,7 @@ export function VehiculosTable({
               <h3 className="truncate font-medium">{vehiculo.type} · {vehiculo.model}</h3>
             </div>
             <div className="flex gap-1">
+              {botonMantenimientos(vehiculo)}
               <Button
                 type="button"
                 variant="ghost"

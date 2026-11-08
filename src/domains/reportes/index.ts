@@ -40,6 +40,7 @@ export {
   nombreVehiculo,
   ordenarRanking,
   sinDatosKpi,
+  textoRangoKpi,
   type ColumnaRanking,
   type DireccionOrden,
 } from "./reportes.kpis";
@@ -47,5 +48,6 @@ export { reporteSlaKeys, useReporteSla } from "./hooks/use-reportes";
 export { FiltroPeriodoSla } from "./components/filtro-periodo";
 export { ReporteSlaVista } from "./components/reporte-sla-vista";
 export { ExportarReporteSla } from "./components/exportar-reporte";
+export { BarrasPorVehiculo, RankingRepartidores, SelectorPeriodoKpi, TarjetasKpi } from "./components/indicadores-flota";
 export { celdaCsv, COLUMNAS_METRICAS, generarCsv, nombreArchivoSla, tablaExportacion } from "./reportes.exportar";
 export type { Celda } from "./reportes.exportar";

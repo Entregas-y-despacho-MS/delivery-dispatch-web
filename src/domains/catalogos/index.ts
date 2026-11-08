@@ -21,6 +21,7 @@ export { TipoIncidenteVehiculoForm } from "./components/tipo-incidente-vehiculo-
 export { TiposIncidenteVehiculoFilters } from "./components/tipos-incidente-vehiculo-filters";
 export { TiposIncidenteVehiculoTable } from "./components/tipos-incidente-vehiculo-table";
 export { useTiposIncidenteVehiculoScreen } from "./hooks/use-tipos-incidente-vehiculo-screen";
+export { useTiposIncidenteVehiculo } from "./hooks/use-tipos-incidente-vehiculo";
 
 export type {
   Zona,

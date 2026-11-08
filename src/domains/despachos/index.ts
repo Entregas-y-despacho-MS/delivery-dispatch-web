@@ -108,6 +108,8 @@ export { recojosService } from "./services/recojos.service";
 export { almacenesKeys, recojosKeys, useAccionesRecojo, useAlmacenes, useRecojos } from "./hooks/use-recojos";
 export { RecojosFiltros } from "./components/recojos-filtros";
 export { RecojosTable } from "./components/recojos-table";
+export { NuevoRecojoDialog } from "./components/nuevo-recojo-dialog";
+export { aCrearRecojoInput, crearRecojoSchema, RECOJO_FORM_VACIO, type RecojoFormValues } from "./recojos.schemas";
 export {
   ESTADOS_RECOJO,
   ETIQUETA_ORIGEN,

@@ -29,7 +29,8 @@
     "test:navegacion-rol": "vitest run scripts/navegacion-rol.test.tsx",
     "test:reportes-sla": "vitest run scripts/reportes-sla.test.tsx",
     "test:excluidos-cotejo": "vitest run scripts/excluidos-cotejo.test.tsx",
-    "test:seguimiento-en-vivo": "vitest run scripts/seguimiento-en-vivo.test.tsx"
+    "test:seguimiento-en-vivo": "vitest run scripts/seguimiento-en-vivo.test.tsx",
+    "test:mantenimiento-flota": "vitest run scripts/mantenimiento-flota.test.tsx"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

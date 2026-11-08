@@ -6,6 +6,7 @@ import { useReprogramacion } from "../hooks/use-reprogramacion";
 import { useRespuestaCliente, useSeguimientoPublico } from "../hooks/use-seguimiento-publico";
 import { mensajeErrorSeguimiento, vistaError } from "../seguimiento.errores";
 import { AccionesAutoservicio } from "./acciones-autoservicio";
+import { CalificarEntregaCard } from "./calificar-entrega-card";
 import { EnCaminoCard } from "./en-camino-card";
 import { PasoElegirFranja, PasoPedirCodigo, PasoVerificarCodigo } from "./reprogramacion-pasos";
 import { SeguimientoError } from "./seguimiento-error";
@@ -67,6 +68,12 @@ export function SeguimientoPublicoVista({ token }: { token: string }) {
     <div className="space-y-4">
       <SeguimientoResumen pedido={pedido} />
       <EnCaminoCard pedido={pedido} />
+      <CalificarEntregaCard
+        pedido={pedido}
+        enviando={respuesta.calificar.isPending}
+        error={mensaje(respuesta.calificar.error)}
+        onEnviar={(score) => respuesta.calificar.mutate({ score })}
+      />
 
       {panel === "acciones" && (
         <AccionesAutoservicio

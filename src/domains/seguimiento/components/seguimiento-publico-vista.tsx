@@ -72,7 +72,7 @@ export function SeguimientoPublicoVista({ token }: { token: string }) {
         pedido={pedido}
         enviando={respuesta.calificar.isPending}
         error={mensaje(respuesta.calificar.error)}
-        onEnviar={(score) => respuesta.calificar.mutate({ score })}
+        onEnviar={(calificacion) => respuesta.calificar.mutate(calificacion)}
       />
 
       {panel === "acciones" && (

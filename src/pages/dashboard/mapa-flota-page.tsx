@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Radio, RadioTower } from "lucide-react";
 
-import { MapaPosicionesFlota, usePosicionesFlota } from "@/domains/flota";
+import { MapaPosicionesFlota, PanelVehiculosFlota, usePosicionesFlota, type FiltroEstadoFlota } from "@/domains/flota";
 import { PageHeader } from "@/shared/components/common/page-header";
 import { ErrorAlert } from "@/shared/components/feedback/error-alert";
 import { Skeleton } from "@/shared/components/ui/skeleton";
@@ -11,6 +11,9 @@ const TICK_SENAL_MS = 15_000;
 export default function MapaFlotaPage() {
   const { posiciones, umbrales, connected } = usePosicionesFlota();
   const [ahora, setAhora] = useState(() => Date.now());
+  const [zonaId, setZonaId] = useState("todas");
+  const [estado, setEstado] = useState<FiltroEstadoFlota>("todos");
+  const [rutaSeleccionada, setRutaSeleccionada] = useState<number | null>(null);
 
   useEffect(() => {
     const timer = window.setInterval(() => setAhora(Date.now()), TICK_SENAL_MS);
@@ -42,24 +45,40 @@ export default function MapaFlotaPage() {
       )}
 
       {cargando ? (
-        <Skeleton className="h-[min(68vh,640px)] min-h-[360px] rounded-xl" aria-busy="true" />
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px]" aria-busy="true">
+          <Skeleton className="h-[min(68vh,640px)] min-h-[360px] rounded-xl" />
+          <Skeleton className="h-[420px] rounded-xl" />
+        </div>
       ) : errorPosiciones || errorUmbral || sinUmbral ? null : (
-        <section className="min-w-0 rounded-xl border bg-card p-2 shadow-sm" aria-label="Mapa de ubicaciones">
-          {lista.length === 0 && (
-            <p className="mb-2 rounded-lg border border-dashed px-4 py-3 text-sm text-muted-foreground" role="status">
-              No hay vehículos en rutas activas en este momento.
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
+          <section className="min-w-0 rounded-xl border bg-card p-2 shadow-sm" aria-label="Mapa de ubicaciones">
+            {lista.length === 0 && (
+              <p className="mb-2 rounded-lg border border-dashed px-4 py-3 text-sm text-muted-foreground" role="status">
+                No hay vehículos en rutas activas en este momento.
+              </p>
+            )}
+            {lista.length > 0 && lista.every((p) => p.lastLatitude === null || p.lastLongitude === null) && (
+              <p className="mb-2 rounded-lg border border-dashed px-4 py-3 text-sm text-muted-foreground" role="status">
+                Las rutas están activas, pero todavía no han reportado una posición GPS.
+              </p>
+            )}
+            <MapaPosicionesFlota posiciones={lista} umbralMinutos={umbralMinutos} rutaSeleccionada={rutaSeleccionada} ahora={ahora} />
+            <p className="px-2 pt-2 text-xs text-muted-foreground">
+              Mapa base © OpenStreetMap · Las ubicaciones se centran según los reportes GPS de las rutas activas.
             </p>
-          )}
-          {lista.length > 0 && lista.every((p) => p.lastLatitude === null || p.lastLongitude === null) && (
-            <p className="mb-2 rounded-lg border border-dashed px-4 py-3 text-sm text-muted-foreground" role="status">
-              Las rutas están activas, pero todavía no han reportado una posición GPS.
-            </p>
-          )}
-          <MapaPosicionesFlota posiciones={lista} umbralMinutos={umbralMinutos} rutaSeleccionada={null} ahora={ahora} />
-          <p className="px-2 pt-2 text-xs text-muted-foreground">
-            Mapa base © OpenStreetMap · Las ubicaciones se centran según los reportes GPS de las rutas activas.
-          </p>
-        </section>
+          </section>
+          <PanelVehiculosFlota
+            posiciones={lista}
+            umbralMinutos={umbralMinutos}
+            ahora={ahora}
+            zonaId={zonaId}
+            estado={estado}
+            rutaSeleccionada={rutaSeleccionada}
+            onZonaChange={setZonaId}
+            onEstadoChange={setEstado}
+            onSeleccionar={setRutaSeleccionada}
+          />
+        </div>
       )}
     </div>
   );

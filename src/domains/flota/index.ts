@@ -1,4 +1,6 @@
 export { vehiculosService } from "./services/vehiculos.service";
+export { PanelVehiculosFlota } from "./components/panel-vehiculos-flota";
+export type { FiltroEstadoFlota } from "./flota-posiciones.types";
 export { MapaPosicionesFlota } from "./components/mapa-posiciones-flota";
 export { usePosicionesFlota } from "./hooks/use-posiciones-flota";
 export type { PosicionFlotaEnVivo, UbicacionFlotaActualizada } from "./flota-posiciones.types";

@@ -20,6 +20,8 @@ export {
   escribirFiltrosAlertas,
   etiquetaEstadoAlerta,
   etiquetaTipoAlerta,
+  fechaHoraBolivia,
+  hayFiltrosAlertas,
   filtrarPorTipo,
   horaBolivia,
   leerFiltrosAlertas,
@@ -33,3 +35,4 @@ export { atenderAlerta, listarAlertas } from "./services/alertas.service";
 export { alertasKeys, useAlertas, useAtenderAlerta, useContadorAlertas } from "./hooks/use-alertas-criticas";
 export { useAlertasEnVivo } from "./hooks/use-alertas-en-vivo";
 export { CampanaAlertas } from "./components/campana-alertas";
+export { CentroAlertas } from "./components/centro-alertas";

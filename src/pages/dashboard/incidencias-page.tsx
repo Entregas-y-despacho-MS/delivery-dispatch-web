@@ -1,5 +1,18 @@
+import { BellRing } from "lucide-react";
+
+import { CentroAlertas } from "@/domains/incidencias";
 import { PageHeader } from "@/shared/components/common/page-header";
 
+/** Centro de alertas del coordinador (ST-66.3, RF-A19). */
 export default function IncidenciasPage() {
-  return <PageHeader title="Incidencias" description="RF-A19 — alertas ante incidencia crítica" />;
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        icon={BellRing}
+        title="Alertas operativas"
+        description="Incidencias críticas, vehículos sin señal y desvíos de desempeño de tus zonas"
+      />
+      <CentroAlertas />
+    </div>
+  );
 }

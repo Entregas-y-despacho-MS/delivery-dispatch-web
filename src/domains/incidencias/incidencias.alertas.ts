@@ -75,6 +75,15 @@ const texto = (detalle: Record<string, unknown>, clave: string) =>
 const formatoHora = new Intl.DateTimeFormat("es-BO", { timeZone: "America/La_Paz", hour: "2-digit", minute: "2-digit" });
 export const horaBolivia = (iso: string) => formatoHora.format(new Date(iso));
 
+const formatoFechaHora = new Intl.DateTimeFormat("es-BO", {
+  timeZone: "America/La_Paz", day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit",
+});
+export const fechaHoraBolivia = (iso: string) => formatoFechaHora.format(new Date(iso));
+
+/** Hay filtros distintos de los de por defecto (para ofrecer limpiarlos cuando no hay resultados). */
+export const hayFiltrosAlertas = (filtros: FiltrosAlertas) =>
+  filtros.tipo !== FILTROS_ALERTAS_POR_DEFECTO.tipo || filtros.estado !== FILTROS_ALERTAS_POR_DEFECTO.estado;
+
 /** Una línea legible con el contexto de `detail`, según el tipo. */
 export function descripcionAlerta(alerta: Pick<AlertaLevantada, "kind" | "dispatchId" | "driverId" | "detail">): string {
   const { detail } = alerta;

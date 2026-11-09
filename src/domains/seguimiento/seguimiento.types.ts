@@ -41,6 +41,26 @@ export interface SeguimientoPublico {
   /** Última posición del repartidor. Solo en in_transit (es su turno) y si reportó una. */
   location?: UbicacionRepartidor | null;
   selfService: Autoservicio;
+  /** Calificación del cliente (ST-42.1); null mientras no calificó. */
+  rating?: CalificacionEntrega | null;
+  /** Solo true si ya se entregó y todavía no se calificó. */
+  canRate?: boolean;
+}
+
+/** Calificación guardada: respuesta del POST y campo `rating` del seguimiento. */
+export interface CalificacionEntrega {
+  /** Entero de 1 a 5. */
+  score: number;
+  /** Comentario opcional (ST-43.1); null si no dejó. */
+  comment: string | null;
+  createdAt: string;
+}
+
+/** Cuerpo de POST /public/tracking/:token/rating. Una sola calificación por entrega. */
+export interface CalificarEntregaInput {
+  score: number;
+  /** Opcional, hasta 500 caracteres (ST-43.1). */
+  comment?: string;
 }
 
 /** `osrm`: tiempo de manejo desde la última posición. `window`: sin posición u OSRM caído, se usa la franja prometida. */

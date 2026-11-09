@@ -1,6 +1,7 @@
 export { SeguimientoPublicoVista } from "./components/seguimiento-publico-vista";
 export { SeguimientoResumen } from "./components/seguimiento-resumen";
 export { EnCaminoCard } from "./components/en-camino-card";
+export { CalificarEntregaCard } from "./components/calificar-entrega-card";
 export { SeguimientoError } from "./components/seguimiento-error";
 export { AccionesAutoservicio } from "./components/acciones-autoservicio";
 export { SolicitarCambioForm, MAX_DETALLE_CAMBIO } from "./components/solicitar-cambio-form";
@@ -9,6 +10,7 @@ export { useSeguimientoPublico, useRespuestaCliente, seguimientoKeys } from "./h
 export { useReprogramacion } from "./hooks/use-reprogramacion";
 export type { PasoReprogramacion } from "./hooks/use-reprogramacion";
 export {
+  calificarEntrega,
   confirmarEntrega,
   enviarCodigo,
   listarFranjas,
@@ -46,6 +48,8 @@ export {
 } from "./seguimiento.en-vivo";
 export type {
   Autoservicio,
+  CalificacionEntrega,
+  CalificarEntregaInput,
   EtaSeguimiento,
   FuenteEta,
   RepartidorSeguimiento,

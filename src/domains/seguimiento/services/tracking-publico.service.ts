@@ -1,5 +1,7 @@
 import { publicApi } from "@/shared/lib/public-api";
 import type {
+  CalificacionEntrega,
+  CalificarEntregaInput,
   CodigoEnviado,
   FranjasDisponibles,
   PruebaVerificacion,
@@ -22,6 +24,17 @@ export async function confirmarEntrega(token: string): Promise<SeguimientoPublic
 
 export async function solicitarCambio(token: string, detalle: string): Promise<SeguimientoPublico> {
   const { data } = await publicApi.post<SeguimientoPublico>(`${ruta(token)}/change-request`, { detail: detalle });
+  return data;
+}
+
+/**
+ * Califica la entrega (ST-42.1): solo si ya se entregó y una sola vez. 409 RATING_NOT_ALLOWED antes de
+ * entregar y 409 RATING_ALREADY_SUBMITTED si ya se calificó. El comentario vacío no se manda.
+ */
+export async function calificarEntrega(token: string, { score, comment }: CalificarEntregaInput): Promise<CalificacionEntrega> {
+  const texto = comment?.trim();
+  const cuerpo: CalificarEntregaInput = texto ? { score, comment: texto } : { score };
+  const { data } = await publicApi.post<CalificacionEntrega>(`${ruta(token)}/rating`, cuerpo);
   return data;
 }
 

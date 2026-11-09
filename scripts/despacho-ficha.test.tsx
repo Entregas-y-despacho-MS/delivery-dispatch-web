@@ -33,7 +33,7 @@ const otp: EvidenciaDetalle = {
 const despacho: DespachoDetalle = {
   id: 120, trackingCode: "DSP-2026-00120", sourceOrderRef: "SO-1001",
   type: { id: 1, name: "delivery" }, status: { id: 7, name: "delivered" }, priority: "urgent",
-  serviceLevel: { id: 2, name: "Express" }, evidencePolicy: "hand_delivery_standard", paymentStatusLabel: "Prepagado",
+  serviceLevel: { id: 2, name: "Express" }, evidencePolicy: "hand_delivery_standard", paymentStatusLabel: "Prepagado", rating: null,
   scheduledWindowStart: "2026-10-19T12:00:00Z", scheduledWindowEnd: "2026-10-19T14:00:00Z", createdAt: "2026-10-18T10:00:00Z",
   destination: {
     address: "Av. Arce 2100, Sopocachi", reference: "Frente a la farmacia", latitude: -16.5, longitude: -68.15,
@@ -87,6 +87,19 @@ describe("ficha 360° del despacho (ST-56.1)", () => {
     ficha({ route: null, receiver: null, paymentStatusLabel: null });
     expect(screen.getByText("Todavía no está en una ruta")).toBeTruthy();
     expect(screen.getByText("Nadie firmó todavía")).toBeTruthy();
+  });
+
+  it("la sección de opinión muestra puntaje, fecha y comentario del cliente", () => {
+    ficha({ rating: { score: 5, comment: "Llegó rápido y en buen estado.", createdAt: "2026-10-19T15:00:00Z" } });
+    const opinion = screen.getByRole("region", { name: "Opinión del cliente" });
+    expect(within(opinion).getByRole("img", { name: "5 de 5 estrellas" })).toBeTruthy();
+    expect(opinion.textContent).toContain("Llegó rápido y en buen estado.");
+    expect(opinion.textContent).toContain("19/10/2026");
+  });
+
+  it("la sección de opinión explica cuando el cliente todavía no calificó", () => {
+    ficha({ rating: null });
+    expect(screen.getByRole("region", { name: "Opinión del cliente" }).textContent).toContain("El cliente todavía no calificó la entrega.");
   });
 
   it("la línea de tiempo muestra hora exacta, estado, GPS, operador y al final el receptor", async () => {

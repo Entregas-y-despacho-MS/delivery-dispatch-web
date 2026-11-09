@@ -107,6 +107,8 @@ export interface DespachoDetalle {
   serviceLevel: RefCatalogo | null;
   evidencePolicy: string;
   paymentStatusLabel: string | null;
+  /** Opinión del cliente (ST-43.1), null hasta que califique. */
+  rating: { score: number; comment: string | null; createdAt: string } | null;
   scheduledWindowStart: string | null;
   scheduledWindowEnd: string | null;
   createdAt: string;

@@ -200,7 +200,7 @@ let detalle: DespachoDetalle;
 const DETALLE: DespachoDetalle = {
   id: 103, trackingCode: "DSP-2026-00103", sourceOrderRef: "SO-1042", type: { id: 1, name: "delivery" },
   status: { id: 4, name: "assigned" }, priority: "normal", serviceLevel: null, evidencePolicy: "hand_delivery_standard",
-  paymentStatusLabel: null, scheduledWindowStart: null, scheduledWindowEnd: null, createdAt: "2026-11-01T10:00:00Z",
+  paymentStatusLabel: null, rating: null, scheduledWindowStart: null, scheduledWindowEnd: null, createdAt: "2026-11-01T10:00:00Z",
   destination: { address: "Av. Arce 2345", reference: null, latitude: null, longitude: null, contactName: "María López", contactPhone: null, zone: null },
   packages: [], route: null, receiver: null, timeline: [], incidents: [], reschedules: [], evidences: [],
 };

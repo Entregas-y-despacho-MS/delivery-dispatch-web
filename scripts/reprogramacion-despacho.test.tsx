@@ -21,7 +21,7 @@ const MOTIVOS = [{ code: "RES-CLI-AUSENTE", name: "Cliente ausente" }, { code: "
 const base: DespachoDetalle = {
   id: 42, trackingCode: "DSP-2026-00042", sourceOrderRef: "SO-2042", type: { id: 1, name: "delivery" },
   status: { id: 9, name: "not_delivered" }, priority: "normal", serviceLevel: null, evidencePolicy: "hand_delivery_standard",
-  paymentStatusLabel: null, scheduledWindowStart: null, scheduledWindowEnd: null, createdAt: "2026-10-15T10:00:00Z",
+  paymentStatusLabel: null, rating: null, scheduledWindowStart: null, scheduledWindowEnd: null, createdAt: "2026-10-15T10:00:00Z",
   destination: { address: "Calle 1", reference: null, latitude: null, longitude: null, contactName: null, contactPhone: null, zone: null },
   packages: [], route: null, receiver: null,
   timeline: [

@@ -2,13 +2,15 @@ import { useRef, useState, type KeyboardEvent } from "react";
 import { LoaderCircle, Star } from "lucide-react";
 
 import { Button } from "@/shared/components/ui/button";
+import { Textarea } from "@/shared/components/ui/textarea";
 import { cn } from "@/shared/lib/utils";
 import { formatearFechaHora } from "../seguimiento.format";
-import type { SeguimientoPublico } from "../seguimiento.types";
+import type { CalificarEntregaInput, SeguimientoPublico } from "../seguimiento.types";
 
 const PUNTAJES = [1, 2, 3, 4, 5] as const;
 const ETIQUETAS: Record<number, string> = { 1: "Muy mala", 2: "Mala", 3: "Regular", 4: "Buena", 5: "Excelente" };
 const nombreEstrellas = (n: number) => `${n} ${n === 1 ? "estrella" : "estrellas"}`;
+const MAX_COMENTARIO = 500;
 
 function Estrellas({ valor, tamano = "size-8" }: { valor: number; tamano?: string }) {
   return (
@@ -24,7 +26,7 @@ interface CalificarEntregaCardProps {
   pedido: SeguimientoPublico;
   enviando?: boolean;
   error?: string | null;
-  onEnviar: (score: number) => void;
+  onEnviar: (calificacion: CalificarEntregaInput) => void;
 }
 
 /**
@@ -35,6 +37,7 @@ interface CalificarEntregaCardProps {
 export function CalificarEntregaCard({ pedido, enviando = false, error, onEnviar }: CalificarEntregaCardProps) {
   const [seleccion, setSeleccion] = useState(0);
   const [resaltado, setResaltado] = useState(0);
+  const [comentario, setComentario] = useState("");
   const botones = useRef<(HTMLButtonElement | null)[]>([]);
 
   if (pedido.rating) {
@@ -45,6 +48,7 @@ export function CalificarEntregaCard({ pedido, enviando = false, error, onEnviar
         <p className="text-sm text-muted-foreground">
           {ETIQUETAS[pedido.rating.score]} · Calificada el {formatearFechaHora(pedido.rating.createdAt)}
         </p>
+        {pedido.rating.comment && <p className="text-sm">Tu comentario: {pedido.rating.comment}</p>}
       </section>
     );
   }
@@ -103,9 +107,26 @@ export function CalificarEntregaCard({ pedido, enviando = false, error, onEnviar
         <span className="min-w-20 text-sm font-medium" aria-live="polite">{visible ? ETIQUETAS[visible] : ""}</span>
       </div>
 
+      <div className="space-y-1.5">
+        <label htmlFor="comentario-calificacion" className="text-sm font-medium">Comentario (opcional)</label>
+        <Textarea
+          id="comentario-calificacion"
+          value={comentario}
+          onChange={(evento) => setComentario(evento.target.value)}
+          maxLength={MAX_COMENTARIO}
+          aria-describedby="contador-comentario-calificacion"
+          disabled={enviando}
+          placeholder="Cuéntanos cómo fue tu experiencia"
+          rows={3}
+        />
+        <p id="contador-comentario-calificacion" className="text-right text-xs text-muted-foreground" aria-live="polite">
+          {comentario.length}/{MAX_COMENTARIO} caracteres
+        </p>
+      </div>
+
       {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
 
-      <Button type="button" disabled={!seleccion || enviando} onClick={() => onEnviar(seleccion)} className="w-full sm:w-auto">
+      <Button type="button" disabled={!seleccion || enviando} onClick={() => onEnviar({ score: seleccion, comment: comentario.trim() })} className="w-full sm:w-auto">
         {enviando && <LoaderCircle className="animate-spin" aria-hidden />}
         {enviando ? "Enviando…" : "Enviar calificación"}
       </Button>

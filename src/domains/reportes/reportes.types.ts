@@ -47,3 +47,20 @@ export interface FiltrosSla {
   hasta: string;
   agrupacion: AgrupacionSla;
 }
+
+/** Períodos del tablero de KPIs (ST-61.1), en días de Bolivia: hoy, lunes a hoy, día 1 a hoy. */
+export type PeriodoKpi = "today" | "week" | "month";
+
+/** Respuesta de GET /fleet/kpis: las cifras del reporte SLA del período, por repartidor y por vehículo. */
+export interface IndicadoresFlota {
+  period: PeriodoKpi;
+  /** AAAA-MM-DD, primer y último día del período (inclusive). */
+  from: string;
+  to: string;
+  /** Totales de la flota para las tarjetas. */
+  totals: MetricasSla;
+  /** Una fila por repartidor; los despachos sin repartidor van al final con `groupName: null`. */
+  drivers: FilaSla[];
+  /** Una fila por vehículo con `groupName` = placa; sin vehículo, al final con `groupName: null`. */
+  vehicles: FilaSla[];
+}

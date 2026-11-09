@@ -1,4 +1,7 @@
 export { vehiculosService } from "./services/vehiculos.service";
+export { MapaPosicionesFlota } from "./components/mapa-posiciones-flota";
+export { usePosicionesFlota } from "./hooks/use-posiciones-flota";
+export type { PosicionFlotaEnVivo, UbicacionFlotaActualizada } from "./flota-posiciones.types";
 export { mantenimientosService } from "./services/mantenimientos.service";
 export { useVehiculos } from "./hooks/use-vehiculos";
 export { useAccionesMantenimiento, useHistorialMantenimientos } from "./hooks/use-mantenimientos";

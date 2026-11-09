@@ -28,3 +28,5 @@ export {
   textoContador,
   type EnlaceAlerta,
 } from "./incidencias.alertas";
+export { atenderAlerta, listarAlertas } from "./services/alertas.service";
+export { alertasKeys, useAlertas, useAtenderAlerta, useContadorAlertas } from "./hooks/use-alertas-criticas";

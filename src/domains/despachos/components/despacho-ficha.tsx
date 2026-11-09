@@ -1,8 +1,9 @@
 import type { ReactNode } from "react";
+import { Star } from "lucide-react";
 
 import { Badge } from "@/shared/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
-import { etiquetaEstadoDespacho } from "../despacho-detalle.format";
+import { etiquetaEstadoDespacho, formatearFechaHoraExacta } from "../despacho-detalle.format";
 import type { DespachoDetalle } from "../despacho-detalle.types";
 import { FichaEvidencias } from "./ficha-evidencias";
 import { FichaGeneral } from "./ficha-general";
@@ -63,6 +64,30 @@ export function DespachoFicha({ despacho, onRenovar, renovando, pestana = "gener
           <FichaIncidencias incidencias={despacho.incidents} reprogramaciones={despacho.reschedules} />
         </TabsContent>
       </Tabs>
+
+      <section className="space-y-2 rounded-lg border p-4" aria-label="Opinión del cliente">
+        <h3 className="text-sm font-semibold">Opinión del cliente</h3>
+        {despacho.rating ? (
+          <div className="space-y-1.5">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="flex gap-0.5" role="img" aria-label={`${despacho.rating.score} de 5 estrellas`}>
+                {Array.from({ length: 5 }, (_, index) => (
+                  <Star
+                    key={index + 1}
+                    aria-hidden
+                    className={`size-4 ${index < despacho.rating.score ? "fill-warning text-warning" : "text-muted-foreground/40"}`}
+                  />
+                ))}
+              </span>
+              <span className="text-sm font-medium">{despacho.rating.score}/5</span>
+              <span className="text-xs text-muted-foreground">{formatearFechaHoraExacta(despacho.rating.createdAt)}</span>
+            </div>
+            <p className="text-sm">{despacho.rating.comment || <span className="text-muted-foreground">El cliente no dejó un comentario.</span>}</p>
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">El cliente todavía no calificó la entrega.</p>
+        )}
+      </section>
     </div>
   );
 }

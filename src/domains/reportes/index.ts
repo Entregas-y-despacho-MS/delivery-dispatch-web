@@ -51,3 +51,24 @@ export { ExportarReporteSla } from "./components/exportar-reporte";
 export { BarrasPorVehiculo, RankingRepartidores, SelectorPeriodoKpi, TarjetasKpi } from "./components/indicadores-flota";
 export { celdaCsv, COLUMNAS_METRICAS, generarCsv, nombreArchivoSla, tablaExportacion } from "./reportes.exportar";
 export type { Celda } from "./reportes.exportar";
+export type { FilaVehiculoFlota, ParamsReporteFlota, ReporteFlota } from "./reportes.flota";
+export {
+  COLUMNAS_REPARTIDOR_FLOTA,
+  COLUMNAS_VEHICULO_FLOTA,
+  generarCsvFlota,
+  generarExcelFlota,
+  hojasExcelFlota,
+  mensajeErrorFlota,
+  nombreArchivoFlota,
+  ordenarFilasFlota,
+  sinDatosFlota,
+  tablasExportacionFlota,
+  vehiculosConEntregas,
+} from "./reportes.flota";
+export { generarXlsx, letraColumna, TIPO_XLSX, type HojaXlsx } from "./reportes.xlsx";
+export { obtenerReporteFlota } from "./services/reporte-flota.service";
+export { reporteFlotaKeys, useReporteFlota } from "./hooks/use-reporte-flota";
+export { FiltroRangoFlota } from "./components/filtro-rango-flota";
+export { ExportarReporteFlota } from "./components/exportar-reporte-flota";
+export { ReporteFlotaVista } from "./components/reporte-flota-vista";
+export { TablaRepartidoresFlota, TablaVehiculosFlota } from "./components/tablas-flota";

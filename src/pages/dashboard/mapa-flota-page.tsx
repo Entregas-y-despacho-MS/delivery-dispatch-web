@@ -2,6 +2,10 @@ import { useEffect, useState } from "react";
 import { Radio, RadioTower } from "lucide-react";
 
 import { MapaPosicionesFlota, PanelVehiculosFlota, usePosicionesFlota, type FiltroEstadoFlota } from "@/domains/flota";
+import { ReasignarParadasDialog } from "@/domains/planificacion";
+import { useMotivosReprogramacion } from "@/domains/catalogos";
+import { hasRole, ROLES } from "@/config/roles";
+import { useAuthStore } from "@/shared/store/use-auth-store";
 import { PageHeader } from "@/shared/components/common/page-header";
 import { ErrorAlert } from "@/shared/components/feedback/error-alert";
 import { Skeleton } from "@/shared/components/ui/skeleton";
@@ -14,6 +18,10 @@ export default function MapaFlotaPage() {
   const [zonaId, setZonaId] = useState("todas");
   const [estado, setEstado] = useState<FiltroEstadoFlota>("todos");
   const [rutaSeleccionada, setRutaSeleccionada] = useState<number | null>(null);
+  const [loteParaReasignar, setLoteParaReasignar] = useState<number | null>(null);
+  const roleId = useAuthStore((state) => state.user?.rol.id);
+  const puedeReasignar = hasRole(roleId, [ROLES.COORDINADOR, ROLES.SUPERVISOR]);
+  const motivos = useMotivosReprogramacion({ page: 1, active: true, limit: 100 }, puedeReasignar && loteParaReasignar !== null);
 
   useEffect(() => {
     const timer = window.setInterval(() => setAhora(Date.now()), TICK_SENAL_MS);
@@ -62,7 +70,7 @@ export default function MapaFlotaPage() {
                 Las rutas están activas, pero todavía no han reportado una posición GPS.
               </p>
             )}
-            <MapaPosicionesFlota posiciones={lista} umbralMinutos={umbralMinutos} rutaSeleccionada={rutaSeleccionada} ahora={ahora} />
+            <MapaPosicionesFlota posiciones={lista} umbralMinutos={umbralMinutos} rutaSeleccionada={rutaSeleccionada} ahora={ahora} onReasignar={puedeReasignar ? setLoteParaReasignar : undefined} />
             <p className="px-2 pt-2 text-xs text-muted-foreground">
               Mapa base © OpenStreetMap · Las ubicaciones se centran según los reportes GPS de las rutas activas.
             </p>
@@ -77,9 +85,11 @@ export default function MapaFlotaPage() {
             onZonaChange={setZonaId}
             onEstadoChange={setEstado}
             onSeleccionar={setRutaSeleccionada}
+            onReasignar={puedeReasignar ? setLoteParaReasignar : undefined}
           />
         </div>
       )}
+      <ReasignarParadasDialog routeBatchId={loteParaReasignar} onOpenChange={(open) => !open && setLoteParaReasignar(null)} motivos={motivos.data} />
     </div>
   );
 }

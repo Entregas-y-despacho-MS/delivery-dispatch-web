@@ -8,7 +8,7 @@ import { obtenerPosicionesFlota } from "../services/posiciones-flota.service";
 import type { PosicionFlotaEnVivo, UbicacionFlotaActualizada } from "../flota-posiciones.types";
 
 export const POSICIONES_FLOTA_KEY = ["fleet-live-positions"] as const;
-const EVENTOS_FLOTA = ["dispatch.location.updated", "dispatch.status_changed", "route.assigned"] as const;
+const EVENTOS_FLOTA = ["dispatch.location.updated", "dispatch.status_changed", "route.assigned", "route.batch_reassigned"] as const;
 
 function esUbicacionActualizada(payload: unknown): payload is UbicacionFlotaActualizada {
   if (!payload || typeof payload !== "object") return false;

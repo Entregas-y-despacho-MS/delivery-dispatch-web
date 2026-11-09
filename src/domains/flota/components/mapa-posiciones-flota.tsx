@@ -49,11 +49,13 @@ export function MapaPosicionesFlota({
   umbralMinutos,
   rutaSeleccionada,
   ahora,
+  onReasignar,
 }: {
   posiciones: PosicionFlotaEnVivo[];
   umbralMinutos: number;
   rutaSeleccionada: number | null;
   ahora: number;
+  onReasignar?: (routeBatchId: number) => void;
 }) {
   const centro = useMemo<LatLngExpression>(() => {
     const punto = posiciones.find((posicion) => posicion.lastLatitude !== null && posicion.lastLongitude !== null);
@@ -86,6 +88,7 @@ export function MapaPosicionesFlota({
                 <p>Estado: {posicion.currentStop?.status === "in_transit" ? "En movimiento" : "En ruta"}</p>
                 <p>Última ubicación: {fechaVisible(posicion.lastLocationAt)}</p>
                 {sinSenal && <p className="font-medium text-zinc-500">Sin señal GPS</p>}
+                {onReasignar && <button type="button" className="mt-2 rounded-md bg-primary px-3 py-1.5 text-primary-foreground" onClick={(event) => { event.stopPropagation(); onReasignar(posicion.routeBatchId); }}>Reasignar paradas</button>}
               </div>
             </Popup>
           </CircleMarker>

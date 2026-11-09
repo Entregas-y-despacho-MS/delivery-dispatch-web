@@ -14,6 +14,7 @@ export function PanelVehiculosFlota({
   ahora,
   rutaSeleccionada,
   onSeleccionar,
+  onReasignar,
 }: {
   posiciones: PosicionFlotaEnVivo[];
   zonaId: string;
@@ -24,6 +25,7 @@ export function PanelVehiculosFlota({
   ahora: number;
   rutaSeleccionada: number | null;
   onSeleccionar: (routeBatchId: number) => void;
+  onReasignar?: (routeBatchId: number) => void;
 }) {
   const zonas = useMemo(() => [...new Map(posiciones.filter((p) => p.deliveryZone).map((p) => [p.deliveryZone!.id, p.deliveryZone!])).values()]
     .sort((a, b) => a.name.localeCompare(b.name, "es")), [posiciones]);
@@ -93,6 +95,9 @@ export function PanelVehiculosFlota({
                   </span>
                 </span>
               </button>
+              {onReasignar && <button type="button" className="mt-1 w-full rounded-md px-3 py-1.5 text-left text-sm font-medium text-primary hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" onClick={() => onReasignar(posicion.routeBatchId)}>
+                Reasignar paradas de {posicion.vehiclePlate}
+              </button>}
             </li>
           );
         })}

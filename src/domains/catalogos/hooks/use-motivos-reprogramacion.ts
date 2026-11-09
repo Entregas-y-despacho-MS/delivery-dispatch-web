@@ -10,13 +10,13 @@ import type {
 } from "../catalogos.types";
 import { motivosReprogramacionService } from "../services/motivos-reprogramacion.service";
 
-export function useMotivosReprogramacion(params: MotivoReprogramacionListParams) {
+export function useMotivosReprogramacion(params: MotivoReprogramacionListParams, enabled = true) {
   const crud = useCrud<
     MotivoReprogramacion,
     MotivoReprogramacionCreate,
     MotivoReprogramacionUpdate,
     MotivoReprogramacionListParams
-  >(motivosReprogramacionService, "reschedule-reasons", { params, policy: "catalog" });
+  >(motivosReprogramacionService, "reschedule-reasons", { params, policy: "catalog", enabled });
 
   const saveItem = async (values: MotivoReprogramacionFormValues, id?: number) => {
     if (id === undefined) {

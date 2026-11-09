@@ -12,6 +12,7 @@ export { useLote, useLotes } from "./hooks/use-lotes";
 export { listarLotes, obtenerLote } from "./services/lotes.service";
 export { LoteProvisionalDetalle } from "./components/lote-provisional-detalle";
 export { LoteAprobacionFinal } from "./components/lote-aprobacion-final";
+export { ReasignarParadasDialog } from "./components/reasignar-paradas-dialog";
 export { LotePedidosTable } from "./components/lote-pedidos-table";
 export type {
   HallazgoValidacion,

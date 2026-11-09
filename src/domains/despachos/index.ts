@@ -141,6 +141,8 @@ export {
   type TonoRecepcion,
   type TotalesRecepcion,
 } from "./recepcion.reglas";
+export { FichaRecepcion } from "./components/ficha-recepcion";
+export { ResultadoRecepcionBadge } from "./components/resultado-recepcion-badge";
 export type {
   Almacen,
   AlmacenDestino,

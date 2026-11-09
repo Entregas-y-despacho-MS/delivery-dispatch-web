@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -22,7 +22,8 @@ describe("comentario de calificación (ST-43.2)", () => {
     expect(screen.getByText("0/500 caracteres")).toBeTruthy();
     await user.type(comentario, "Hola");
     expect(screen.getByText("4/500 caracteres")).toBeTruthy();
-    await user.type(comentario, "a".repeat(501));
+    await user.click(comentario);
+    await user.paste("a".repeat(501));
     expect((comentario as HTMLTextAreaElement).value).toHaveLength(500);
     expect(screen.getByText("500/500 caracteres")).toBeTruthy();
   });
@@ -36,7 +37,7 @@ describe("comentario de calificación (ST-43.2)", () => {
     await user.type(screen.getByRole("textbox", { name: "Comentario (opcional)" }), "  Llegó rápido  ");
     await user.click(screen.getByRole("button", { name: "Enviar calificación" }));
 
-    expect(onEnviar).toHaveBeenCalledWith({ score: 5, comment: "Llegó rápido" });
+    await waitFor(() => expect(onEnviar).toHaveBeenCalledWith({ score: 5, comment: "Llegó rápido" }));
   });
 
   it("muestra el comentario devuelto tras guardar la calificación", () => {

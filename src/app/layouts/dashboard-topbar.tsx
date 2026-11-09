@@ -1,6 +1,7 @@
 import { ChevronDown, ChevronRight, LogOut } from "lucide-react";
 
 import { useLogout } from "@/domains/auth";
+import { CampanaAlertas } from "@/domains/incidencias";
 import { ThemeToggle } from "@/shared/components/theme-toggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/components/ui/avatar";
 import {
@@ -10,9 +11,17 @@ import {
 import { Separator } from "@/shared/components/ui/separator";
 import { SidebarTrigger } from "@/shared/components/ui/sidebar";
 import type { AuthUser } from "@/shared/store/use-auth-store";
-import { ROLE_LABELS } from "@/config/roles";
+import { ROLE_LABELS, ROLES } from "@/config/roles";
+import { portalHref } from "@/config/portal-routes";
 
 type CurrentNavItem = { title: string; groupLabel: string } | undefined;
+
+/** Solo coordinador y supervisor reciben alertas; cada uno las ve en la página de su menú. */
+function hrefCentroAlertas(roleId: number): string | null {
+  if (roleId === ROLES.SUPERVISOR) return portalHref("alertas");
+  if (roleId === ROLES.COORDINADOR) return portalHref("incidencias");
+  return null;
+}
 
 export function DashboardTopbar({
   user,
@@ -24,6 +33,7 @@ export function DashboardTopbar({
   const handleLogout = useLogout();
   const roleLabel = ROLE_LABELS[user.rol.id as keyof typeof ROLE_LABELS] ?? user.rol.nombre;
   const initials = `${user.nombres?.[0] ?? ""}${user.apellidos?.[0] ?? ""}`.toUpperCase();
+  const hrefAlertas = hrefCentroAlertas(user.rol.id);
 
   return (
     <header className="sticky top-0 z-40 bg-sidebar">
@@ -47,6 +57,7 @@ export function DashboardTopbar({
         </nav>
 
         <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+          {hrefAlertas && <CampanaAlertas hrefCentro={hrefAlertas} />}
           <span className="topbar-theme-control flex size-10 items-center justify-center rounded-lg text-sidebar-foreground hover:bg-sidebar-foreground/10 [&_button]:size-10 [&_button]:rounded-lg [&_button]:text-sidebar-foreground [&_button]:hover:bg-transparent [&_button]:hover:text-sidebar-foreground">
             <ThemeToggle />
           </span>

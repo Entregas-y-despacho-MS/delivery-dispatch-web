@@ -32,6 +32,7 @@ interface DespachoFichaProps {
  */
 export function DespachoFicha({ despacho, onRenovar, renovando, pestana = "general", acciones, ahora }: DespachoFichaProps) {
   const cantidad = (n: number) => (n > 0 ? ` (${n})` : "");
+  const opinion = despacho.rating;
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -67,22 +68,22 @@ export function DespachoFicha({ despacho, onRenovar, renovando, pestana = "gener
 
       <section className="space-y-2 rounded-lg border p-4" aria-label="Opinión del cliente">
         <h3 className="text-sm font-semibold">Opinión del cliente</h3>
-        {despacho.rating ? (
+        {opinion ? (
           <div className="space-y-1.5">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="flex gap-0.5" role="img" aria-label={`${despacho.rating.score} de 5 estrellas`}>
+              <span className="flex gap-0.5" role="img" aria-label={`${opinion.score} de 5 estrellas`}>
                 {Array.from({ length: 5 }, (_, index) => (
                   <Star
                     key={index + 1}
                     aria-hidden
-                    className={`size-4 ${index < despacho.rating.score ? "fill-warning text-warning" : "text-muted-foreground/40"}`}
+                    className={`size-4 ${index < opinion.score ? "fill-warning text-warning" : "text-muted-foreground/40"}`}
                   />
                 ))}
               </span>
-              <span className="text-sm font-medium">{despacho.rating.score}/5</span>
-              <span className="text-xs text-muted-foreground">{formatearFechaHoraExacta(despacho.rating.createdAt)}</span>
+              <span className="text-sm font-medium">{opinion.score}/5</span>
+              <span className="text-xs text-muted-foreground">{formatearFechaHoraExacta(opinion.createdAt)}</span>
             </div>
-            <p className="text-sm">{despacho.rating.comment || <span className="text-muted-foreground">El cliente no dejó un comentario.</span>}</p>
+            <p className="text-sm">{opinion.comment || <span className="text-muted-foreground">El cliente no dejó un comentario.</span>}</p>
           </div>
         ) : (
           <p className="text-sm text-muted-foreground">El cliente todavía no calificó la entrega.</p>

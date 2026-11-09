@@ -120,6 +120,19 @@ export function enlaceAlerta(alerta: Pick<AlertaOperativa, "dispatchId" | "vehic
   return null;
 }
 
+const esIdONulo = (valor: unknown) => valor === null || Number.isInteger(valor);
+
+/** Lo que llega por el socket viene sin tipo: solo se usa si tiene la forma de una alerta. */
+export function esAlertaLevantada(payload: unknown): payload is AlertaLevantada {
+  if (!payload || typeof payload !== "object") return false;
+  const evento = payload as Partial<Record<keyof AlertaLevantada, unknown>>;
+  return Number.isInteger(evento.id)
+    && esTipo(typeof evento.kind === "string" ? evento.kind : null)
+    && (evento.severity === "critical" || evento.severity === "warning")
+    && esIdONulo(evento.zoneId) && esIdONulo(evento.dispatchId) && esIdONulo(evento.driverId)
+    && typeof evento.detail === "object" && evento.detail !== null;
+}
+
 export function mensajeErrorAtender(error: ApiError): string {
   if (error.code === "OPERATIONAL_ALERT_ALREADY_ACKNOWLEDGED") return "Otra persona ya marcó esta alerta como atendida.";
   if (error.code === "OPERATIONAL_ALERT_NOT_FOUND") return "La alerta ya no existe.";

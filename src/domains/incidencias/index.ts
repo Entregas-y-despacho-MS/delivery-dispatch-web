@@ -16,6 +16,7 @@ export {
   TIPOS_ALERTA,
   descripcionAlerta,
   enlaceAlerta,
+  esAlertaLevantada,
   escribirFiltrosAlertas,
   etiquetaEstadoAlerta,
   etiquetaTipoAlerta,
@@ -30,3 +31,4 @@ export {
 } from "./incidencias.alertas";
 export { atenderAlerta, listarAlertas } from "./services/alertas.service";
 export { alertasKeys, useAlertas, useAtenderAlerta, useContadorAlertas } from "./hooks/use-alertas-criticas";
+export { useAlertasEnVivo } from "./hooks/use-alertas-en-vivo";

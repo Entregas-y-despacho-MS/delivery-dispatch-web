@@ -1,4 +1,9 @@
 export { vehiculosService } from "./services/vehiculos.service";
+export { PanelVehiculosFlota } from "./components/panel-vehiculos-flota";
+export { MapaPosicionesFlota } from "./components/mapa-posiciones-flota";
+export { usePosicionesFlota } from "./hooks/use-posiciones-flota";
+export type { FiltroEstadoFlota, PosicionFlotaEnVivo, UbicacionFlotaActualizada } from "./flota-posiciones.types";
+export { esUbicacionSinSenal, filtrarPosicionesFlota } from "./flota-posiciones.types";
 export { mantenimientosService } from "./services/mantenimientos.service";
 export { useVehiculos } from "./hooks/use-vehiculos";
 export { useAccionesMantenimiento, useHistorialMantenimientos } from "./hooks/use-mantenimientos";

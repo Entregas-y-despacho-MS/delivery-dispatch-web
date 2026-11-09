@@ -7,6 +7,7 @@ import { cn } from "@/shared/lib/utils";
 import { etiquetaEstadoDespacho, formatearFechaTurnoDetalle } from "../despacho-detalle.format";
 import { ETIQUETA_ORIGEN, sePuedeAnular } from "../recojos.reglas";
 import type { OrigenRecojo, Recojo } from "../recojos.types";
+import { ResultadoRecepcionBadge } from "./resultado-recepcion-badge";
 
 function OrigenBadge({ origen }: { origen: OrigenRecojo }) {
   return (
@@ -32,7 +33,17 @@ function EstadoRecojo({ estado }: { estado: string }) {
   );
 }
 
-const fechaPreferida = (recojo: Recojo) => (recojo.preferredPickupDate ? formatearFechaTurnoDetalle(recojo.preferredPickupDate) : "—");
+/** Estado del recojo y, debajo, el resultado de la recepción en almacén cuando ya la hay (ST-240.5). */
+function EstadoConRecepcion({ recojo, className }: { recojo: Recojo; className?: string }) {
+  return (
+    <div className={cn("flex flex-col gap-1", className)}>
+      <EstadoRecojo estado={recojo.status} />
+      {recojo.receiptResult && <ResultadoRecepcionBadge resultado={recojo.receiptResult} />}
+    </div>
+  );
+}
+
+const fechaPreferida =(recojo: Recojo) => (recojo.preferredPickupDate ? formatearFechaTurnoDetalle(recojo.preferredPickupDate) : "—");
 
 function BotonAnular({ recojo, onAnular }: { recojo: Recojo; onAnular?: (recojo: Recojo) => void }) {
   if (!onAnular || !sePuedeAnular(recojo.status)) return null;
@@ -91,7 +102,7 @@ export function RecojosTable({ data, loading, filtrado = false, onLimpiarFiltros
       className: "w-[16%]",
     },
     { header: "Fecha", cell: (r) => <span className="text-sm tabular-nums">{fechaPreferida(r)}</span>, className: "w-[9%]" },
-    { header: "Estado", cell: (r) => <EstadoRecojo estado={r.status} />, className: "w-[11%]" },
+    { header: "Estado", cell: (r) => <EstadoConRecepcion recojo={r} />, className: "w-[11%]" },
     {
       header: "",
       cell: (r) => <div className="flex justify-end"><BotonAnular recojo={r} onAnular={onAnular} /></div>,
@@ -115,7 +126,7 @@ export function RecojosTable({ data, loading, filtrado = false, onLimpiarFiltros
               <p className="font-mono text-sm font-semibold">{r.trackingCode ?? "Sin código"}</p>
               <OrigenBadge origen={r.origin} />
             </div>
-            <EstadoRecojo estado={r.status} />
+            <EstadoConRecepcion recojo={r} className="items-end" />
           </div>
           <p className="mt-3 text-sm font-medium">{r.contactName ?? "Sin nombre"}</p>
           <p className="text-sm text-muted-foreground">{r.address}</p>

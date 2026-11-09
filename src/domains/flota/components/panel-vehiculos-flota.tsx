@@ -57,15 +57,20 @@ export function PanelVehiculosFlota({
       ) : <ul className="max-h-[min(50vh,520px)] space-y-2 overflow-y-auto" aria-label="Lista de vehículos">
         {filtradas.map((posicion) => {
           const sinSenal = esUbicacionSinSenal(posicion, umbralMinutos, ahora);
+          const sinCoordenadas = posicion.lastLatitude === null || posicion.lastLongitude === null;
           const enMovimiento = posicion.currentStop?.status === "in_transit";
-          const estadoVisible = sinSenal ? "Sin señal" : enMovimiento ? "En movimiento" : "En ruta";
+          const estadoVisible = sinCoordenadas ? "Sin ubicación GPS" : sinSenal ? "Sin señal" : enMovimiento ? "En movimiento" : "En ruta";
           return (
             <li key={posicion.routeBatchId}>
               <button
                 type="button"
                 onClick={() => onSeleccionar(posicion.routeBatchId)}
                 aria-pressed={rutaSeleccionada === posicion.routeBatchId}
-                className={`w-full rounded-lg border p-3 text-left hover:bg-accent ${rutaSeleccionada === posicion.routeBatchId ? "border-primary bg-accent" : ""}`}
+                aria-label={sinCoordenadas
+                  ? `${posicion.vehiclePlate}, sin ubicación GPS; no se puede centrar`
+                  : `Centrar mapa en ${posicion.vehiclePlate}, ${estadoVisible}`}
+                disabled={sinCoordenadas}
+                className={`w-full rounded-lg border p-3 text-left outline-none transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-transparent ${rutaSeleccionada === posicion.routeBatchId ? "border-primary bg-accent" : ""}`}
               >
                 <span className="flex items-start gap-3">
                   <span className={`mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-full ${sinSenal ? "bg-zinc-500/15 text-zinc-500" : "bg-primary/10 text-primary"}`}>
@@ -74,8 +79,8 @@ export function PanelVehiculosFlota({
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center justify-between gap-2">
                       <span className="truncate font-semibold">{posicion.vehiclePlate}</span>
-                      <span className={`inline-flex shrink-0 items-center gap-1 text-xs ${sinSenal ? "text-zinc-500" : "text-emerald-700 dark:text-emerald-400"}`}>
-                        {sinSenal ? <Radio className="size-3.5" aria-hidden /> : <RadioTower className="size-3.5" aria-hidden />}
+                      <span className={`inline-flex shrink-0 items-center gap-1 text-xs ${sinSenal || sinCoordenadas ? "text-zinc-500" : "text-emerald-700 dark:text-emerald-400"}`}>
+                        {sinSenal || sinCoordenadas ? <Radio className="size-3.5" aria-hidden /> : <RadioTower className="size-3.5" aria-hidden />}
                         {estadoVisible}
                       </span>
                     </span>
@@ -84,6 +89,7 @@ export function PanelVehiculosFlota({
                       <MapPin className="size-3.5" aria-hidden />{posicion.deliveryZone?.name ?? "Zona sin asignar"}
                     </span>
                     <span className="mt-1 block text-xs text-muted-foreground">Parada: {posicion.currentStop?.trackingCode ?? "Sin parada abierta"}</span>
+                    {sinCoordenadas && <span className="mt-1 block text-xs text-zinc-500">No hay coordenadas GPS para centrar el mapa.</span>}
                   </span>
                 </span>
               </button>

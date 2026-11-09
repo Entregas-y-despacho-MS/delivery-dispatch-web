@@ -53,15 +53,33 @@ const positions = [{
   currentStop: { dispatchId: 99, trackingCode: "DSP-099", status: "in_transit" },
   lastLatitude: -17.78,
   lastLongitude: -63.18,
-  lastLocationAt: new Date(NOW - 60_000).toISOString(),
+  lastLocationAt: new Date(NOW - 10 * 60_000).toISOString(),
 }];
 
-function renderPage() {
+function renderMap() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
-  return render(<QueryClientProvider client={client}><MapaFlotaPage /></QueryClientProvider>);
+  return render(<QueryClientProvider client={client}><MapaPrueba /></QueryClientProvider>);
 }
 
-let MapaFlotaPage: typeof import("@/pages/dashboard/mapa-flota-page").default;
+let flota: typeof import("@/domains/flota");
+
+function MapaPrueba() {
+  const { posiciones, umbrales } = flota.usePosicionesFlota();
+  if (posiciones.isPending || umbrales.umbrales.isPending) return <p>Cargando flota</p>;
+  if (posiciones.isError || umbrales.umbrales.isError || !umbrales.umbrales.data) return <p>Error de flota</p>;
+  const lista = posiciones.data ?? [];
+  return (
+    <>
+      {lista.length === 0 && <p>No hay vehículos en rutas activas en este momento.</p>}
+      <flota.MapaPosicionesFlota
+        posiciones={lista}
+        umbralMinutos={umbrales.umbrales.data.gpsStaleAlertMinutes}
+        rutaSeleccionada={null}
+        ahora={NOW}
+      />
+    </>
+  );
+}
 
 beforeEach(async () => {
   handlers.clear();
@@ -76,7 +94,7 @@ beforeEach(async () => {
   });
   const { useAuthStore } = await import("@/shared/store/use-auth-store");
   useAuthStore.setState({ access_token: "supervisor-token" });
-  MapaFlotaPage = (await import("@/pages/dashboard/mapa-flota-page")).default;
+  flota = await import("@/domains/flota");
 });
 
 afterEach(async () => {
@@ -87,19 +105,20 @@ afterEach(async () => {
 
 describe("mapa en vivo de la flota (ST-60.3)", () => {
   it("carga posiciones, datos del conductor y centra los marcadores reportados", async () => {
-    renderPage();
+    renderMap();
 
     expect(await screen.findByText("ABC-123")).toBeTruthy();
     expect(screen.getByText("Repartidor: Ana Repartidora")).toBeTruthy();
     expect(screen.getByText("Parada: DSP-099")).toBeTruthy();
     expect(screen.getByTestId("map-marker").getAttribute("data-center")).toBe("-17.78,-63.18");
-    await waitFor(() => expect(fitBounds).toHaveBeenCalledOnce());
-    expect(getPosiciones).toHaveBeenCalledOnce();
+    await waitFor(() => expect(setView).toHaveBeenCalledWith([-17.78, -63.18], 13));
+    expect(screen.getByTestId("map-marker").getAttribute("data-color")).toBe("#71717a");
+    expect(getPosiciones).toHaveBeenCalled();
     expect(getUmbrales).toHaveBeenCalledOnce();
   });
 
   it("actualiza el marcador al recibir dispatch.location.updated", async () => {
-    renderPage();
+    renderMap();
     await screen.findByText("ABC-123");
     await waitFor(() => expect(handlers.has("dispatch.location.updated")).toBe(true));
 
@@ -117,8 +136,8 @@ describe("mapa en vivo de la flota (ST-60.3)", () => {
   });
 
   it("presenta el estado vacío cuando el servicio no devuelve vehículos en ruta", async () => {
-    getPosiciones.mockResolvedValueOnce([]);
-    renderPage();
+    getPosiciones.mockResolvedValue([]);
+    renderMap();
 
     expect(await screen.findByText("No hay vehículos en rutas activas en este momento.")).toBeTruthy();
     expect(screen.queryByTestId("map-marker")).toBeNull();

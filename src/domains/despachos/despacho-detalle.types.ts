@@ -2,6 +2,7 @@
  * Ficha 360° de un despacho (ST-56.1, RF-A09): GET /dispatches/:id/detail.
  * Las URL de las evidencias son firmadas y vencen a los 5 minutos: se pide el detalle otra vez para renovarlas.
  */
+import type { RecepcionAlmacen } from "./recepcion.types";
 
 export interface RefCatalogo {
   id: number;
@@ -109,6 +110,11 @@ export interface DespachoDetalle {
   paymentStatusLabel: string | null;
   /** Opinión del cliente (ST-43.1), null hasta que califique. */
   rating: { score: number; comment: string | null; createdAt: string } | null;
+  /**
+   * Recepción en almacén (ST-240.6), null si el despacho no tiene. Opcional: el back la agrega en
+   * ST-240.6 y hasta entonces no la manda.
+   */
+  receipt?: RecepcionAlmacen | null;
   scheduledWindowStart: string | null;
   scheduledWindowEnd: string | null;
   createdAt: string;

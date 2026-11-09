@@ -127,6 +127,20 @@ export {
   type ErrorRecojo,
   type FiltrosRecojos,
 } from "./recojos.reglas";
+// Recepción en almacén de recojos y recogidas (ST-240.5).
+export type { ItemRecepcion, RecepcionAlmacen, ResultadoRecepcion } from "./recepcion.types";
+export {
+  RESULTADOS_RECEPCION,
+  esResultadoRecepcion,
+  etiquetaResultadoRecepcion,
+  formatearCantidad,
+  itemConDiferencia,
+  nombreItemRecepcion,
+  tonoResultadoRecepcion,
+  totalesRecepcion,
+  type TonoRecepcion,
+  type TotalesRecepcion,
+} from "./recepcion.reglas";
 export type {
   Almacen,
   AlmacenDestino,

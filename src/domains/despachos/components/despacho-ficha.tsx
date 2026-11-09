@@ -9,6 +9,7 @@ import { FichaEvidencias } from "./ficha-evidencias";
 import { FichaGeneral } from "./ficha-general";
 import { FichaIncidencias } from "./ficha-incidencias";
 import { FichaLineaTiempo } from "./ficha-linea-tiempo";
+import { FichaRecepcion } from "./ficha-recepcion";
 import { PrioridadBadge } from "./pedido-badges";
 
 export type PestanaFicha = "general" | "linea-tiempo" | "evidencias" | "incidencias";
@@ -89,6 +90,9 @@ export function DespachoFicha({ despacho, onRenovar, renovando, pestana = "gener
           <p className="text-sm text-muted-foreground">El cliente todavía no calificó la entrega.</p>
         )}
       </section>
+
+      {/* Solo recojos y recogidas pasan por almacén: sin recepción la sección no se muestra. */}
+      {despacho.receipt && <FichaRecepcion recepcion={despacho.receipt} />}
     </div>
   );
 }

@@ -157,10 +157,12 @@ describe("pantalla del reporte SLA (ST-54.1)", () => {
     expect(await screen.findByRole("button", { name: /Reintentar/ })).toBeTruthy();
   });
 
-  it("el supervisor ve el aviso y no se consulta al back", async () => {
+  it("el supervisor ve el reporte de flota y no se consulta el SLA", async () => {
     usuario(2);
+    vi.mocked(api.get).mockResolvedValue({ data: { from: "2026-10-01", to: "2026-10-31", drivers: [], vehicles: [] } } as never);
     abrir();
-    expect(await screen.findByText("Reporte disponible solo para el Coordinador")).toBeTruthy();
-    expect(vi.mocked(api.get)).not.toHaveBeenCalled();
+    expect(await screen.findByRole("heading", { name: "Reporte de flota" })).toBeTruthy();
+    await screen.findByText("Sin datos para el período seleccionado");
+    expect(vi.mocked(api.get)).not.toHaveBeenCalledWith("/reports/sla", expect.anything());
   });
 });

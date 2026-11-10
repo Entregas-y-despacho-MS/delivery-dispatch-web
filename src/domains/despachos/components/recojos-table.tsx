@@ -91,6 +91,8 @@ export function RecojosTable({ data, loading, filtrado = false, onLimpiarFiltros
       className: "w-[16%]",
     },
     { header: "Dirección", cell: (r) => <p className="line-clamp-2 text-sm" title={r.address}>{r.address}</p>, className: "w-[22%]" },
+    { header: "Motivo", cell: (r) => <p className="line-clamp-2 text-sm">{r.returnReason ?? "—"}</p>, className: "w-[12%]" },
+    { header: "Almacén destino", cell: (r) => <p className="line-clamp-2 text-sm">{r.destinationWarehouse?.name ?? "—"}</p>, className: "w-[14%]" },
     {
       header: "Qué se recoge",
       cell: (r) => (
@@ -130,6 +132,7 @@ export function RecojosTable({ data, loading, filtrado = false, onLimpiarFiltros
           </div>
           <p className="mt-3 text-sm font-medium">{r.contactName ?? "Sin nombre"}</p>
           <p className="text-sm text-muted-foreground">{r.address}</p>
+          <p className="mt-1 text-xs">Motivo: {r.returnReason ?? "—"} · Almacén: {r.destinationWarehouse?.name ?? "—"}</p>
           <div className="mt-3 flex items-end justify-between gap-3 border-t pt-3">
             <div className="text-xs">
               <p>Fecha: {fechaPreferida(r)}</p>

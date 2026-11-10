@@ -16,7 +16,7 @@ export const ESTADOS_RECOJO = [
 ] as const;
 
 /** El coordinador solo puede anular antes de que salga la ruta (ST-81.2). */
-const ESTADOS_ANULABLES = new Set(["pickup_scheduled", "address_review", "in_planning"]);
+const ESTADOS_ANULABLES = new Set(["pickup_scheduled", "in_planning"]);
 export const sePuedeAnular = (estado: string) => ESTADOS_ANULABLES.has(estado);
 
 export const ETIQUETA_ORIGEN: Record<OrigenRecojo, string> = { manual: "Manual", rma: "RMA" };

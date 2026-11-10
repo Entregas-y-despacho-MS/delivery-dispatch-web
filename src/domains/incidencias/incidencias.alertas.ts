@@ -3,6 +3,7 @@ import type { AlertaLevantada, AlertaOperativa, EstadoAlerta, FiltrosAlertas, Pa
 
 /** Evento del socket que avisa una alerta nueva (ST-66.2). */
 export const EVENTO_ALERTA_LEVANTADA = "operational.alert_raised";
+export const EVENTO_ALERTA_ATENDIDA = "operational.alert_acknowledged";
 
 /** El back no deja pedir más de 100 por página. */
 export const LIMITE_ALERTAS = 100;

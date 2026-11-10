@@ -71,7 +71,7 @@ export function generarCsv(reporte: ReporteSla): string {
 
 /** `reporte-sla-zona-2026-10-01_2026-10-31.csv`: el período y la agrupación en el nombre. */
 export function nombreArchivoSla(reporte: Pick<ReporteSla, "from" | "to" | "groupBy">, extension: "csv" | "xlsx"): string {
-  const grupo = { zone: "zona", service_level: "nivel-servicio", driver: "repartidor" }[reporte.groupBy];
+  const grupo = { zone: "zona", service_level: "nivel-servicio", zone_service: "zona-servicio", driver: "repartidor" }[reporte.groupBy];
   return `reporte-sla-${grupo}-${reporte.from}_${reporte.to}.${extension}`;
 }
 

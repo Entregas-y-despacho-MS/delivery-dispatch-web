@@ -85,6 +85,7 @@ function renderTablero(columns: ColumnaKanban[] = vacias, inverse = false, onOpe
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   const rendered = render(
     <TableroKanban
+      zonas={[{ id: 8, name: "Centro" }]}
       date="2026-10-19"
       onDateChange={vi.fn()}
       deliveryZoneId="all"

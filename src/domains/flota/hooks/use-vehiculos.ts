@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useCrud, type UseCrudOptions } from "@/shared/hooks/use-crud";
 import { vehiculosService } from "../services/vehiculos.service";
-import type { CambiarEstadoVehiculoInput, Vehiculo, VehiculoInput, VehiculoListParams, VehiculoUpdateInput } from "../flota.types";
+import type { CambiarEstadoVehiculoInput, Vehiculo, VehiculoInput, VehiculoListParams, VehiculoUpdateInput } from "../types/flota.types";
 
 export function useVehiculos(
   params?: VehiculoListParams,

@@ -1,19 +1,11 @@
-import { Pencil, Power } from "lucide-react";
+import { Pencil } from "lucide-react";
 
 import type { Column } from "@/shared/components/common/data-table";
 import { ResponsiveList } from "@/shared/components/common/responsive-list";
-import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import { Switch } from "@/shared/components/ui/switch";
-import type { Zona } from "../catalogos.types";
-
-function ZonaStatusBadge() {
-  return (
-    <Badge variant="outline" className="border-success/20 bg-success/10 text-success">
-      <Power aria-hidden /> Activo
-    </Badge>
-  );
-}
+import { EstadoCatalogoBadge } from "./estado-catalogo-badge";
+import type { Zona } from "../types/catalogos.types";
 
 export function ZonasTable({
   data,
@@ -36,22 +28,29 @@ export function ZonasTable({
     {
       header: "Código",
       cell: (zona) => <span className="font-mono font-medium tracking-tight">{zona.code}</span>,
-      className: "w-[24%]",
+      className: "w-[18%]",
     },
     {
       header: "Nombre",
       cell: (zona) => <span className="font-medium">{zona.name}</span>,
-      className: "w-[32%]",
+      className: "w-[26%]",
+    },
+    {
+      header: "Cobertura",
+      cell: (zona) => zona.boundary?.length
+        ? <span className="text-sm font-medium text-emerald-700">Definida</span>
+        : <span className="text-sm font-medium text-amber-700">Pendiente</span>,
+      className: "w-[14%]",
     },
     {
       header: "Tiempo estimado",
       cell: (zona) => <span className="tabular-nums">{zona.estimatedTimeMin} min</span>,
-      className: "w-[22%] text-right",
+      className: "w-[16%] text-right",
     },
     {
       header: "Estado",
-      cell: () => <ZonaStatusBadge />,
-      className: "w-[22%]",
+      cell: () => <EstadoCatalogoBadge activo />,
+      className: "w-[14%]",
     },
     {
       header: "Acciones",
@@ -91,11 +90,17 @@ export function ZonasTable({
           </div>
           <div className="mt-4 flex items-center justify-between gap-4 border-t pt-3">
             <div>
+              <p className="text-xs text-muted-foreground">Cobertura</p>
+              <p className={`text-sm font-medium ${zona.boundary?.length ? "text-emerald-700" : "text-amber-700"}`}>
+                {zona.boundary?.length ? "Definida" : "Pendiente"}
+              </p>
+            </div>
+            <div>
               <p className="text-xs text-muted-foreground">Tiempo estimado</p>
               <p className="tabular-nums font-medium">{zona.estimatedTimeMin} min</p>
             </div>
             <div className="flex items-center gap-3">
-              <ZonaStatusBadge />
+              <EstadoCatalogoBadge activo />
               <Switch
                 checked
                 disabled={deactivating}

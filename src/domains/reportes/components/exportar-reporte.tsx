@@ -3,7 +3,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/shared/components/ui/button";
 import { descargarArchivo, generarCsv, nombreArchivoSla } from "../reportes.exportar";
-import type { ReporteSla } from "../reportes.types";
+import type { ReporteSla } from "../types/reportes.types";
 
 /** Exporta en el navegador lo que muestra la pantalla, con los filtros aplicados. Sin filas no hay nada que exportar. */
 export function ExportarReporteSla({ reporte, deshabilitado }: { reporte: ReporteSla | undefined; deshabilitado: boolean }) {

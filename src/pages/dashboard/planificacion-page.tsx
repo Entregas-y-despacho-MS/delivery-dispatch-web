@@ -12,6 +12,7 @@ import {
   type OpcionVehiculo,
 } from "@/domains/planificacion";
 import { useUsuarios } from "@/domains/usuarios";
+import { useParametrosOperativos } from "@/domains/configuracion";
 import { PageHeader } from "@/shared/components/common/page-header";
 import { Button } from "@/shared/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
@@ -165,8 +166,26 @@ export default function PlanificacionPage() {
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {(lotesFinales.data?.items ?? []).map((lote) => <LoteResumenCard key={lote.id} titulo={`Lote #${lote.id} · Revisión final`} zona={lote.zone?.name ?? null} fecha={lote.shiftDate} vehiculo={lote.vehicle?.plate ?? null} cantidadPedidos={lote.dispatchCount} ocupacion={lote.occupancy ? Math.max(lote.occupancy.weight.usedPercent, lote.occupancy.volume.usedPercent) : null} revisor={lote.reviewer?.fullName ?? null} seleccionado={lote.id === loteFinalId} onSeleccionar={() => seleccionarLoteFinal(lote.id)} />)}
         </div>
-        {loteFinalId !== null && <LoteAprobacionFinal key={loteFinalId} loteId={loteFinalId} vehiculos={opcionesVehiculo} conductores={conductores} onCerrar={() => seleccionarLoteFinal(null)} />}
+        {loteFinalId !== null && <LoteAprobacionFinalConParametros key={loteFinalId} loteId={loteFinalId} vehiculos={opcionesVehiculo} conductores={conductores} onCerrar={() => seleccionarLoteFinal(null)} />}
       </section>
     </div>
+  );
+}
+
+function LoteAprobacionFinalConParametros(props: {
+  loteId: number;
+  vehiculos: OpcionVehiculo[];
+  conductores: OpcionRevisor[];
+  onCerrar: () => void;
+}) {
+  const parametros = useParametrosOperativos();
+  return (
+    <LoteAprobacionFinal
+      {...props}
+      horariosRevision={{
+        final_review_end_time: parametros.valores.final_review_end_time,
+        final_review_escalation_time: parametros.valores.final_review_escalation_time,
+      }}
+    />
   );
 }

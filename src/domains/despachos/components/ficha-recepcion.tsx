@@ -2,7 +2,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { cn } from "@/shared/lib/utils";
 import { formatearFechaHoraExacta } from "../despacho-detalle.format";
 import { formatearCantidad, itemConDiferencia, nombreItemRecepcion, totalesRecepcion } from "../recepcion.reglas";
-import type { RecepcionAlmacen } from "../recepcion.types";
+import type { RecepcionAlmacen } from "../types/recepcion.types";
 import { ResultadoRecepcionBadge } from "./resultado-recepcion-badge";
 
 /**

@@ -11,8 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/shared/components/ui/textarea";
 import { parseApiError } from "@/shared/lib/api-error";
 import { useFormSubmitConfirmation } from "@/shared/hooks/use-form-submit-confirmation";
-import { motivoReprogramacionSchema, type MotivoReprogramacionFormValues } from "../catalogos.schemas";
-import type { MotivoReprogramacion, MotivoReprogramacionCategoria } from "../catalogos.types";
+import { motivoReprogramacionSchema, type MotivoReprogramacionFormValues } from "../schemas/catalogos.schemas";
+import type { MotivoReprogramacion, MotivoReprogramacionCategoria } from "../types/catalogos.types";
 import { MOTIVO_REPROGRAMACION_CATEGORIAS } from "../motivos-reprogramacion.constants";
 
 const FIELD_ICON = "pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground";

@@ -1,7 +1,7 @@
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { ESTADOS_MANTENIMIENTO, ETIQUETA_ESTADO_MANTENIMIENTO, type FiltrosMantenimiento } from "../flota.mantenimiento";
-import type { EstadoMantenimiento } from "../flota.types";
+import type { EstadoMantenimiento } from "../types/flota.types";
 
 const CLASE_SELECT = "h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50";
 

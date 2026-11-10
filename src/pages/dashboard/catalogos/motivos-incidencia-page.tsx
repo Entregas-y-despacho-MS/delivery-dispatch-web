@@ -9,6 +9,7 @@ import {
 } from "@/domains/catalogos";
 import { PageHeader } from "@/shared/components/common/page-header";
 import { FormDialogHeader } from "@/shared/components/common/form-dialog-header";
+import { FormDialogContent } from "@/shared/components/common/form-dialog";
 import { ConfirmActionDialog } from "@/shared/components/common/confirm-action-dialog";
 import { ActiveStatusFilter, type ActiveStatusFilterValue } from "@/shared/components/common/active-status-filter";
 import { SearchField } from "@/shared/components/common/search-field";
@@ -19,10 +20,7 @@ import { useConfirmAction } from "@/shared/hooks/use-confirm-action";
 import { ErrorAlert } from "@/shared/components/feedback/error-alert";
 import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 import { Button } from "@/shared/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-} from "@/shared/components/ui/dialog";
+import { Dialog } from "@/shared/components/ui/dialog";
 import { parseApiError } from "@/shared/lib/api-error";
 
 const PAGE_SIZE = 10;
@@ -147,7 +145,7 @@ export default function MotivosIncidenciaPage() {
       </section>
 
       <Dialog open={editor.open} onOpenChange={editor.onOpenChange}>
-        <DialogContent data-form-dialog className="form-dialog-content max-h-[90dvh] overflow-y-auto bg-card sm:max-w-2xl motion-reduce:animate-none">
+        <FormDialogContent className="sm:max-w-2xl">
           <FormDialogHeader icon={ListX}
             title={editingMotivo ? "Editar motivo de incidencia" : "Nuevo motivo de incidencia"}
             description={editingMotivo
@@ -161,7 +159,7 @@ export default function MotivosIncidenciaPage() {
             onDirtyChange={editor.setDirty}
             guardando={motivos.isSaving}
           />
-        </DialogContent>
+        </FormDialogContent>
       </Dialog>
 
       <ConfirmActionDialog open={!!confirmation.item}

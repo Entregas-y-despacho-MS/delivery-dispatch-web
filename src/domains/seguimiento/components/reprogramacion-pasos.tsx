@@ -5,7 +5,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { formatearFechaEntrega, formatearFranjaEntrega, formatearHora } from "../seguimiento.format";
-import type { CodigoEnviado, FranjasDisponibles } from "../seguimiento.types";
+import type { CodigoEnviado, FranjasDisponibles } from "../types/seguimiento.types";
 
 const CODIGO_VALIDO = /^\d{6}$/;
 

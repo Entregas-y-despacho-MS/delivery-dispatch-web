@@ -9,7 +9,7 @@ import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { useLogout } from "../hooks/use-logout";
 import { useChangePassword } from "../hooks/use-change-password";
-import { changePasswordSchema, type ChangePasswordInput } from "../auth.schemas";
+import { changePasswordSchema, type ChangePasswordInput } from "../schemas/auth.schemas";
 import { describeChangePasswordError } from "../auth.errors";
 import { PasswordRequirements } from "./password-requirements";
 

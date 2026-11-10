@@ -1,4 +1,4 @@
-import type { ClaveParametroOperativo } from "./configuracion.types";
+import type { ClaveParametroOperativo } from "./types/configuracion.types";
 
 /**
  * Reglas de los parámetros operativos, espejo de `setting-value.validator.ts` del back (ST-57.2).

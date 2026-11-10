@@ -1,9 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { describeDesactivacionError, describeUsuarioError } from "../usuarios.errors";
-import type { UsuarioFormValues } from "../usuarios.schemas";
+import type { UsuarioFormValues } from "../schemas/usuarios.schemas";
 import { toActualizarPayload, toCrearPayload, usuariosService } from "../services/usuarios.service";
-import type { Usuario, UsuariosFiltrosParams, UsuariosPagina } from "../usuarios.types";
+import type { Usuario, UsuariosFiltrosParams, UsuariosPagina } from "../types/usuarios.types";
 
 export const USUARIOS_QUERY_KEY = ["usuarios"] as const;
 

@@ -4,8 +4,8 @@ import { useListFilters } from "@/shared/hooks/use-list-filters";
 import { useEditorDialog } from "@/shared/hooks/use-editor-dialog";
 import { useConfirmAction } from "@/shared/hooks/use-confirm-action";
 import { parseApiError } from "@/shared/lib/api-error";
-import type { MotivoReprogramacionFormValues } from "../catalogos.schemas";
-import type { MotivoReprogramacion, MotivoReprogramacionCategoria } from "../catalogos.types";
+import type { MotivoReprogramacionFormValues } from "../schemas/catalogos.schemas";
+import type { MotivoReprogramacion, MotivoReprogramacionCategoria } from "../types/catalogos.types";
 import { useMotivosReprogramacion } from "./use-motivos-reprogramacion";
 
 const PAGE_SIZE = 10;

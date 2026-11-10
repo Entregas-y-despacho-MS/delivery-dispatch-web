@@ -6,7 +6,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { useAccionesLote } from "../hooks/use-acciones-lote";
 import { useLote } from "../hooks/use-lotes";
-import type { PedidoLote } from "../lotes.types";
+import type { PedidoLote } from "../types/lotes.types";
 import { formatearFechaTurno } from "../planificacion.format";
 import { AprobarPromesasDialog } from "./aprobar-promesas-dialog";
 import { CambiarVehiculoDialog, type OpcionVehiculo } from "./cambiar-vehiculo-dialog";
@@ -71,6 +71,7 @@ export function LoteProvisionalDetalle({
   }
 
   const datos = lote.data;
+  const esRecojoProveedor = datos.zone === null;
   const esMio = datos.reviewer === null || datos.reviewer.id === usuarioId;
   const puedeOperar = datos.status === "provisional" && esMio && !acciones.ocupado;
   const puedeCambiarVehiculo = (puedeOperar || datos.status === "confirmed") && !acciones.ocupado;
@@ -79,12 +80,12 @@ export function LoteProvisionalDetalle({
   const puedeEditarPedidos = puedeOperar && !datos.dispatches.every((p) => p.status !== "in_planning");
   const aprobados = datos.dispatches.filter((p) => !sacados.has(p.dispatchId));
   // 1.ª aprobación hecha: los pedidos ya están programados y el lote espera el corte de D-1.
-  const yaAprobado = datos.dispatches.length > 0 && datos.dispatches.every((p) => p.status !== "in_planning");
+  const yaAprobado = !esRecojoProveedor && datos.dispatches.length > 0 && datos.dispatches.every((p) => p.status !== "in_planning");
   const sacadosLista = datos.dispatches.filter((p) => sacados.has(p.dispatchId));
   const motivoBloqueo = yaAprobado
     ? "Las promesas de este lote ya están aprobadas. Queda esperar el corte del día anterior para la aprobación final."
     : !datos.vehicle
-    ? "Asigna un vehículo antes de aprobar."
+    ? "Asigna un vehículo antes de confirmar el lote."
     : aprobados.length === 0
       ? "Debe quedar al menos un pedido en el lote."
       : datos.capacity && !datos.capacity.assignable
@@ -113,7 +114,7 @@ export function LoteProvisionalDetalle({
       )}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h3 className="text-base font-semibold">{`Lote #${datos.id} · ${datos.zone?.name ?? "Sin zona"}`}</h3>
+          <h3 className="text-base font-semibold">{`Lote #${datos.id} · ${datos.zone?.name ?? "Recojos de proveedor"}`}</h3>
           <p className="text-sm text-muted-foreground">
             {`Sale el ${formatearFechaTurno(datos.shiftDate)} · ${datos.vehicle ? `${datos.vehicle.plate} (${datos.vehicle.model})` : "Sin vehículo"} · Revisa: ${datos.reviewer?.fullName ?? "cualquier coordinador"}`}
           </p>
@@ -126,7 +127,7 @@ export function LoteProvisionalDetalle({
             <UserRoundCog aria-hidden /> Reasignar
           </Button>
           <Button type="button" size="sm" onClick={() => setDialogo("aprobar")} disabled={!puedeOperar || motivoBloqueo !== null}>
-            <CheckCheck aria-hidden /> Aprobar promesas
+            <CheckCheck aria-hidden /> {esRecojoProveedor ? "Confirmar revisión" : "Aprobar promesas"}
           </Button>
         </div>
       </div>
@@ -154,12 +155,14 @@ export function LoteProvisionalDetalle({
 
       <LotePedidosTable
         pedidos={datos.dispatches}
+        modoRecojo={esRecojoProveedor}
         sacados={sacados}
         onSacar={puedeEditarPedidos ? setASacar : undefined}
         onDevolver={puedeEditarPedidos ? (id) => setSacados((actual) => { const nuevo = new Set(actual); nuevo.delete(id); return nuevo; }) : undefined}
       />
 
       <SacarPedidoDialog
+        modoRecojo={esRecojoProveedor}
         pedido={aSacar && { id: aSacar.dispatchId, orderNumber: aSacar.sourceOrderRef, recipient: null }}
         onOpenChange={(abierto) => { if (!abierto) setASacar(null); }}
         onConfirmar={(id) => { setSacados((actual) => new Set(actual).add(id)); setASacar(null); }}
@@ -172,6 +175,7 @@ export function LoteProvisionalDetalle({
         sacados={sacadosLista.map((p) => ({ id: p.dispatchId, orderNumber: p.sourceOrderRef }))}
         aprobando={acciones.aprobando}
         onConfirmar={aprobar}
+        modoRecojo={esRecojoProveedor}
       />
       <CambiarVehiculoDialog
         abierto={abrirCambioVehiculo}

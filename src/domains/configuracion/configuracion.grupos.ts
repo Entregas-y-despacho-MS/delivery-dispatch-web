@@ -1,4 +1,4 @@
-import type { ClaveParametroOperativo } from "./configuracion.types";
+import type { ClaveParametroOperativo } from "./types/configuracion.types";
 
 export interface CampoParametro {
   clave: ClaveParametroOperativo;

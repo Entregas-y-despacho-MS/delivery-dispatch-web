@@ -21,6 +21,7 @@ export const PORTAL_ROUTES = {
   solicitudes: { path: "solicitudes", roles: COORDINATOR },
   planificacion: { path: "planificacion", roles: COORDINATOR },
   recojos: { path: "recojos", roles: COORDINATOR },
+  recojosProveedor: { path: "recojos-proveedor", roles: COORDINATOR },
   mapa: { path: "mapa", roles: BOTH },
   flota: { path: "flota", roles: SUPERVISOR },
   kpis: { path: "kpis", roles: SUPERVISOR },

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
 
 import {
@@ -12,7 +13,7 @@ export function FormDialogHeader({
   description,
 }: {
   icon: LucideIcon;
-  title: string;
+  title: ReactNode;
   description: string;
 }) {
   return (

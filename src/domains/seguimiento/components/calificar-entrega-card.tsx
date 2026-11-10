@@ -5,7 +5,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { cn } from "@/shared/lib/utils";
 import { formatearFechaHora } from "../seguimiento.format";
-import type { CalificarEntregaInput, SeguimientoPublico } from "../seguimiento.types";
+import type { CalificarEntregaInput, SeguimientoPublico } from "../types/seguimiento.types";
 
 const PUNTAJES = [1, 2, 3, 4, 5] as const;
 const ETIQUETAS: Record<number, string> = { 1: "Muy mala", 2: "Mala", 3: "Regular", 4: "Buena", 5: "Excelente" };

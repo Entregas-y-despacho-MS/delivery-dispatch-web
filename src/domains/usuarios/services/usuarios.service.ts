@@ -1,5 +1,5 @@
 import api from "@/shared/lib/axios";
-import type { UsuarioFormValues } from "../usuarios.schemas";
+import type { UsuarioFormValues } from "../schemas/usuarios.schemas";
 import type {
   ActualizarUsuarioPayload,
   BackendPage,
@@ -8,7 +8,7 @@ import type {
   Usuario,
   UsuariosFiltrosParams,
   UsuariosPagina,
-} from "../usuarios.types";
+} from "../types/usuarios.types";
 import { toRol } from "./roles.service";
 
 // Cada pantalla de este dominio muestra sus errores dentro de la página o del formulario,

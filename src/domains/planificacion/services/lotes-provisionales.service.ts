@@ -9,7 +9,7 @@ import type {
   AsignarVehiculoPayload,
   ReasignarRevisorPayload,
   RevisorLote,
-} from "../planificacion.types";
+} from "../types/planificacion.types";
 
 /*
  * Acciones sobre un lote provisional (ST-215.2, 1.ª aprobación).

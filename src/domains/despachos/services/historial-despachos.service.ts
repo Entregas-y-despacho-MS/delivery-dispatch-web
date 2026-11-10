@@ -2,7 +2,7 @@ import { isAxiosError } from "axios";
 
 import api from "@/shared/lib/axios";
 import { createCrudService } from "@/shared/lib/base.service";
-import type { DespachoHistorial, HistorialParams, HistorialResponse } from "../historial.types";
+import type { DespachoHistorial, HistorialParams, HistorialResponse } from "../types/historial.types";
 
 /** Historial de despachos finalizados (ST-55.2). Solo lectura: { data, total, page, limit } → ListResult. */
 export const historialDespachosService = createCrudService<

@@ -1,4 +1,4 @@
-import type { Autoservicio } from "./seguimiento.types";
+import type { Autoservicio } from "./types/seguimiento.types";
 
 const ZONA = "America/La_Paz";
 const fechaLarga = new Intl.DateTimeFormat("es-BO", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });

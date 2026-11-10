@@ -4,19 +4,16 @@ import { Link } from "react-router-dom";
 
 import { parseApiError } from "@/shared/lib/api-error";
 import { Button } from "@/shared/components/ui/button";
+import { FormDialogContent, FormDialogFooter } from "@/shared/components/common/form-dialog";
+import { FormDialogHeader } from "@/shared/components/common/form-dialog-header";
 import {
   Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
 } from "@/shared/components/ui/dialog";
 import { Label } from "@/shared/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { vehiculosService } from "../services/vehiculos.service";
-import type { CambiarEstadoVehiculoInput, EstadoOperativoVehiculo, Vehiculo } from "../flota.types";
+import type { CambiarEstadoVehiculoInput, EstadoOperativoVehiculo, Vehiculo } from "../types/flota.types";
 
 const ESTADOS: { value: EstadoOperativoVehiculo; label: string }[] = [
   { value: "active", label: "Disponible" },
@@ -93,13 +90,12 @@ export function CambiarEstadoDialog({
 
   return (
     <Dialog open={abierto} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90dvh] overflow-y-auto bg-card sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2"><Power aria-hidden /> Cambiar estado</DialogTitle>
-          <DialogDescription>
-            {vehiculo ? `${vehiculo.plate} · ${vehiculo.type} ${vehiculo.model}` : "Selecciona un nuevo estado e indica el motivo."}
-          </DialogDescription>
-        </DialogHeader>
+      <FormDialogContent className="sm:max-w-2xl">
+        <FormDialogHeader
+          icon={Power}
+          title="Cambiar estado del vehículo"
+          description={vehiculo ? `${vehiculo.plate} · ${vehiculo.type} ${vehiculo.model}` : "Selecciona un nuevo estado e indica el motivo."}
+        />
 
         <form onSubmit={enviar} className="space-y-5" noValidate>
           {validacion && <p role="alert" className="text-sm text-destructive">{validacion}</p>}
@@ -169,15 +165,15 @@ export function CambiarEstadoDialog({
             </section>
           )}
 
-          <DialogFooter>
+          <FormDialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={guardando}>Cancelar</Button>
             <Button type="submit" disabled={guardando || !vehiculo}>
               {guardando && <LoaderCircle className="size-4 animate-spin" aria-hidden />}
               {guardando ? "Guardando…" : "Guardar estado"}
             </Button>
-          </DialogFooter>
+          </FormDialogFooter>
         </form>
-      </DialogContent>
+      </FormDialogContent>
     </Dialog>
   );
 }

@@ -1,5 +1,6 @@
-import "leaflet/dist/leaflet.css";
-import { CircleMarker, MapContainer, TileLayer, useMapEvents } from "react-leaflet";
+import { CircleMarker, useMapEvents } from "react-leaflet";
+
+import { MapView } from "@/shared/components/common/map-view";
 
 /** Centro de La Paz, para cuando todavía no se marcó nada. */
 const CENTRO_INICIAL: [number, number] = [-16.5, -68.13];
@@ -22,13 +23,9 @@ interface PuntoRecojoMapaProps {
 export default function PuntoRecojoMapa({ latitud, longitud, onElegir }: PuntoRecojoMapaProps) {
   const punto: [number, number] | null = latitud !== null && longitud !== null ? [latitud, longitud] : null;
   return (
-    <MapContainer center={punto ?? CENTRO_INICIAL} zoom={punto ? 16 : 13} scrollWheelZoom className="h-56 w-full cursor-crosshair rounded-lg border">
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
+    <MapView center={punto ?? CENTRO_INICIAL} zoom={punto ? 16 : 13} scrollWheelZoom className="h-56 w-full cursor-crosshair rounded-lg border">
       <AlHacerClic onElegir={onElegir} />
-      {punto && <CircleMarker center={punto} radius={9} pathOptions={{ color: "#265c7f", fillColor: "#e18641", fillOpacity: 0.9, weight: 3 }} />}
-    </MapContainer>
+      {punto && <CircleMarker center={punto} radius={9} pathOptions={{ color: "var(--map-marker-outline)", fillColor: "var(--map-marker-fill)", fillOpacity: 0.9, weight: 3 }} />}
+    </MapView>
   );
 }

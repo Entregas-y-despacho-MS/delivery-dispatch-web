@@ -7,7 +7,7 @@ import type {
   VehiculoListParams,
   VehiculoUpdateInput,
   VehiclesResponse,
-} from "../flota.types";
+} from "../types/flota.types";
 
 const crudService = createCrudService<
   Vehiculo,

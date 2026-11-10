@@ -14,7 +14,7 @@ import {
   type ErrorMantenimiento,
   type FiltrosMantenimiento,
 } from "../flota.mantenimiento";
-import type { EstadoMantenimiento, MantenimientoListParams, RegistrarMantenimientoInput } from "../flota.types";
+import type { EstadoMantenimiento, MantenimientoListParams, RegistrarMantenimientoInput } from "../types/flota.types";
 import { mantenimientosService } from "../services/mantenimientos.service";
 
 export const mantenimientosKeys = createQueryKeys<MantenimientoListParams>("vehicle-maintenances");

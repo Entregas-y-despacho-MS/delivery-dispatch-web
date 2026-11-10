@@ -5,7 +5,7 @@ import {
   ChevronUp,
   Pencil,
 } from "lucide-react";
-import { Badge } from "@/shared/components/ui/badge";
+import { StatusBadge } from "@/shared/components/common/status-badge";
 import { Button } from "@/shared/components/ui/button";
 import { Switch } from "@/shared/components/ui/switch";
 import { AsyncState } from "@/shared/components/feedback/async-state";
@@ -16,7 +16,7 @@ import { PagedTableControls } from "@/shared/components/common/paged-table-contr
 import { DataTable, type Column } from "@/shared/components/common/data-table";
 import { useRoles } from "../hooks/use-roles";
 import { useUsuarios } from "../hooks/use-usuarios";
-import type { Usuario, UsuarioEstado, UsuariosFiltrosParams } from "../usuarios.types";
+import type { Usuario, UsuarioEstado, UsuariosFiltrosParams } from "../types/usuarios.types";
 import { UsuariosTableFilters } from "./usuarios-table-filters";
 
 type SortCol = "nombre" | "ultimoAcceso";
@@ -46,37 +46,13 @@ function formatUltimoAcceso(fechaIso: string | null): string {
 function EstadoBadge({ estado }: { estado: UsuarioEstado }) {
   switch (estado) {
     case "active":
-      return (
-        <Badge
-          variant="outline"
-          className="border-success/20 bg-success/10 text-success gap-1.5 font-medium"
-        >
-          <span className="size-1.5 rounded-full bg-emerald-500" aria-hidden />
-          Activo
-        </Badge>
-      );
+      return <StatusBadge tone="success" dot>Activo</StatusBadge>;
     case "inactive":
-      return (
-        <Badge
-          variant="outline"
-          className="border-muted-foreground/20 bg-muted text-muted-foreground gap-1.5 font-medium"
-        >
-          <span className="size-1.5 rounded-full bg-slate-400" aria-hidden />
-          Inactivo
-        </Badge>
-      );
+      return <StatusBadge tone="muted" dot>Inactivo</StatusBadge>;
     case "locked":
-      return (
-        <Badge
-          variant="outline"
-          className="border-destructive/20 bg-destructive/10 text-destructive gap-1.5 font-medium"
-        >
-          <span className="size-1.5 rounded-full bg-rose-500" aria-hidden />
-          Bloqueado
-        </Badge>
-      );
+      return <StatusBadge tone="destructive" dot>Bloqueado</StatusBadge>;
     default:
-      return <Badge variant="outline">{estado}</Badge>;
+      return <StatusBadge tone="muted">{estado}</StatusBadge>;
   }
 }
 

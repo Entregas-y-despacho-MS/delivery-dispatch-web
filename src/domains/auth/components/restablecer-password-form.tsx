@@ -22,7 +22,7 @@ import { Label } from "@/shared/components/ui/label";
 import { Separator } from "@/shared/components/ui/separator";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/components/ui/alert";
 import { useRestablecerPassword } from "../hooks/use-restablecer-password";
-import { resetPasswordSchema, type ResetPasswordInput } from "../auth.schemas";
+import { resetPasswordSchema, type ResetPasswordInput } from "../schemas/auth.schemas";
 import { PasswordRequirements } from "./password-requirements";
 
 const CONTROL = "h-11";

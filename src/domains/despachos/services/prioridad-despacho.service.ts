@@ -1,5 +1,5 @@
 import api from "@/shared/lib/axios";
-import type { PrioridadPedido } from "../despachos.types";
+import type { PrioridadPedido } from "../types/despachos.types";
 
 /** Respuesta de PATCH /dispatches/:id/priority (ST-58.2). */
 export interface PrioridadActualizada {

@@ -10,6 +10,7 @@ const DespachoDetallePage = lazy(() => import("@/pages/dashboard/despacho-detall
 const SolicitudesPage = lazy(() => import("@/pages/dashboard/solicitudes-page"));
 const PlanificacionPage = lazy(() => import("@/pages/dashboard/planificacion-page"));
 const RecojosPage = lazy(() => import("@/pages/dashboard/recojos-page"));
+const RecojosProveedorPage = lazy(() => import("@/pages/dashboard/recojos-proveedor-page"));
 
 // ── Flota ──
 const MapaFlotaPage = lazy(() => import("@/pages/dashboard/mapa-flota-page"));
@@ -47,6 +48,7 @@ export const PAGE_ROUTES = [
   ["solicitudes", SolicitudesPage],
   ["planificacion", PlanificacionPage],
   ["recojos", RecojosPage],
+  ["recojosProveedor", RecojosProveedorPage],
   ["mapa", MapaFlotaPage],
   ["flota", FlotaPage],
   ["kpis", KpisPortalPage],

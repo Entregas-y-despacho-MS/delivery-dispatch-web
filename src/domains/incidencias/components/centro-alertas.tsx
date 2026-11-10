@@ -6,7 +6,7 @@ import { EmptyState, NoResultsState } from "@/shared/components/feedback/empty-s
 import { Label } from "@/shared/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 import { FILTROS_ALERTAS_POR_DEFECTO, LIMITE_ALERTAS, TIPOS_ALERTA, hayFiltrosAlertas } from "../incidencias.alertas";
-import type { FiltrosAlertas } from "../incidencias.types";
+import type { FiltrosAlertas } from "../types/incidencias.types";
 import { useAlertas, useAtenderAlerta } from "../hooks/use-alertas-criticas";
 import { AlertaItem } from "./alerta-item";
 

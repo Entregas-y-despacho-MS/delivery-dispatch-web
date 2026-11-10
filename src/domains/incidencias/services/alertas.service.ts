@@ -1,5 +1,5 @@
 import api from "@/shared/lib/axios";
-import type { AlertaOperativa, ParamsAlertas, RespuestaAlertas } from "../incidencias.types";
+import type { AlertaOperativa, ParamsAlertas, RespuestaAlertas } from "../types/incidencias.types";
 
 /** Alertas operativas (ST-66.2): coordinador y supervisor. Sin `status` devuelve abiertas y atendidas. */
 export async function listarAlertas(params: ParamsAlertas, signal?: AbortSignal): Promise<RespuestaAlertas> {

@@ -17,8 +17,8 @@ import {
   editarUsuarioSchema,
   REGLAS_PASSWORD,
   type UsuarioFormValues,
-} from "../usuarios.schemas";
-import type { Usuario } from "../usuarios.types";
+} from "../schemas/usuarios.schemas";
+import type { Usuario } from "../types/usuarios.types";
 import { PermisosRolPanel } from "./permisos-rol-panel";
 import { RolSelector } from "./rol-selector";
 

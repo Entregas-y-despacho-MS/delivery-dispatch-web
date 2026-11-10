@@ -1,8 +1,8 @@
 import { useMemo } from "react";
 import { MapPin, Radio, RadioTower, Truck } from "lucide-react";
 
-import type { FiltroEstadoFlota, PosicionFlotaEnVivo } from "../flota-posiciones.types";
-import { esUbicacionSinSenal, filtrarPosicionesFlota } from "../flota-posiciones.types";
+import type { FiltroEstadoFlota, PosicionFlotaEnVivo } from "../types/flota-posiciones.types";
+import { esUbicacionSinSenal, filtrarPosicionesFlota } from "../types/flota-posiciones.types";
 
 export function PanelVehiculosFlota({
   posiciones,
@@ -81,7 +81,7 @@ export function PanelVehiculosFlota({
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center justify-between gap-2">
                       <span className="truncate font-semibold">{posicion.vehiclePlate}</span>
-                      <span className={`inline-flex shrink-0 items-center gap-1 text-xs ${sinSenal || sinCoordenadas ? "text-zinc-500" : "text-emerald-700 dark:text-emerald-400"}`}>
+                      <span className={`inline-flex shrink-0 items-center gap-1 text-xs ${sinSenal || sinCoordenadas ? "text-muted-foreground" : "text-success"}`}>
                         {sinSenal || sinCoordenadas ? <Radio className="size-3.5" aria-hidden /> : <RadioTower className="size-3.5" aria-hidden />}
                         {estadoVisible}
                       </span>

@@ -4,9 +4,9 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { createServer } from "vite";
 import { fileURLToPath } from "node:url";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join, relative, resolve } from "node:path";
 import { execFileSync, spawnSync } from "node:child_process";
 
 // Windows no trae bash (salvo Git Bash en el PATH): ahí se salta la prueba del generador en vez de fallar.
@@ -25,6 +25,40 @@ const { NAV_GROUPS } = await server.ssrLoadModule("/src/config/navigation.ts");
 const { PAGE_ROUTES } = await server.ssrLoadModule("/src/app/page-routes.ts");
 const { ROLES, ROLES_WEB, hasRole } = await server.ssrLoadModule("/src/config/roles.ts");
 const { PermisosRolPanel } = await server.ssrLoadModule("/src/domains/usuarios/components/permisos-rol-panel.tsx");
+
+test("los dominios solo consumen APIs públicas de otros dominios", () => {
+  const sourceRoot = fileURLToPath(new URL("../src", import.meta.url));
+  const domainsRoot = join(sourceRoot, "domains");
+  const listFiles = (directory) => readdirSync(directory).flatMap((name) => {
+    const file = join(directory, name);
+    return statSync(file).isDirectory() ? listFiles(file) : [file];
+  });
+  const importPattern = /(?:\bfrom\s*|\bimport\s*(?:type\s*)?(?:\(\s*)?)["']([^"']+)["']/g;
+  const violations = [];
+
+  for (const sourceFile of listFiles(domainsRoot).filter((file) => /\.[cm]?[jt]sx?$/.test(file))) {
+    const sourceDomain = relative(domainsRoot, sourceFile).split(/[\\/]/)[0];
+    const source = readFileSync(sourceFile, "utf8");
+    for (const match of source.matchAll(importPattern)) {
+      const specifier = match[1];
+      const target = specifier.startsWith("@/")
+        ? resolve(sourceRoot, specifier.slice(2))
+        : specifier.startsWith(".")
+          ? resolve(dirname(sourceFile), specifier)
+          : null;
+      if (!target) continue;
+      const targetWithinDomains = relative(domainsRoot, target);
+      if (targetWithinDomains.startsWith("..") || targetWithinDomains === "") continue;
+      const targetDomain = targetWithinDomains.split(/[\\/]/)[0];
+      if (targetDomain !== sourceDomain) {
+        if (specifier === `@/domains/${targetDomain}`) continue;
+        violations.push(`${relative(sourceRoot, sourceFile)} → ${specifier}`);
+      }
+    }
+  }
+
+  assert.deepEqual(violations, [], `Imports profundos o relativos entre dominios:\n${violations.join("\n")}`);
+});
 
 test("cada ruta del panel tiene página y cada elemento del menú usa su ruta y roles", () => {
   assert.deepEqual(new Set(PAGE_ROUTES.map(([key]) => key)), new Set(Object.keys(PORTAL_ROUTES)));

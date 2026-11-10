@@ -13,16 +13,14 @@ import {
 import { portalHref } from "@/config/portal-routes";
 import { PageHeader } from "@/shared/components/common/page-header";
 import { FormDialogHeader } from "@/shared/components/common/form-dialog-header";
+import { FormDialogContent } from "@/shared/components/common/form-dialog";
 import { PaginationControls } from "@/shared/components/common/pagination-controls";
 import { SearchField } from "@/shared/components/common/search-field";
 import { ErrorAlert } from "@/shared/components/feedback/error-alert";
 import { Button } from "@/shared/components/ui/button";
 import { useEditorDialog } from "@/shared/hooks/use-editor-dialog";
 import { useListFilters } from "@/shared/hooks/use-list-filters";
-import {
-  Dialog,
-  DialogContent,
-} from "@/shared/components/ui/dialog";
+import { Dialog } from "@/shared/components/ui/dialog";
 
 const PAGE_SIZE = 10;
 const hrefMantenimientos = (vehiculo: Vehiculo) =>
@@ -102,7 +100,7 @@ export default function FlotaPage() {
       </section>
 
       <Dialog open={editor.open} onOpenChange={editor.onOpenChange}>
-        <DialogContent data-form-dialog className="form-dialog-content max-h-[90dvh] overflow-y-auto bg-card sm:max-w-2xl motion-reduce:animate-none">
+        <FormDialogContent className="sm:max-w-2xl">
           <FormDialogHeader icon={Truck}
             title={editor.editingItem ? "Editar vehículo" : "Nuevo vehículo"}
             description={editor.editingItem
@@ -115,7 +113,7 @@ export default function FlotaPage() {
             onCancel={() => editor.onOpenChange(false)}
             guardando={flota.isSaving}
           />
-        </DialogContent>
+        </FormDialogContent>
       </Dialog>
 
       {vehiculoEstado && (

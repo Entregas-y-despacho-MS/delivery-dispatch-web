@@ -3,7 +3,7 @@ import { FileSignature, ImageIcon, KeyRound } from "lucide-react";
 
 import { useAhora } from "../hooks/use-ahora";
 import { etiquetaEvidencia, formatearFechaHoraExacta, urlVencida } from "../despacho-detalle.format";
-import type { EvidenciaDetalle } from "../despacho-detalle.types";
+import type { EvidenciaDetalle } from "../types/despacho-detalle.types";
 import { EvidenciaVisor } from "./evidencia-visor";
 
 interface FichaEvidenciasProps {

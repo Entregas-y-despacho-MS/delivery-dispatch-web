@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import { DndContext, DragOverlay, KeyboardSensor, PointerSensor, useDraggable, useDroppable, useSensor, useSensors, type DragEndEvent, type DragStartEvent } from "@dnd-kit/core";
 import { CalendarDays, CircleAlert, Clock3, FileSearch, Truck, Wifi, WifiOff } from "lucide-react";
 
-import { useZonas } from "@/domains/catalogos";
 import { useTableroKanbanFiltros } from "../hooks/use-tablero-kanban-filtros";
 import { Badge } from "@/shared/components/ui/badge";
 import { Input } from "@/shared/components/ui/input";
@@ -10,10 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/shared/components/ui/switch";
 import { formatearFranja, formatearMetrosCubicos } from "../despachos.format";
 import { PrioridadBadge } from "./pedido-badges";
-import type { ColumnaKanban, ColumnaKanbanKey, DespachoKanban } from "../despachos.types";
+import type { ColumnaKanban, ColumnaKanbanKey, DespachoKanban } from "../types/despachos.types";
 import { COLUMNAS_OPERATIVAS, destinoAbreRevision, ordenarColumnas, puedeArrastrarDespacho } from "../tablero-kanban.rules";
 
 interface TableroKanbanProps {
+  zonas: { id: number; name: string }[];
   date: string;
   onDateChange: (date: string) => void;
   deliveryZoneId: string;
@@ -187,11 +187,11 @@ function BoardSkeleton() {
 }
 
 export function TableroKanban({
+  zonas,
   date, onDateChange, deliveryZoneId, onDeliveryZoneChange, driverId, onDriverChange,
   dispatchTypeId, onDispatchTypeChange, logisticaInversa, onLogisticaInversaChange,
   columns, isLoading, isError, isFetching, socketConnected, onRetry, onOpenReview, onOpenDetail,
 }: TableroKanbanProps) {
-  const zonas = useZonas({ page: 1, limit: 100 });
   const filtrosCatalogo = useTableroKanbanFiltros();
   const [dispatchDragging, setDispatchDragging] = useState<DespachoKanban | null>(null);
   const sensors = useSensors(
@@ -224,7 +224,7 @@ export function TableroKanban({
               <Input id="tablero-date" type="date" value={date} onChange={(event) => onDateChange(event.target.value)} className="pl-9" />
             </div>
           </div>
-          <FiltroSelect label="Zona logística" value={deliveryZoneId} onChange={onDeliveryZoneChange} options={zonas.data.map(({ id, name }) => ({ id, name }))} />
+          <FiltroSelect label="Zona logística" value={deliveryZoneId} onChange={onDeliveryZoneChange} options={zonas} />
           <FiltroSelect label="Conductor" value={driverId} onChange={onDriverChange} options={drivers} />
           <FiltroSelect label="Tipo de despacho" value={dispatchTypeId} onChange={onDispatchTypeChange} options={dispatchTypes} />
           <div className="flex min-h-10 min-w-0 flex-[1_1_12rem] items-center gap-2 rounded-md border px-3 sm:flex-none">

@@ -6,8 +6,8 @@ import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
-import { umbralesSchema, type UmbralesFormValues } from "../configuracion.schemas";
-import type { CampoUmbral } from "../configuracion.types";
+import { umbralesSchema, type UmbralesFormValues } from "../schemas/configuracion.schemas";
+import type { CampoUmbral } from "../types/configuracion.types";
 import type { ErrorUmbrales } from "../configuracion.umbrales";
 
 const CAMPOS: { campo: CampoUmbral; etiqueta: string; unidad: string; ayuda: string }[] = [

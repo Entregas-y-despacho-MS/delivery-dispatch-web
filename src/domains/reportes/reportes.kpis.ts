@@ -1,4 +1,4 @@
-import type { FilaSla, IndicadoresFlota, PeriodoKpi } from "./reportes.types";
+import type { FilaSla, IndicadoresFlota, PeriodoKpi } from "./types/reportes.types";
 
 export const PERIODOS_KPI: readonly { valor: PeriodoKpi; etiqueta: string }[] = [
   { valor: "today", etiqueta: "Hoy" },

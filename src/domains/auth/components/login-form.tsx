@@ -10,7 +10,7 @@ import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { Separator } from "@/shared/components/ui/separator";
 import { useLogin } from "../hooks/use-login";
-import { loginSchema, type LoginInput } from "../auth.schemas";
+import { loginSchema, type LoginInput } from "../schemas/auth.schemas";
 import { LoginErrorAlert } from "./login-error-alert";
 
 /** 48 px (h-12): altura ergonómica con micro-interacción de foco. */

@@ -1,5 +1,5 @@
 import api from "@/shared/lib/axios";
-import type { Almacen, CrearRecojoInput, Recojo, RecojoListParams, RecojosResponse } from "../recojos.types";
+import type { Almacen, CrearRecojoInput, Recojo, RecojoListParams, RecojosResponse } from "../types/recojos.types";
 
 const RUTA = "/pickup-orders";
 

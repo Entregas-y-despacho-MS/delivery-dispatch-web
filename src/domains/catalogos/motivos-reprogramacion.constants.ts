@@ -1,4 +1,4 @@
-import type { MotivoReprogramacionCategoria } from "./catalogos.types";
+import type { MotivoReprogramacionCategoria } from "./types/catalogos.types";
 
 export const MOTIVO_REPROGRAMACION_CATEGORIAS: {
   value: MotivoReprogramacionCategoria;

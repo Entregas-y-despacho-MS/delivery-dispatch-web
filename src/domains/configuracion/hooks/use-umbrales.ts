@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { QUERY_POLICIES } from "@/shared/lib/query-policies";
 import { createQueryKeys } from "@/shared/lib/query-keys";
 import { errorGuardadoUmbrales, type ErrorUmbrales } from "../configuracion.umbrales";
-import type { UmbralesAlerta } from "../configuracion.types";
+import type { UmbralesAlerta } from "../types/configuracion.types";
 import { guardarUmbrales, obtenerUmbrales } from "../services/umbrales.service";
 
 export const umbralesKeys = createQueryKeys("alert-thresholds");

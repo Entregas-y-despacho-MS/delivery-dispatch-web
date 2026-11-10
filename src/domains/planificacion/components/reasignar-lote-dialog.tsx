@@ -1,18 +1,16 @@
 import { useState } from "react";
+import { UsersRound } from "lucide-react";
 
 import { Button } from "@/shared/components/ui/button";
+import { FormDialogContent, FormDialogFooter } from "@/shared/components/common/form-dialog";
+import { FormDialogHeader } from "@/shared/components/common/form-dialog-header";
 import {
   Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
 } from "@/shared/components/ui/dialog";
 import { Label } from "@/shared/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 import { Textarea } from "@/shared/components/ui/textarea";
-import type { ReasignarRevisorPayload } from "../planificacion.types";
+import type { ReasignarRevisorPayload } from "../types/planificacion.types";
 
 /** Largo máximo del motivo que acepta el back. */
 const MAX_MOTIVO_REASIGNACION = 500;
@@ -43,9 +41,9 @@ interface ReasignarLoteDialogProps {
 export function ReasignarLoteDialog({ abierto, onOpenChange, ...resto }: ReasignarLoteDialogProps) {
   return (
     <Dialog open={abierto} onOpenChange={(valor) => !resto.guardando && onOpenChange(valor)}>
-      <DialogContent className="sm:max-w-md">
+      <FormDialogContent className="sm:max-w-2xl">
         {abierto && <Contenido {...resto} onCerrar={() => onOpenChange(false)} />}
-      </DialogContent>
+      </FormDialogContent>
     </Dialog>
   );
 }
@@ -74,10 +72,7 @@ function Contenido({
 
   return (
     <>
-      <DialogHeader>
-        <DialogTitle>Reasignar lote</DialogTitle>
-        <DialogDescription>El lote completo pasa a otra persona, que será la única que pueda aprobarlo.</DialogDescription>
-      </DialogHeader>
+      <FormDialogHeader icon={UsersRound} title="Reasignar lote" description="El lote completo pasa a otra persona, que será la única que pueda aprobarlo." />
 
       <div className="space-y-4">
         <div className="space-y-2">
@@ -109,14 +104,14 @@ function Contenido({
         </div>
       </div>
 
-      <DialogFooter>
+      <FormDialogFooter>
         <Button type="button" variant="outline" onClick={onCerrar} disabled={guardando}>
           Cancelar
         </Button>
         <Button type="button" onClick={confirmar} disabled={guardando || !revisor}>
           {guardando ? "Reasignando..." : "Reasignar lote"}
         </Button>
-      </DialogFooter>
+      </FormDialogFooter>
     </>
   );
 }

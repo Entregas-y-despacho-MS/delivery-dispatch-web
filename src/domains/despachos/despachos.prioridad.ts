@@ -3,7 +3,7 @@ import type { MutationOptions, QueryClient } from "@tanstack/react-query";
 import { parseApiError, type ApiError } from "@/shared/lib/api-error";
 import type { ListResult } from "@/shared/lib/base.service";
 import { createQueryKeys } from "@/shared/lib/query-keys";
-import type { PedidoPendiente, PrioridadPedido } from "./despachos.types";
+import type { PedidoPendiente, PrioridadPedido } from "./types/despachos.types";
 
 /** Estados en los que el back acepta cambiar la prioridad (ST-58.2). */
 export const ESTADOS_CON_PRIORIDAD_EDITABLE: readonly string[] = ["pending", "in_planning", "scheduled"];

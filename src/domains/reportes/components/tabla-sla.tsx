@@ -1,7 +1,7 @@
 import { Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/shared/components/ui/table";
 import { cn } from "@/shared/lib/utils";
 import { cumpleUmbral, etiquetaAgrupacion, filasPorDemora, formatoMinutos, formatoPorcentaje, nombreGrupo } from "../reportes.reglas";
-import type { AgrupacionSla, FilaSla, MetricasSla } from "../reportes.types";
+import type { AgrupacionSla, FilaSla, MetricasSla } from "../types/reportes.types";
 
 const NUM = "text-right tabular-nums";
 

@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 
 import { useCrud } from "@/shared/hooks/use-crud";
 import { pedidosPendientesService } from "../services/pedidos-pendientes.service";
-import type { OrdenBandeja, PedidoPendiente, PedidosPendientesParams } from "../despachos.types";
+import type { OrdenBandeja, PedidoPendiente, PedidosPendientesParams } from "../types/despachos.types";
 import {
   escribirFiltrosBandeja,
   FILTROS_BANDEJA_INICIALES,

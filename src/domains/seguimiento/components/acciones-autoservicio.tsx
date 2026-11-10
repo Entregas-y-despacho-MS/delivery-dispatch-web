@@ -2,7 +2,7 @@ import { CalendarClock, CheckCircle2, Info, MessageSquareText } from "lucide-rea
 
 import { Button } from "@/shared/components/ui/button";
 import { avisoAutoservicio } from "../seguimiento.format";
-import type { Autoservicio } from "../seguimiento.types";
+import type { Autoservicio } from "../types/seguimiento.types";
 
 interface AccionesAutoservicioProps {
   autoservicio: Autoservicio;

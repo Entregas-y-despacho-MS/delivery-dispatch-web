@@ -6,7 +6,7 @@ import { Button } from "@/shared/components/ui/button";
 import { RequireRole } from "@/shared/guards/require-role";
 import { ROLES } from "@/config/roles";
 import { formatearFechaHoraExacta, formatearFechaTurnoDetalle, formatearVentana } from "../despacho-detalle.format";
-import type { SolicitudCambio } from "../solicitudes-cambio.types";
+import type { SolicitudCambio } from "../types/solicitudes-cambio.types";
 
 export interface SolicitudesCambioListaProps {
   data: SolicitudCambio[];
@@ -67,7 +67,7 @@ export function SolicitudesCambioLista({ data, puedeResolver, onResolver, onMost
           </figure>
 
           {!s.promiseIsFirm && (
-            <p role="note" className="flex items-start gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 p-2 text-xs text-amber-700 dark:text-amber-300">
+            <p role="note" className="flex items-start gap-2 rounded-md border border-warning/40 bg-warning/10 p-2 text-xs text-warning">
               <AlertTriangle className="mt-0.5 size-3.5 shrink-0" aria-hidden />
               La promesa no está en firme: no saldrá la orden de preparación hasta que resuelvas esta solicitud.
             </p>

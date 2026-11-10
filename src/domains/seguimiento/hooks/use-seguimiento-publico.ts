@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { parseApiError } from "@/shared/lib/api-error";
 import { createQueryKeys } from "@/shared/lib/query-keys";
 import { intervaloRefresco } from "../seguimiento.en-vivo";
-import type { CalificacionEntrega, CalificarEntregaInput, SeguimientoPublico } from "../seguimiento.types";
+import type { CalificacionEntrega, CalificarEntregaInput, SeguimientoPublico } from "../types/seguimiento.types";
 import {
   calificarEntrega,
   confirmarEntrega,

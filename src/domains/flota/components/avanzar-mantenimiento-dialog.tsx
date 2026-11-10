@@ -3,7 +3,7 @@ import { CheckCircle2, Play } from "lucide-react";
 
 import { ConfirmActionDialog } from "@/shared/components/common/confirm-action-dialog";
 import { siguienteEstado, type ErrorMantenimiento } from "../flota.mantenimiento";
-import type { EstadoMantenimiento, Mantenimiento } from "../flota.types";
+import type { EstadoMantenimiento, Mantenimiento } from "../types/flota.types";
 
 interface AvanzarMantenimientoDialogProps {
   /** Mantenimiento a avanzar; null cierra el diálogo. */

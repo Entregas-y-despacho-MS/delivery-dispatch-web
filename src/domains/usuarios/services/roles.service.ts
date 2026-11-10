@@ -1,6 +1,6 @@
 import api from "@/shared/lib/axios";
 import { ROLE_BY_BACKEND_NAME, ROLE_LABELS } from "@/config/roles";
-import type { BackendPage, BackendRole, Rol } from "../usuarios.types";
+import type { BackendPage, BackendRole, Rol } from "../types/usuarios.types";
 
 /** Adapta el rol del backend al modelo del front. Si el rol no está en config/roles, se muestra su nombre. */
 export function toRol(r: BackendRole): Rol {

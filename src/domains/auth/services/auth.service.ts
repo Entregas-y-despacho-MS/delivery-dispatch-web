@@ -1,7 +1,7 @@
 import api from "@/shared/lib/axios";
 import type { AuthUser } from "@/shared/store/use-auth-store";
 import { ROLE_BY_BACKEND_NAME, ROLE_LABELS } from "@/config/roles";
-import type { LoginInput } from "../auth.schemas";
+import type { LoginInput } from "../schemas/auth.schemas";
 import type {
   BackendUser,
   ChangePasswordPayload,
@@ -9,7 +9,7 @@ import type {
   LoginResponse,
   ResetPasswordPayload,
   Session,
-} from "../auth.types";
+} from "../types/auth.types";
 import { UnknownRoleError } from "../auth.errors";
 
 /** Adapta el usuario del backend al modelo del front. Es el único lugar que conoce ambos. */

@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
-import type { FiltrosTableroKanban } from "../despachos.types";
+import type { FiltrosTableroKanban } from "../types/despachos.types";
 import { obtenerTableroKanban } from "../services/tablero-kanban.service";
 import { DISPATCHES_KANBAN_QUERY_KEY } from "./use-dispatch-events";
 

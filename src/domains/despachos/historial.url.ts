@@ -1,4 +1,4 @@
-import { ESTADOS_FINALES, ORDENES_HISTORIAL, type EstadoFinal, type HistorialParams, type OrdenHistorial } from "./historial.types";
+import { ESTADOS_FINALES, ORDENES_HISTORIAL, type EstadoFinal, type HistorialParams, type OrdenHistorial } from "./types/historial.types";
 
 export const FILAS_HISTORIAL = [10, 20, 50] as const;
 

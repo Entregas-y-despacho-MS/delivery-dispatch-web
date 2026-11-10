@@ -5,7 +5,7 @@ import { useSearchParams } from "react-router-dom";
 import { QUERY_POLICIES } from "@/shared/lib/query-policies";
 import { createQueryKeys } from "@/shared/lib/query-keys";
 import { escribirFiltrosSla, leerFiltrosSla, paramsReporteSla, problemaRango } from "../reportes.reglas";
-import type { FiltrosSla, ParamsReporteSla } from "../reportes.types";
+import type { FiltrosSla, ParamsReporteSla } from "../types/reportes.types";
 import { obtenerReporteSla } from "../services/reportes.service";
 
 export const reporteSlaKeys = createQueryKeys<{ from: string; to: string; groupBy: string }>("sla-report");

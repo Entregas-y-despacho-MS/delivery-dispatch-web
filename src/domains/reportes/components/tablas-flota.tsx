@@ -5,7 +5,7 @@ import { cn } from "@/shared/lib/utils";
 import { ordenarFilasFlota, type FilaVehiculoFlota } from "../reportes.flota";
 import { nombreRepartidor, nombreVehiculo, type DireccionOrden } from "../reportes.kpis";
 import { cumpleUmbral, formatoMinutos, formatoPorcentaje } from "../reportes.reglas";
-import type { FilaSla } from "../reportes.types";
+import type { FilaSla } from "../types/reportes.types";
 
 interface Columna<T> {
   id: string;

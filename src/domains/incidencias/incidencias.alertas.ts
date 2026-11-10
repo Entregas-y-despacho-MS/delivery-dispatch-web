@@ -1,5 +1,5 @@
 import type { ApiError } from "@/shared/lib/api-error";
-import type { AlertaLevantada, AlertaOperativa, EstadoAlerta, FiltrosAlertas, ParamsAlertas, TipoAlerta } from "./incidencias.types";
+import type { AlertaLevantada, AlertaOperativa, EstadoAlerta, FiltrosAlertas, ParamsAlertas, TipoAlerta } from "./types/incidencias.types";
 
 /** Evento del socket que avisa una alerta nueva (ST-66.2). */
 export const EVENTO_ALERTA_LEVANTADA = "operational.alert_raised";

@@ -1,6 +1,6 @@
 import { useCrud, type UseCrudOptions } from "@/shared/hooks/use-crud";
 import { zonasService } from "../services/zonas.service";
-import type { Zona, ZonaInput, ZonaListParams } from "../catalogos.types";
+import type { Zona, ZonaInput, ZonaListParams } from "../types/catalogos.types";
 
 export function useZonas(
   params?: ZonaListParams,

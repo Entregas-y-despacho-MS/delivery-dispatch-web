@@ -3,7 +3,7 @@ import type {
   PedidoPendiente,
   PedidosPendientesParams,
   PedidosPendientesResponse,
-} from "../despachos.types";
+} from "../types/despachos.types";
 
 /**
  * Bandeja central de pedidos pendientes de planificación (ST-48.2, RF-A40).

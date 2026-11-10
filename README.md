@@ -114,12 +114,15 @@ location.href = '/app/tablero';
 ## La regla que sostiene todo
 
 ```
-pages/  →  domains/  →  shared/
+pages/  →  domains/  →  shared/ y config/
+             ↕
+      otros dominios por index.ts público, sin ciclos
 ```
 
-**Las flechas van en un solo sentido.** Una página importa de su dominio; un dominio
-importa de `shared`. Nunca al revés. Si dos dominios necesitan lo mismo, eso sube a
-`shared/`.
+Las páginas componen pantallas y consumen los barrels públicos. Los dominios pueden
+usar APIs públicas de otros dominios, pero nunca sus rutas internas ni `pages/`;
+evitamos ciclos. La infraestructura compartida vive en `shared/` y la configuración
+común en `config/`.
 
 Esto no es una recomendación: **oxlint lo hace cumplir**. `npm run lint` falla si te
 saltas el barrel de un dominio o si `domains/` o `shared/` importan de `pages/`.
@@ -197,15 +200,19 @@ una sola vez:
 
 ```
 domains/<dominio>/
-├── index.ts                 ← LA API PÚBLICA del módulo
-├── <dominio>.types.ts          los tipos, tal como los devuelve el backend
-├── <dominio>.schemas.ts        los esquemas Zod de validación
+├── index.ts                 ← API pública cuando existan consumidores externos
+├── types/*.types.ts          tipos de contrato y tipos del dominio
+├── schemas/*.schemas.ts      esquemas Zod de validación
 ├── services/*.service.ts       las llamadas HTTP
 ├── hooks/use-*.ts              la lógica reutilizable del módulo
 └── components/*.tsx            componentes que solo usa este dominio
 ```
 
-**`index.ts` es la pieza clave.** Es el único archivo que otros pueden importar:
+**`index.ts` es la API pública del módulo.** Las páginas y otros dominios importan desde ahí,
+nunca usan rutas internas. El barrel contiene solo símbolos que necesiten consumidores
+externos; lo que solo se usa dentro del dominio permanece privado. Si el dominio todavía
+no tiene consumidores externos, no crees un barrel vacío; agrégalo cuando haya algo que
+publicar:
 
 ```ts
 import { despachosService, useDespachos } from "@/domains/despachos";   // ✅
@@ -218,10 +225,14 @@ componentes— sin romper a nadie.
 
 **Reglas de los dominios:**
 
-1. Un dominio **no importa de otro dominio**. Si lo necesitas, o el código es
-   realmente compartido (y sube a `shared/`), o los dos dominios eran uno solo.
-2. Los esquemas Zod viven **dentro** de su dominio, no en una carpeta de validaciones aparte.
-3. Los tipos reflejan el contrato del backend, no lo que la pantalla necesita.
+1. Una página importa APIs públicas desde el `index.ts` del dominio. No usa rutas
+   internas como `@/domains/flota/hooks/...`.
+2. Si un dominio necesita otro dominio, importa solo desde su `index.ts` público;
+   nunca desde sus archivos internos. Evita ciclos y mueve a `shared/` la lógica que
+   realmente sea común.
+3. Los esquemas Zod viven en `schemas/` dentro de su dominio.
+4. Los archivos de tipos viven en `types/`. Los tipos reflejan el contrato del
+   backend o el dominio, no necesidades ad hoc de una pantalla.
 
 **Los 11 dominios y qué requerimientos cubre cada uno:**
 
@@ -236,7 +247,7 @@ componentes— sin romper a nadie.
 | `incidencias` | Registro, alertas críticas y reclamos — RF-A19, A32, U22 |
 | `reportes` | Cumplimiento, SLA e indicadores de flota — RF-A07, A14, A18 |
 | `catalogos` | Zonas, niveles de servicio, motivos de incidencia y de reprogramación, tipos de incidente — RF-A29–A34 |
-| `auditoria` | Consulta, filtrado y exportación de logs — RF-A37, A38 |
+| `auditoria` | RF-A37 y RF-A38 pendientes; la página actual es un placeholder sin implementación conectada. |
 | `configuracion` | Ventana horaria, umbrales de SLA, política de contraseñas — RF-A10, A20, A25 |
 
 ### `shared/` — lo reutilizable
@@ -249,7 +260,7 @@ ubicado: pertenece a ese dominio.
 | Archivo | Para qué sirve |
 |---|---|
 | `axios.ts` | **El cliente de la API.** Pone el `baseURL`, inyecta el JWT en cada petición y traduce los errores HTTP a un aviso legible. En un 401 además cierra la sesión solo. |
-| `base.service.ts` | `createCrudService<T>("/ruta")` genera los cinco métodos CRUD ya tipados. |
+| `base.service.ts` | `createCrudService({...})` recibe un objeto de opciones (`endpoint`, mapeos y método de actualización) y devuelve `list`, `getOne`, `create`, `update` y `delete` tipados. Las listas se normalizan a `{ items, total, page?, pageSize?, pages? }`. |
 | `query-keys.ts` | Claves de caché consistentes. Evita el bug clásico de invalidar `"cliente"` cuando la query se llamaba `"clientes"` y la tabla nunca se refresca. |
 | `public-api.ts` | Segunda instancia de axios **sin** el header de autorización, para el portal del cliente. *(pendiente)* |
 | `socket.ts` | Conexión WebSocket para el tablero en tiempo real. *(pendiente)* |
@@ -278,7 +289,6 @@ ubicado: pertenece a ese dominio.
 | Archivo | Para qué sirve |
 |---|---|
 | `protected-route.tsx` | Bloquea las rutas privadas y filtra por rol. Es el equivalente al middleware de Next. **Ojo: esto es experiencia de usuario, no seguridad** — quien realmente autoriza es el backend. |
-| `tracking-guard.tsx` | Validación del token de seguimiento del portal del cliente. *(pendiente)* |
 
 #### `shared/components/`
 
@@ -286,7 +296,7 @@ ubicado: pertenece a ese dominio.
 |---|---|
 | `ui/` | Los 22 componentes de shadcn (botón, tabla, diálogo, sidebar…). **No los edites a mano** salvo que sepas lo que haces: se regeneran con el CLI de shadcn. |
 | `layout/` | `public-layout` (sitio público), `dashboard-layout` (sidebar + cabecera del panel) y `tracking-layout` (portal del cliente, sin sidebar ni sesión). |
-| `common/` | Piezas propias reutilizables: `page-header`, `data-table`, y *(pendientes)* `estado-badge`, `stat-card`, `map-view`. |
+| `common/` | Piezas propias reutilizables activas: `page-header` y `data-table`. |
 | `feedback/` | `error-boundary` (evita la pantalla en blanco si algo revienta), `loading-screen` y `empty-state`. |
 | `theme-toggle.tsx` | El botón de claro/oscuro. |
 
@@ -299,17 +309,38 @@ Una pantalla CRUD completa son tres archivos y ningún `try/catch`:
 **1. El servicio** — `domains/<x>/services/<x>.service.ts`
 
 ```ts
-export const zonasService = {
-  ...createCrudService<Zona>("/zonas"),
-  // lo que no sea CRUD puro se agrega aquí
-};
+import { createCrudService } from "@/shared/lib/base.service";
+import type { DeliveryZonesResponse, Zona, ZonaInput, ZonaListParams } from "../types/catalogos.types";
+
+export const zonasService = createCrudService<
+  Zona, Zona, ZonaInput, ZonaInput, ZonaListParams, DeliveryZonesResponse
+>({
+  endpoint: "/delivery-zones",
+  updateMethod: "put",
+  mapListResponse: ({ data, meta }) => ({
+    items: data,
+    total: meta.total,
+    page: meta.page,
+    pageSize: meta.limit,
+    pages: meta.pages,
+  }),
+});
 ```
+
+El primer tipo es la respuesta de un elemento de la API; el segundo, el modelo que usa la app;
+siguen los payloads de creación y edición, los parámetros de lista y el tipo de respuesta de lista.
+`mapListResponse` es necesario cuando la API devuelve una lista paginada en vez de un arreglo.
 
 **2. El hook** — `domains/<x>/hooks/use-<x>.ts`
 
 ```ts
+import { useCrud } from "@/shared/hooks/use-crud";
+import { zonasService } from "../services/zonas.service";
+
 export function useZonas() {
-  return useCrud<Zona>(zonasService, "zonas");
+  return useCrud<Zona, ZonaInput, ZonaInput, ZonaListParams>(zonasService, "delivery-zones", {
+    policy: "catalog",
+  });
 }
 ```
 
@@ -319,9 +350,10 @@ export function useZonas() {
 const { data, loading, createItem, updateItem, deleteItem } = useZonas();
 ```
 
-Sin `useState`, sin `useEffect`, sin manejo de errores, sin avisos de éxito, sin
-recargar la tabla a mano. Todo eso ya está resuelto entre el interceptor de axios
-y `use-crud`.
+No hace falta duplicar la caché ni recargar la lista a mano. `use-crud` maneja la
+consulta y la invalidación; los hooks del dominio pueden definir avisos de éxito,
+reintentos y errores específicos. El interceptor traduce errores HTTP y permite
+desactivar su aviso genérico con `skipErrorToast` cuando la pantalla muestra el error inline.
 
 ---
 
@@ -361,17 +393,10 @@ Entrar a una ruta sin permiso redirige a `/acceso-denegado`; sin sesión, a `/lo
 
 ## Paleta
 
-Naranja de marca sobre una base de gris cálido (`stone`).
-
-| Token | Valor | Nota |
-|---|---|---|
-| `--primary` | `oklch(0.705 0.213 47.604)` | Naranja vivo, igual en claro y oscuro |
-| `--primary-foreground` | Casi negro | Da **7.3:1** de contraste, pasa WCAG AA |
-
-El naranja se reserva para la **marca**: botón principal, ítem activo del menú, foco
-del teclado. Los estados tienen sus propios colores bien separados — verde para
-entregado, **azul para "en camino"** (nunca naranja), rojo para no entregado. Así el
-naranja nunca se confunde con una alerta.
+La paleta está definida por variables semánticas en `src/index.css`, con valores
+adaptados al modo claro y oscuro. Los colores de marca son azul, turquesa y naranja;
+los estados usan `--success`, `--warning`, `--info` y `--destructive`. Los mapas usan
+los alias `--map-marker-*`, así sus marcadores siguen la misma paleta del tema.
 
 ---
 
@@ -436,19 +461,40 @@ dominio y 1 página, siempre en este orden.
 
 ### 1. Los tipos — lo que devuelve el backend
 
-`src/domains/flota/flota.types.ts`
+`src/domains/flota/types/flota.types.ts`
 
 ```ts
-import type { EstadoVehiculo } from "@/config/despachos";
+export interface EstadoVehiculo {
+  id: number;
+  name: "active" | "maintenance" | "out_of_service";
+}
 
 export interface Vehiculo {
   id: number;
-  placa: string;
-  tipo: string;
-  capacidad_kg: number;
-  estado: EstadoVehiculo;
-  repartidor_id: number | null;
-  repartidor_nombre?: string;
+  type: string;
+  model: string;
+  plate: string;
+  capacityKg: number;
+  capacityM3: number;
+  vehicleStatus: EstadoVehiculo;
+  createdAt: string;
+}
+
+export type VehiculoInput = {
+  type: string;
+  model: string;
+  plate: string;
+  capacityKg: number;
+  capacityM3: number;
+};
+
+export type VehiculoUpdateInput = Partial<VehiculoInput>;
+export type VehiculoListParams = { page?: number; limit?: number; search?: string; vehicleStatusId?: number };
+export type CambiarEstadoVehiculoInput = { status: EstadoVehiculo["name"]; reason: string };
+
+export interface VehiclesResponse {
+  data: Vehiculo[];
+  meta: { page: number; limit: number; pages: number; total: number };
 }
 ```
 
@@ -456,24 +502,27 @@ Esto refleja **el contrato del backend**, no lo que a la pantalla le viene cómo
 
 ### 2. El esquema — cómo se valida
 
-`src/domains/flota/flota.schemas.ts`
+`src/domains/flota/schemas/flota.schemas.ts`
 
 ```ts
 import { z } from "zod";
-import { ESTADO_VEHICULO } from "@/config/despachos";
+
+const MAX_CAPACIDAD = 99999999.99;
+const capacidadSchema = (etiqueta: string) =>
+  z.coerce.number({ invalid_type_error: `${etiqueta} debe ser un número` })
+    .positive(`${etiqueta} debe ser mayor que 0`)
+    .max(MAX_CAPACIDAD, `${etiqueta} es demasiado grande`)
+    .refine((value) => Number.isInteger(Math.round(value * 100)), `${etiqueta} admite hasta 2 decimales`);
 
 export const vehiculoSchema = z.object({
-  placa: z.string().min(6, "La placa debe tener al menos 6 caracteres"),
-  tipo: z.string().min(1, "Selecciona el tipo"),
-  capacidad_kg: z.coerce.number().positive("Debe ser mayor a 0"),
-  estado: z.enum([
-    ESTADO_VEHICULO.ACTIVO,
-    ESTADO_VEHICULO.EN_MANTENIMIENTO,
-    ESTADO_VEHICULO.FUERA_DE_SERVICIO,
-  ]),
+  type: z.string().trim().min(1, "Ingresa el tipo de vehículo").max(50),
+  model: z.string().trim().min(1, "Ingresa el modelo").max(100),
+  plate: z.string().trim().toUpperCase().min(1, "Ingresa la placa").max(15),
+  capacityKg: capacidadSchema("La capacidad en kg"),
+  capacityM3: capacidadSchema("La capacidad en m³"),
 });
 
-export type VehiculoInput = z.infer<typeof vehiculoSchema>;
+export type VehiculoFormValues = z.infer<typeof vehiculoSchema>;
 ```
 
 `z.coerce.number()` porque los inputs de HTML siempre devuelven texto.
@@ -483,21 +532,38 @@ export type VehiculoInput = z.infer<typeof vehiculoSchema>;
 `src/domains/flota/services/vehiculos.service.ts`
 
 ```ts
-import api from "@/shared/lib/axios";
 import { createCrudService } from "@/shared/lib/base.service";
-import type { EstadoVehiculo } from "@/config/despachos";
-import type { Vehiculo } from "../flota.types";
+import api from "@/shared/lib/axios";
+import type {
+  CambiarEstadoVehiculoInput,
+  Vehiculo,
+  VehiculoInput,
+  VehiculoListParams,
+  VehiculoUpdateInput,
+  VehiclesResponse,
+} from "../types/flota.types";
+
+const crudService = createCrudService<
+  Vehiculo, Vehiculo, VehiculoInput, VehiculoUpdateInput, VehiculoListParams, VehiclesResponse
+>({
+  endpoint: "/vehicles",
+  requestConfig: { skipErrorToast: true },
+  updateMethod: "put",
+  mapListResponse: ({ data, meta }) => ({
+    items: data,
+    total: meta.total,
+    page: meta.page,
+    pageSize: meta.limit,
+    pages: meta.pages,
+  }),
+});
 
 export const vehiculosService = {
-  // Esto ya da getAll, getOne, create, update y delete tipados
-  ...createCrudService<Vehiculo>("/vehiculos"),
-
-  // Lo que NO es CRUD puro se agrega aquí abajo
-  cambiarDisponibilidad: async (id: number, estado: EstadoVehiculo) =>
-    (await api.patch<Vehiculo>(`/vehiculos/${id}/estado`, { estado })).data,
-
-  disponibles: async () =>
-    (await api.get<Vehiculo[]>("/vehiculos", { params: { estado: "ACTIVO" } })).data,
+  ...crudService,
+  changeStatus: async (id: number, payload: CambiarEstadoVehiculoInput) => {
+    const { data } = await api.patch<Vehiculo>(`/vehicles/${id}/status`, payload, { skipErrorToast: true });
+    return data;
+  },
 };
 ```
 
@@ -511,174 +577,59 @@ en un aviso.
 ```ts
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useCrud } from "@/shared/hooks/use-crud";
-import { createQueryKeys } from "@/shared/lib/query-keys";
-import type { EstadoVehiculo } from "@/config/despachos";
+import { useCrud, type UseCrudOptions } from "@/shared/hooks/use-crud";
 import { vehiculosService } from "../services/vehiculos.service";
-import type { Vehiculo } from "../flota.types";
+import type { CambiarEstadoVehiculoInput, Vehiculo, VehiculoInput, VehiculoListParams, VehiculoUpdateInput } from "../types/flota.types";
 
-const keys = createQueryKeys("vehiculos");
-
-export function useVehiculos() {
-  const crud = useCrud<Vehiculo>(vehiculosService, "vehiculos");
+export function useVehiculos(params?: VehiculoListParams, options: Omit<UseCrudOptions<VehiculoListParams, Vehiculo>, "params"> = {}) {
   const queryClient = useQueryClient();
-
-  // Solo hay que escribir a mano lo que se sale del CRUD
-  const disponibilidad = useMutation({
-    mutationFn: ({ id, estado }: { id: number; estado: EstadoVehiculo }) =>
-      vehiculosService.cambiarDisponibilidad(id, estado),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: keys.all });
-      toast.success("Disponibilidad actualizada");
+  const result = useCrud<Vehiculo, VehiculoInput, VehiculoUpdateInput, VehiculoListParams>(vehiculosService, "vehicles", {
+    ...options,
+    params,
+    notifications: {
+      created: "Vehículo registrado correctamente",
+      updated: "Vehículo actualizado correctamente",
+      deleted: "Vehículo dado de baja correctamente",
+      ...options.notifications,
     },
   });
 
-  return { ...crud, cambiarDisponibilidad: disponibilidad.mutateAsync };
+  const changeStatusMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: CambiarEstadoVehiculoInput }) => vehiculosService.changeStatus(id, data),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: result.keys.all });
+      toast.success("Estado del vehículo actualizado.");
+    },
+  });
+
+  return { ...result, changeStatus: changeStatusMutation.mutateAsync, isChangingStatus: changeStatusMutation.isPending };
 }
 ```
 
 `useCrud` ya trae listado, caché, crear, actualizar, borrar, invalidación y avisos
 de éxito. Solo agregas lo extra.
 
-### 5. El componente del dominio
+### 5. Componentes y página
 
-`src/domains/flota/components/vehiculo-form.tsx`
-
-```tsx
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Button } from "@/shared/components/ui/button";
-import { Input } from "@/shared/components/ui/input";
-import { Label } from "@/shared/components/ui/label";
-import { vehiculoSchema, type VehiculoInput } from "../flota.schemas";
-import type { Vehiculo } from "../flota.types";
-
-export function VehiculoForm({
-  vehiculo,
-  onSubmit,
-  guardando,
-}: {
-  vehiculo?: Vehiculo;
-  onSubmit: (values: VehiculoInput) => void;
-  guardando?: boolean;
-}) {
-  const { register, handleSubmit, formState: { errors } } = useForm<VehiculoInput>({
-    resolver: zodResolver(vehiculoSchema),
-    defaultValues: vehiculo ?? { estado: "ACTIVO" },
-  });
-
-  return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="placa">Placa</Label>
-        <Input id="placa" {...register("placa")} />
-        {errors.placa && <p className="text-xs text-destructive">{errors.placa.message}</p>}
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="capacidad_kg">Capacidad (kg)</Label>
-        <Input id="capacidad_kg" type="number" {...register("capacidad_kg")} />
-        {errors.capacidad_kg && (
-          <p className="text-xs text-destructive">{errors.capacidad_kg.message}</p>
-        )}
-      </div>
-
-      <Button type="submit" disabled={guardando} className="w-full">
-        {guardando ? "Guardando..." : "Guardar"}
-      </Button>
-    </form>
-  );
-}
-```
-
-Va en el dominio y no en `shared/` porque **solo `flota` lo usa**.
+`VehiculoForm` conserva en el dominio la validación y los campos reales (`type`, `model`,
+`plate`, `capacityKg`, `capacityM3`). Su `onSubmit` es asíncrono y recibe
+`VehiculoFormValues`; la página abre el formulario dentro de un diálogo y compone
+`VehiculosTable`, `CambiarEstadoDialog` y los estados de carga/error. Para copiar la
+implementación completa y vigente, consulta `src/domains/flota/components/vehiculo-form.tsx`
+y `src/pages/dashboard/flota-page.tsx`; evita reproducir una tabla o un diálogo reducido
+que omita la edición, los cambios de estado y el manejo de errores del flujo actual.
 
 ### 6. El barrel — la puerta del módulo
 
-`src/domains/flota/index.ts`
-
-```ts
-// Esto y solo esto pueden importar los demás
-export { vehiculosService } from "./services/vehiculos.service";
-export { useVehiculos } from "./hooks/use-vehiculos";
-export { VehiculoForm } from "./components/vehiculo-form";
-export { vehiculoSchema, type VehiculoInput } from "./flota.schemas";
-export type { Vehiculo } from "./flota.types";
-```
+`src/domains/flota/index.ts` publica los componentes, hooks y tipos que usan las páginas.
+Importa desde `@/domains/flota`; deja servicios y detalles internos dentro del dominio.
 
 ### 7. La página — solo compone
 
-`src/pages/dashboard/flota-page.tsx`
-
-```tsx
-import { useState } from "react";
-import { useVehiculos, VehiculoForm, type Vehiculo, type VehiculoInput } from "@/domains/flota";
-import { PageHeader } from "@/shared/components/common/page-header";
-import { DataTable, type Column } from "@/shared/components/common/data-table";
-import { Button } from "@/shared/components/ui/button";
-import { Badge } from "@/shared/components/ui/badge";
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
-} from "@/shared/components/ui/dialog";
-
-export default function FlotaPage() {
-  const { data, loading, createItem, deleteItem, isSaving } = useVehiculos();
-  const [abierto, setAbierto] = useState(false);
-
-  const columns: Column<Vehiculo>[] = [
-    { header: "Placa", cell: "placa", className: "font-medium" },
-    { header: "Tipo", cell: "tipo" },
-    { header: "Capacidad", cell: (v) => `${v.capacidad_kg} kg` },
-    {
-      header: "Estado",
-      cell: (v) => (
-        <Badge variant={v.estado === "ACTIVO" ? "default" : "secondary"}>{v.estado}</Badge>
-      ),
-    },
-    {
-      header: "",
-      cell: (v) => (
-        <Button variant="ghost" size="sm" onClick={() => deleteItem(v.id)}>
-          Eliminar
-        </Button>
-      ),
-    },
-  ];
-
-  const guardar = async (values: VehiculoInput) => {
-    await createItem(values);
-    setAbierto(false);
-  };
-
-  return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Vehículos"
-        description={`${data.length} en la flota`}
-        action={
-          <Dialog open={abierto} onOpenChange={setAbierto}>
-            <DialogTrigger asChild>
-              <Button>Nuevo vehículo</Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Registrar vehículo</DialogTitle>
-              </DialogHeader>
-              <VehiculoForm onSubmit={guardar} guardando={isSaving} />
-            </DialogContent>
-          </Dialog>
-        }
-      />
-
-      <DataTable columns={columns} data={data} loading={loading} />
-    </div>
-  );
-}
-```
-
-Fíjate en lo que **no** está: ningún `useState` para los datos, ningún `useEffect`,
-ningún `try/catch`, ninguna recarga manual de la tabla, ningún mensaje de éxito o
-error. Todo eso ya lo resuelven el interceptor y `use-crud`.
+La página usa `useVehiculos(params)` y consume `data` como arreglo, junto con `isLoading`,
+`isError`, `createItem`, `updateItem` y `isSaving`. El hook también expone `changeStatus`;
+la actualización específica usa `PATCH /vehicles/:id/status` y recibe `{ status, reason }`.
+El ejemplo vivo está en `src/pages/dashboard/flota-page.tsx`.
 
 ### Lo que el linter rechaza
 

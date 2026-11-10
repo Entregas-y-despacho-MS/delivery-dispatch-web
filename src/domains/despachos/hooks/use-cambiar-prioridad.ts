@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { opcionesCambioPrioridad, type CambioPrioridad } from "../despachos.prioridad";
-import type { PrioridadPedido } from "../despachos.types";
+import type { PrioridadPedido } from "../types/despachos.types";
 import { cambiarPrioridadDespacho } from "../services/prioridad-despacho.service";
 
 /** Cambio rápido de prioridad desde la bandeja (ST-58.1). La lógica vive en `opcionesCambioPrioridad`. */

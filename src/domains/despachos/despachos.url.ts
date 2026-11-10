@@ -1,4 +1,4 @@
-import type { OrdenBandeja, PrioridadPedido, TurnoPedido } from "./despachos.types";
+import type { OrdenBandeja, PrioridadPedido, TurnoPedido } from "./types/despachos.types";
 
 /** "all" o el id de la zona como texto. */
 export type ZonaFilter = "all" | `${number}`;

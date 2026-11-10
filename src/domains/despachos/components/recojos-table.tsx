@@ -6,7 +6,7 @@ import { Button } from "@/shared/components/ui/button";
 import { cn } from "@/shared/lib/utils";
 import { etiquetaEstadoDespacho, formatearFechaTurnoDetalle } from "../despacho-detalle.format";
 import { ETIQUETA_ORIGEN, sePuedeAnular } from "../recojos.reglas";
-import type { OrigenRecojo, Recojo } from "../recojos.types";
+import type { OrigenRecojo, Recojo } from "../types/recojos.types";
 import { ResultadoRecepcionBadge } from "./resultado-recepcion-badge";
 
 function OrigenBadge({ origen }: { origen: OrigenRecojo }) {

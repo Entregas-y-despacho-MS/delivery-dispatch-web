@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { useCrud } from "@/shared/hooks/use-crud";
 import { parseApiError } from "@/shared/lib/api-error";
 import { exportarHistorialCsv, historialDespachosService } from "../services/historial-despachos.service";
-import type { DespachoHistorial, EstadoFinal, HistorialParams, OrdenHistorial } from "../historial.types";
+import type { DespachoHistorial, EstadoFinal, HistorialParams, OrdenHistorial } from "../types/historial.types";
 import {
   escribirFiltrosHistorial,
   leerFiltrosHistorial,

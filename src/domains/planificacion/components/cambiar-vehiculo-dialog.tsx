@@ -1,13 +1,11 @@
 import { useState } from "react";
+import { Truck } from "lucide-react";
 
 import { Button } from "@/shared/components/ui/button";
+import { FormDialogContent, FormDialogFooter } from "@/shared/components/common/form-dialog";
+import { FormDialogHeader } from "@/shared/components/common/form-dialog-header";
 import {
   Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
 } from "@/shared/components/ui/dialog";
 import { Label } from "@/shared/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
@@ -42,10 +40,10 @@ interface CambiarVehiculoDialogProps {
 export function CambiarVehiculoDialog({ abierto, onOpenChange, ...resto }: CambiarVehiculoDialogProps) {
   return (
     <Dialog open={abierto} onOpenChange={(valor) => !resto.guardando && onOpenChange(valor)}>
-      <DialogContent className="sm:max-w-md">
+      <FormDialogContent className="sm:max-w-2xl">
         {/* Se monta al abrir: cada vez arranca con el vehículo actual. */}
         {abierto && <Contenido {...resto} onCerrar={() => onOpenChange(false)} />}
-      </DialogContent>
+      </FormDialogContent>
     </Dialog>
   );
 }
@@ -75,14 +73,13 @@ function Contenido({
 
   return (
     <>
-      <DialogHeader>
-        <DialogTitle>Cambiar vehículo del lote</DialogTitle>
-        <DialogDescription>
-          {requiereMotivo
-            ? "El lote confirmado conserva sus paradas y repartidor. Si ya fue aceptado, el repartidor deberá aceptarlo de nuevo."
-            : "Al guardar se valida que el peso, el volumen y las medidas de los bultos entren."}
-        </DialogDescription>
-      </DialogHeader>
+      <FormDialogHeader
+        icon={Truck}
+        title="Cambiar vehículo del lote"
+        description={requiereMotivo
+          ? "El lote confirmado conserva sus paradas y repartidor. Si ya fue aceptado, el repartidor deberá aceptarlo de nuevo."
+          : "Al guardar se valida que el peso, el volumen y las medidas de los bultos entren."}
+      />
 
       {validacion && <p role="alert" className="text-sm text-destructive">{validacion}</p>}
 
@@ -119,14 +116,14 @@ function Contenido({
         </div>
       )}
 
-      <DialogFooter>
+      <FormDialogFooter>
         <Button type="button" variant="outline" onClick={onCerrar} disabled={guardando}>
           Cancelar
         </Button>
         <Button type="button" onClick={confirmar} disabled={guardando || sinCambios}>
           {guardando ? "Validando..." : "Cambiar vehículo"}
         </Button>
-      </DialogFooter>
+      </FormDialogFooter>
     </>
   );
 }

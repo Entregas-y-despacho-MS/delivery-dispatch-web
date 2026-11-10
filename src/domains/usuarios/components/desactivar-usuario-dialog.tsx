@@ -4,7 +4,7 @@ import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 import { Button } from "@/shared/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/shared/components/ui/dialog";
 import { useDesactivarUsuario } from "../hooks/use-usuarios";
-import type { Usuario } from "../usuarios.types";
+import type { Usuario } from "../types/usuarios.types";
 
 interface DesactivarUsuarioDialogProps {
   /** Usuario a desactivar. null = el modal está cerrado. */

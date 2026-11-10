@@ -6,7 +6,7 @@ import type {
   FranjasDisponibles,
   PruebaVerificacion,
   SeguimientoPublico,
-} from "../seguimiento.types";
+} from "../types/seguimiento.types";
 
 const ruta = (token: string) => `/public/tracking/${encodeURIComponent(token)}`;
 /** La prueba va en una cabecera: nunca en la URL ni en los logs. */

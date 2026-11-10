@@ -74,6 +74,13 @@
   --accent: #ddf3fe;
   --accent-foreground: #265c7f;
 
+  /* Colores reutilizables de los marcadores; los alias siguen el tema y los tokens de estado. */
+  --map-marker-outline: var(--brand-blue);
+  --map-marker-fill: var(--brand-orange);
+  --map-marker-active: var(--success);
+  --map-marker-selected: var(--brand-orange);
+  --map-marker-muted: var(--muted-foreground);
+
   --destructive: oklch(0.577 0.245 27.325);
   /* Estados fuera de las graficas: se usan como texto/icono sobre fondo suave
      del mismo token (bg-warning/10 text-warning), igual que destructive. */
@@ -296,54 +303,54 @@
 
   /* Variante Éxito (Success) - Verde menta suave */
   [data-sonner-toaster] [data-sonner-toast][data-type="success"] [data-icon] {
-    background-color: #e6f7f2 !important;
-    color: #10b981 !important;
+    background-color: color-mix(in srgb, var(--success) 12%, var(--card)) !important;
+    color: var(--success) !important;
   }
   .dark [data-sonner-toaster] [data-sonner-toast][data-type="success"] [data-icon] {
-    background-color: rgba(16, 185, 129, 0.16) !important;
-    color: #34d399 !important;
+    background-color: color-mix(in srgb, var(--success) 18%, var(--card)) !important;
+    color: var(--success) !important;
   }
 
   /* Variante Info / En camino - Turquesa / Celeste suave */
   [data-sonner-toaster] [data-sonner-toast][data-type="info"] [data-icon],
   [data-sonner-toaster] [data-sonner-toast][data-type="default"] [data-icon] {
-    background-color: #ddf3fe !important;
-    color: #265c7f !important;
+    background-color: color-mix(in srgb, var(--brand-soft) 75%, var(--card)) !important;
+    color: var(--brand-blue) !important;
   }
   .dark [data-sonner-toaster] [data-sonner-toast][data-type="info"] [data-icon],
   .dark [data-sonner-toaster] [data-sonner-toast][data-type="default"] [data-icon] {
-    background-color: rgba(70, 157, 176, 0.22) !important;
-    color: #7acddd !important;
+    background-color: color-mix(in srgb, var(--brand-turquoise) 18%, var(--card)) !important;
+    color: var(--brand-turquoise) !important;
   }
 
   /* Variante Advertencia (Warning) - Ámbar / Naranja suave */
   [data-sonner-toaster] [data-sonner-toast][data-type="warning"] [data-icon] {
-    background-color: #fef3c7 !important;
-    color: #d97706 !important;
+    background-color: color-mix(in srgb, var(--warning) 12%, var(--card)) !important;
+    color: var(--warning) !important;
   }
   .dark [data-sonner-toaster] [data-sonner-toast][data-type="warning"] [data-icon] {
-    background-color: rgba(217, 119, 6, 0.2) !important;
-    color: #fbbf24 !important;
+    background-color: color-mix(in srgb, var(--warning) 18%, var(--card)) !important;
+    color: var(--warning) !important;
   }
 
   /* Variante Error / Destructivo - Coral / Rojo suave */
   [data-sonner-toaster] [data-sonner-toast][data-type="error"] [data-icon] {
-    background-color: #fee2e2 !important;
-    color: #ef4444 !important;
+    background-color: color-mix(in srgb, var(--destructive) 12%, var(--card)) !important;
+    color: var(--destructive) !important;
   }
   .dark [data-sonner-toaster] [data-sonner-toast][data-type="error"] [data-icon] {
-    background-color: rgba(239, 68, 68, 0.2) !important;
-    color: #f87171 !important;
+    background-color: color-mix(in srgb, var(--destructive) 18%, var(--card)) !important;
+    color: var(--destructive) !important;
   }
 
   /* Variante Loading - Turquesa suave */
   [data-sonner-toaster] [data-sonner-toast][data-type="loading"] [data-icon] {
-    background-color: #ddf3fe !important;
-    color: #469db0 !important;
+    background-color: color-mix(in srgb, var(--brand-soft) 75%, var(--card)) !important;
+    color: var(--brand-turquoise) !important;
   }
   .dark [data-sonner-toaster] [data-sonner-toast][data-type="loading"] [data-icon] {
-    background-color: rgba(70, 157, 176, 0.22) !important;
-    color: #7acddd !important;
+    background-color: color-mix(in srgb, var(--brand-turquoise) 18%, var(--card)) !important;
+    color: var(--brand-turquoise) !important;
   }
 
   /* Botón de cierre */

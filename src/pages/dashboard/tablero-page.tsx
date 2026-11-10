@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { LayoutDashboard } from "lucide-react";
 
 import { TableroKanban, useDispatchEvents, useTableroKanban } from "@/domains/despachos";
+import { useZonas } from "@/domains/catalogos";
 import { PageHeader } from "@/shared/components/common/page-header";
 
 function fechaLocalActual() {
@@ -25,6 +26,7 @@ export default function TableroPage() {
     dispatch_type_id: dispatchTypeId === "all" ? undefined : Number(dispatchTypeId),
   }), [date, deliveryZoneId, driverId, dispatchTypeId]);
   const tablero = useTableroKanban(params, connected);
+  const zonas = useZonas({ page: 1, limit: 100 });
 
   return (
     <div className="space-y-6">
@@ -35,6 +37,7 @@ export default function TableroPage() {
         description="Sigue las órdenes de la jornada y revisa los lotes antes de asignarlos."
       />
       <TableroKanban
+        zonas={zonas.data.map(({ id, name }) => ({ id, name }))}
         date={date}
         onDateChange={setDate}
         deliveryZoneId={deliveryZoneId}

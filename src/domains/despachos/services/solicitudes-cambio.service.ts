@@ -5,7 +5,7 @@ import type {
   SolicitudCambio,
   SolicitudesCambioParams,
   SolicitudesCambioResponse,
-} from "../solicitudes-cambio.types";
+} from "../types/solicitudes-cambio.types";
 
 /** Bandeja de solicitudes de cambio del cliente (ST-224.1). Solo lectura: { data, meta } → ListResult. */
 const solicitudesCambioCrudService = createCrudService<

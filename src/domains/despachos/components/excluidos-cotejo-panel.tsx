@@ -8,7 +8,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/shared/components/ui/dialog";
 import { formatearFechaHoraExacta, formatearFechaTurnoDetalle } from "../despacho-detalle.format";
 import { codigoParada, etiquetaMotivoFalla } from "../excluidos-cotejo.reglas";
-import type { ExcluidoCotejo, FallaCotejo } from "../excluidos-cotejo.types";
+import type { ExcluidoCotejo, FallaCotejo } from "../types/excluidos-cotejo.types";
 
 export interface ExcluidosCotejoPanelProps {
   data: ExcluidoCotejo[];
@@ -40,10 +40,10 @@ export function ExcluidosCotejoPanel(props: ExcluidosCotejoPanelProps) {
   if (data.length === 0) return null;
 
   return (
-    <section aria-label="Excluidos por cotejo" className="space-y-3 rounded-xl border border-amber-500/50 bg-amber-500/5 p-4 shadow-sm sm:p-5">
+    <section aria-label="Excluidos por cotejo" className="space-y-3 rounded-xl border border-warning/50 bg-warning/5 p-4 shadow-sm sm:p-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <PackageX className="size-4 text-amber-600 dark:text-amber-400" aria-hidden />
+          <PackageX className="size-4 text-warning" aria-hidden />
           <h2 className="font-semibold">Excluidos por cotejo</h2>
           <Badge variant="outline">{data.length}</Badge>
         </div>

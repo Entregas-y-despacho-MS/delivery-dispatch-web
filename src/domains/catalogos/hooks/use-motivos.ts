@@ -1,13 +1,13 @@
 import { toast } from "sonner";
 
 import { useCrud } from "@/shared/hooks/use-crud";
-import type { MotivoIncidenciaFormValues } from "../catalogos.schemas";
+import type { MotivoIncidenciaFormValues } from "../schemas/catalogos.schemas";
 import type {
   MotivoIncidencia,
   MotivoIncidenciaCreate,
   MotivoIncidenciaListParams,
   MotivoIncidenciaUpdate,
-} from "../catalogos.types";
+} from "../types/catalogos.types";
 import { motivosIncidenciaService } from "../services/motivos-incidencia.service";
 
 export function useMotivosIncidencia(params: MotivoIncidenciaListParams) {

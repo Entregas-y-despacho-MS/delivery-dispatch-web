@@ -1,6 +1,6 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 import { cn } from "@/shared/lib/utils";
-import type { Rol } from "../usuarios.types";
+import type { Rol } from "../types/usuarios.types";
 
 interface RolSelectorProps {
   id: string;

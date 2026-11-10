@@ -3,26 +3,27 @@ import { Pencil, Power, Wrench } from "lucide-react";
 
 import type { Column } from "@/shared/components/common/data-table";
 import { ResponsiveList } from "@/shared/components/common/responsive-list";
+import { StatusBadge } from "@/shared/components/common/status-badge";
 import { Button } from "@/shared/components/ui/button";
-import type { EstadoVehiculo, Vehiculo } from "../flota.types";
+import type { EstadoVehiculo, Vehiculo } from "../types/flota.types";
 
 /**
  * Mapeo de estados reales del backend (active | maintenance | out_of_service, en inglés)
  * a las etiquetas y colores pedidos en ST-22.2: Verde=Disponible, Naranja=Mantenimiento.
  * "out_of_service" no está en el ticket original; se muestra en rojo por ser el más crítico.
  */
-const ESTADO_BADGE: Record<string, { label: string; className: string }> = {
-  active: { label: "Disponible", className: "bg-success/10 text-success" },
-  maintenance: { label: "Mantenimiento", className: "bg-warning/10 text-warning" },
-  out_of_service: { label: "Fuera de servicio", className: "bg-destructive/10 text-destructive" },
+const ESTADO_BADGE: Record<string, { label: string; tone: "success" | "warning" | "destructive" }> = {
+  active: { label: "Disponible", tone: "success" },
+  maintenance: { label: "Mantenimiento", tone: "warning" },
+  out_of_service: { label: "Fuera de servicio", tone: "destructive" },
 };
 
 function EstadoBadge({ estado }: { estado: EstadoVehiculo }) {
-  const config = ESTADO_BADGE[estado.name] ?? { label: estado.name, className: "bg-muted text-muted-foreground" };
+  const config = ESTADO_BADGE[estado.name] ?? { label: estado.name, tone: "muted" as const };
   return (
-    <span className={`inline-flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${config.className}`}>
+    <StatusBadge tone={config.tone} bordered={false}>
       {config.label}
-    </span>
+    </StatusBadge>
   );
 }
 

@@ -58,7 +58,7 @@
           {
             "patterns": [{
               "group": ["@/app/**", "@/pages/**", "@/domains/*/**", "**/app/**", "**/pages/**", "**/domains/*/**"],
-              "message": "domains/ depende de shared/ y config/; usa el barrel de otros dominios."
+              "message": "Los dominios solo pueden importar la API pública de otro dominio, nunca sus archivos internos."
             }]
           }
         ]

@@ -2,7 +2,7 @@ import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAx
 
 import { cn } from "@/shared/lib/utils";
 import { cumpleUmbral, etiquetaAgrupacion, formatoMinutos, formatoPorcentaje, nombreGrupo, UMBRAL_SLA_PORCENTAJE } from "../reportes.reglas";
-import type { AgrupacionSla, FilaSla, MetricasSla } from "../reportes.types";
+import type { AgrupacionSla, FilaSla, MetricasSla } from "../types/reportes.types";
 
 /** Barra del % global a tiempo con la marca del umbral pactado. */
 export function MedidorCumplimiento({ totales, umbral = UMBRAL_SLA_PORCENTAJE }: { totales: MetricasSla; umbral?: number }) {

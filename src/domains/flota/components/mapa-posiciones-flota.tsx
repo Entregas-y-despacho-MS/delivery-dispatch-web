@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef } from "react";
-import "leaflet/dist/leaflet.css";
-import { CircleMarker, MapContainer, Popup, TileLayer, useMap } from "react-leaflet";
+import { CircleMarker, Popup, useMap } from "react-leaflet";
 import type { LatLngBoundsExpression, LatLngExpression } from "leaflet";
 
-import type { PosicionFlotaEnVivo } from "../flota-posiciones.types";
-import { esUbicacionSinSenal } from "../flota-posiciones.types";
+import { MapView } from "@/shared/components/common/map-view";
+import type { PosicionFlotaEnVivo } from "../types/flota-posiciones.types";
+import { esUbicacionSinSenal } from "../types/flota-posiciones.types";
 
 const CENTRO_REFERENCIA: [number, number] = [-17.783, -63.182];
 
@@ -68,16 +68,16 @@ export function MapaPosicionesFlota({
   }, [posiciones]);
 
   return (
-    <MapContainer center={centro} zoom={posiciones.some((p) => p.lastLatitude !== null) ? 12 : 10} scrollWheelZoom className="h-[min(68vh,640px)] min-h-[360px] w-full rounded-lg">
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
+    <MapView center={centro} zoom={posiciones.some((p) => p.lastLatitude !== null) ? 12 : 10} scrollWheelZoom className="h-[min(68vh,640px)] min-h-[360px] w-full rounded-lg">
       <AjustarVistaInicial puntos={posiciones} rutaSeleccionada={rutaSeleccionada} />
       {posiciones.map((posicion) => {
         if (posicion.lastLatitude === null || posicion.lastLongitude === null) return null;
         const sinSenal = esUbicacionSinSenal(posicion, umbralMinutos, ahora);
-        const color = sinSenal ? "#71717a" : posicion.routeBatchId === rutaSeleccionada ? "#f97316" : "#0f766e";
+        const color = sinSenal
+          ? "var(--map-marker-muted)"
+          : posicion.routeBatchId === rutaSeleccionada
+            ? "var(--map-marker-selected)"
+            : "var(--map-marker-active)";
         return (
           <CircleMarker
             key={posicion.routeBatchId}
@@ -99,6 +99,6 @@ export function MapaPosicionesFlota({
           </CircleMarker>
         );
       })}
-    </MapContainer>
+    </MapView>
   );
 }

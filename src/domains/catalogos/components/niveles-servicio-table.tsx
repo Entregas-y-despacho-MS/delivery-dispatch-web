@@ -1,28 +1,17 @@
-import { Pencil, Power, Timer } from "lucide-react";
+import { Pencil, Timer } from "lucide-react";
 
 import type { Column } from "@/shared/components/common/data-table";
 import { ResponsiveList } from "@/shared/components/common/responsive-list";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import { Switch } from "@/shared/components/ui/switch";
-import type { NivelServicio } from "../catalogos.types";
+import { EstadoCatalogoBadge } from "./estado-catalogo-badge";
+import type { NivelServicio } from "../types/catalogos.types";
 
 function PriorityBadge({ priorityLevel }: { priorityLevel: number }) {
   return (
     <Badge variant="secondary" className="tabular-nums">
       Prioridad {priorityLevel}{priorityLevel === 1 ? " · más alta" : ""}
-    </Badge>
-  );
-}
-
-function StatusBadge({ active }: { active: boolean }) {
-  return active ? (
-    <Badge variant="outline" className="border-success/20 bg-success/10 text-success">
-      <Power aria-hidden /> Activo
-    </Badge>
-  ) : (
-    <Badge variant="outline" className="border-muted-foreground/20 bg-muted text-muted-foreground">
-      Inactivo
     </Badge>
   );
 }
@@ -87,7 +76,7 @@ export function NivelesServicioTable({
     },
     {
       header: "Estado",
-      cell: (nivel) => <StatusBadge active={nivel.active} />,
+      cell: (nivel) => <EstadoCatalogoBadge activo={nivel.active} />,
       className: "w-[18%]",
     },
     {
@@ -126,7 +115,7 @@ export function NivelesServicioTable({
             </div>
           </div>
           <div className="mt-3 flex items-center justify-between border-t pt-3">
-            <StatusBadge active={nivel.active} />
+            <EstadoCatalogoBadge activo={nivel.active} />
             <Switch checked={nivel.active} disabled={busy} onCheckedChange={() => onToggle(nivel)} aria-label={`${nivel.active ? "Desactivar" : "Activar"} ${nivel.name}`} />
           </div>
         </article>

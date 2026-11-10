@@ -4,6 +4,8 @@ import { ExternalLink, MessageSquareText, RefreshCw, Search, CalendarClock } fro
 import { toast } from "sonner";
 
 import { ReprogramarDialog, solicitudesCambioService, type SolicitudCambio } from "@/domains/despachos";
+import { useMotivosReprogramacion } from "@/domains/catalogos";
+import { useParametrosOperativos } from "@/domains/configuracion";
 import { RequireRole } from "@/shared/guards/require-role";
 import { ROLES } from "@/config/roles";
 import { Button } from "@/shared/components/ui/button";
@@ -51,6 +53,33 @@ export default function SolicitudesCambioPage() {
       <div className="grid min-w-0 gap-3 lg:grid-cols-2">{query.data.items.map((item) => <div key={item.dispatchId} className="min-w-0 space-y-2"><SolicitudCard item={item} /><RequireRole roles={[ROLES.COORDINADOR]}><Button className="w-full" disabled={!item.deliveryDate} onClick={() => setSelected({ solicitud: item, fechaMinima: obtenerFechaBoliviaHoy() })}><CalendarClock aria-hidden /> {item.deliveryDate ? "Resolver solicitud" : "Despacho sin fecha de ruta"}</Button></RequireRole></div>)}</div>
       <div className="flex flex-wrap items-center justify-between gap-3 text-sm"><span className="text-muted-foreground">{query.data.total} solicitudes</span><div className="flex gap-2"><Button variant="outline" size="sm" disabled={page <= 1 || query.isFetching} onClick={() => setPage((current) => current - 1)}>Anterior</Button><span className="px-2 py-2">Página {page} de {Math.max(1, query.data.pages ?? Math.ceil(query.data.total / (query.data.pageSize ?? 20)))}</span><Button variant="outline" size="sm" disabled={page * (query.data.pageSize ?? 20) >= query.data.total || query.isFetching} onClick={() => setPage((current) => current + 1)}>Siguiente</Button></div></div>
     </>}
-    <RequireRole roles={[ROLES.COORDINADOR]}>{selected?.solicitud.deliveryDate && <ReprogramarDialog open={!!selected} onOpenChange={(open) => { if (!open) setSelected(null); }} despachoId={selected.solicitud.dispatchId} fecha={selected.solicitud.deliveryDate} fechaMinima={selected.fechaMinima} onComplete={() => { setSelected(null); void queryClient.invalidateQueries({ queryKey: ["dispatch-change-requests"] }); }} />}</RequireRole>
+    <RequireRole roles={[ROLES.COORDINADOR]}>{selected?.solicitud.deliveryDate && <ReprogramarDialogConReglas open={!!selected} onOpenChange={(open) => { if (!open) setSelected(null); }} despachoId={selected.solicitud.dispatchId} fecha={selected.solicitud.deliveryDate} fechaMinima={selected.fechaMinima} onComplete={() => { setSelected(null); void queryClient.invalidateQueries({ queryKey: ["dispatch-change-requests"] }); }} />}</RequireRole>
   </div>;
+}
+
+function ReprogramarDialogConReglas(props: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  despachoId: number;
+  fecha: string;
+  fechaMinima: string;
+  onComplete: () => void;
+}) {
+  const parametros = useParametrosOperativos();
+  const motivos = useMotivosReprogramacion({ page: 1, limit: 100, active: true });
+  return (
+    <ReprogramarDialog
+      {...props}
+      motivos={motivos.data.map(({ code, name, active }) => ({ code, name, active }))}
+      reglas={{
+        slot_duration_minutes: parametros.valores.slot_duration_minutes,
+        morning_window_start: parametros.valores.morning_window_start,
+        morning_window_end: parametros.valores.morning_window_end,
+        afternoon_window_start: parametros.valores.afternoon_window_start,
+        afternoon_window_end: parametros.valores.afternoon_window_end,
+      }}
+      cargandoReglas={parametros.parametros.isLoading || motivos.isLoading}
+      errorReglas={parametros.parametros.isError || motivos.isError}
+    />
+  );
 }

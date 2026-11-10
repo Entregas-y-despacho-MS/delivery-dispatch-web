@@ -8,7 +8,7 @@ import {
   nivelOcupacion,
   type NivelOcupacion,
 } from "../planificacion.format";
-import type { MedidaCapacidad, ReporteCapacidad } from "../planificacion.types";
+import type { MedidaCapacidad, ReporteCapacidad } from "../types/planificacion.types";
 
 const COLOR_BARRA: Record<NivelOcupacion, string> = {
   normal: "bg-success",

@@ -1,7 +1,7 @@
 import { AlertTriangle, CalendarClock } from "lucide-react";
 
 import { formatearFechaHoraExacta, formatearVentanaConDia } from "../despacho-detalle.format";
-import type { IncidenciaDetalle, ReprogramacionDetalle } from "../despacho-detalle.types";
+import type { IncidenciaDetalle, ReprogramacionDetalle } from "../types/despacho-detalle.types";
 
 const QUIEN: Record<ReprogramacionDetalle["rescheduledByType"], string> = {
   customer: "El cliente",

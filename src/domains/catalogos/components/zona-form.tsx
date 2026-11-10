@@ -8,8 +8,9 @@ import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { parseApiError } from "@/shared/lib/api-error";
 import { useFormSubmitConfirmation } from "@/shared/hooks/use-form-submit-confirmation";
-import { zonaSchema, type ZonaFormValues } from "../catalogos.schemas";
-import type { Zona } from "../catalogos.types";
+import { zonaSchema, type ZonaFormValues } from "../schemas/catalogos.schemas";
+import type { Zona } from "../types/catalogos.types";
+import { ZonaCoberturaEditor } from "./zona-cobertura-editor";
 
 const FIELD_ICON = "pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground";
 
@@ -31,6 +32,8 @@ export function ZonaForm({
     handleSubmit,
     setError,
     setFocus,
+    setValue,
+    watch,
     formState: { errors, isDirty },
   } = useForm<ZonaFormValues>({
     resolver: zodResolver(zonaSchema),
@@ -38,6 +41,7 @@ export function ZonaForm({
       code: zona?.code ?? "",
       name: zona?.name ?? "",
       estimatedTimeMin: zona?.estimatedTimeMin ?? 45,
+      boundary: zona?.boundary ?? null,
     },
     mode: "onTouched",
     reValidateMode: "onChange",
@@ -47,8 +51,12 @@ export function ZonaForm({
   const confirmation = useFormSubmitConfirmation("zona", !!zona);
 
   const save = async (values: ZonaFormValues) => {
+    if (!values.boundary?.length) {
+      setError("root", { message: "Define la cobertura de reparto antes de guardar la zona." });
+      return;
+    }
     try {
-      await onSubmit(values);
+      await onSubmit({ ...values, boundary: values.boundary });
     } catch (error) {
       const parsed = parseApiError(error);
       if (parsed.code === "DELIVERY_ZONE_CODE_ALREADY_EXISTS") {
@@ -131,6 +139,14 @@ export function ZonaForm({
           />
         </div>
         {errors.name && <p id="zona-name-error" className="text-sm text-destructive">{errors.name.message}</p>}
+      </div>
+
+      <div className="border-t pt-5">
+        <ZonaCoberturaEditor
+          value={watch("boundary") ?? null}
+          onChange={(boundary) => setValue("boundary", boundary, { shouldDirty: true, shouldValidate: true })}
+          disabled={guardando}
+        />
       </div>
 
       <div className="form-dialog-footer flex flex-col-reverse gap-2 border-t pt-5 sm:flex-row sm:justify-end">

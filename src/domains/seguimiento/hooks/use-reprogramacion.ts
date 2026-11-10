@@ -3,7 +3,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 
 import { parseApiError } from "@/shared/lib/api-error";
 import { intentosRestantes, reprogramacionCerrada, requiereNuevoCodigo } from "../seguimiento.errores";
-import type { CodigoEnviado, SeguimientoPublico } from "../seguimiento.types";
+import type { CodigoEnviado, SeguimientoPublico } from "../types/seguimiento.types";
 import {
   enviarCodigo,
   listarFranjas,

@@ -4,7 +4,7 @@ import type { Column } from "@/shared/components/common/data-table";
 import { ResponsiveList } from "@/shared/components/common/responsive-list";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
-import type { TipoIncidenteVehiculo } from "../catalogos.types";
+import type { TipoIncidenteVehiculo } from "../types/catalogos.types";
 import { getSeveridadIncidenteVehiculo } from "../tipos-incidente-vehiculo.constants";
 
 function SeveridadBadge({ tipo }: { tipo: TipoIncidenteVehiculo }) {

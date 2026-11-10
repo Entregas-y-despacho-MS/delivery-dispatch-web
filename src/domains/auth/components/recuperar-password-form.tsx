@@ -10,7 +10,7 @@ import { Label } from "@/shared/components/ui/label";
 import { Separator } from "@/shared/components/ui/separator";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/components/ui/alert";
 import { useRecuperarPassword } from "../hooks/use-recuperar-password";
-import { forgotPasswordSchema, type ForgotPasswordInput } from "../auth.schemas";
+import { forgotPasswordSchema, type ForgotPasswordInput } from "../schemas/auth.schemas";
 
 const CONTROL = "h-11";
 const ICONO_CAMPO =

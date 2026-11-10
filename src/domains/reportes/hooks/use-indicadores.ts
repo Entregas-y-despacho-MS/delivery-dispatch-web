@@ -4,7 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import { QUERY_POLICIES } from "@/shared/lib/query-policies";
 import { createQueryKeys } from "@/shared/lib/query-keys";
 import { leerPeriodoKpi } from "../reportes.kpis";
-import type { PeriodoKpi } from "../reportes.types";
+import type { PeriodoKpi } from "../types/reportes.types";
 import { obtenerIndicadoresFlota } from "../services/reportes.service";
 
 export const indicadoresFlotaKeys = createQueryKeys<{ period: PeriodoKpi }>("fleet-kpis");

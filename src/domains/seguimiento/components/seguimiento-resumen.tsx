@@ -1,7 +1,7 @@
 import { CalendarDays, Clock, PackageCheck } from "lucide-react";
 
 import { etiquetaEstado, etiquetaRespuesta, formatearFechaEntrega, formatearFranjaEntrega, formatearFechaHora } from "../seguimiento.format";
-import type { SeguimientoPublico } from "../seguimiento.types";
+import type { SeguimientoPublico } from "../types/seguimiento.types";
 
 /**
  * Estado, fecha y franja del pedido (escenario 1). Solo lo mínimo: sin dirección,

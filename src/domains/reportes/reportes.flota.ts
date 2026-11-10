@@ -2,7 +2,7 @@ import type { ApiError } from "@/shared/lib/api-error";
 import { celdaCsv, COLUMNAS_METRICAS, type Celda } from "./reportes.exportar";
 import { nombreRepartidor, nombreVehiculo, type DireccionOrden } from "./reportes.kpis";
 import { MENSAJE_RANGO } from "./reportes.reglas";
-import type { FilaSla, MetricasSla } from "./reportes.types";
+import type { FilaSla, MetricasSla } from "./types/reportes.types";
 import { generarXlsx, type HojaXlsx } from "./reportes.xlsx";
 
 /** Fila de vehículo de `GET /fleet/reports` (ST-65.1): las cifras del SLA más sus mantenimientos. */

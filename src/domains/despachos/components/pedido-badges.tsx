@@ -1,7 +1,7 @@
 import { Lock, MapPinOff, Minus, Sparkles, UserCheck, Zap } from "lucide-react";
 
 import { Badge } from "@/shared/components/ui/badge";
-import type { PedidoPendiente, PrioridadPedido } from "../despachos.types";
+import type { PedidoPendiente, PrioridadPedido } from "../types/despachos.types";
 
 /**
  * Prioridad del pedido (ST-58.1): rojo «Urgente», gris «Normal».

@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { Badge } from "@/shared/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/shared/components/ui/table";
 import { etiquetaEstadoDespacho, formatearFechaHoraExacta } from "../despacho-detalle.format";
-import type { DespachoHistorial, OrdenHistorial } from "../historial.types";
+import type { DespachoHistorial, OrdenHistorial } from "../types/historial.types";
 
 const VARIANTE_ESTADO: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
   delivered: "default",

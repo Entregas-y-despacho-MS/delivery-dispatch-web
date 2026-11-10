@@ -1,11 +1,11 @@
 import { createCrudService, type PaginatedApiResponse } from "@/shared/lib/base.service";
-import { motivoReprogramacionResponseSchema } from "../catalogos.schemas";
+import { motivoReprogramacionResponseSchema } from "../schemas/catalogos.schemas";
 import type {
   MotivoReprogramacion,
   MotivoReprogramacionCreate,
   MotivoReprogramacionListParams,
   MotivoReprogramacionUpdate,
-} from "../catalogos.types";
+} from "../types/catalogos.types";
 
 export const motivosReprogramacionService = createCrudService<
   MotivoReprogramacion,

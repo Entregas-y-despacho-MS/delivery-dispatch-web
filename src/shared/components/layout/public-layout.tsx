@@ -29,7 +29,7 @@ export function PublicLayout() {
       </main>
 
       <footer className="border-t py-6 text-center text-sm text-muted-foreground">
-        © {CURRENT_YEAR} delivery-dispatch-web
+        © {CURRENT_YEAR} Delivery Dispatch
       </footer>
     </div>
   );

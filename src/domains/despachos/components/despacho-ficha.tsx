@@ -4,7 +4,7 @@ import { Star } from "lucide-react";
 import { Badge } from "@/shared/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
 import { etiquetaEstadoDespacho, formatearFechaHoraExacta } from "../despacho-detalle.format";
-import type { DespachoDetalle } from "../despacho-detalle.types";
+import type { DespachoDetalle } from "../types/despacho-detalle.types";
 import { FichaEvidencias } from "./ficha-evidencias";
 import { FichaGeneral } from "./ficha-general";
 import { FichaIncidencias } from "./ficha-incidencias";
@@ -67,7 +67,7 @@ export function DespachoFicha({ despacho, onRenovar, renovando, pestana = "gener
         </TabsContent>
       </Tabs>
 
-      <section className="space-y-2 rounded-lg border p-4" aria-label="Opinión del cliente">
+      {despacho.type.name !== "supplier_pickup" && <section className="space-y-2 rounded-lg border p-4" aria-label="Opinión del cliente">
         <h3 className="text-sm font-semibold">Opinión del cliente</h3>
         {opinion ? (
           <div className="space-y-1.5">
@@ -89,7 +89,7 @@ export function DespachoFicha({ despacho, onRenovar, renovando, pestana = "gener
         ) : (
           <p className="text-sm text-muted-foreground">El cliente todavía no calificó la entrega.</p>
         )}
-      </section>
+      </section>}
 
       {/* Solo recojos y recogidas pasan por almacén: sin recepción la sección no se muestra. */}
       {despacho.receipt && <FichaRecepcion recepcion={despacho.receipt} />}

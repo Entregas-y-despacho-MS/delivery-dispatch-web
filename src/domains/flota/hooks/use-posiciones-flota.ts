@@ -3,9 +3,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { QUERY_POLICIES } from "@/shared/lib/query-policies";
 import { useSocketEvents } from "@/shared/hooks/use-socket";
-import { useUmbralesAlerta } from "@/domains/configuracion";
 import { obtenerPosicionesFlota } from "../services/posiciones-flota.service";
-import type { PosicionFlotaEnVivo, UbicacionFlotaActualizada } from "../flota-posiciones.types";
+import type { PosicionFlotaEnVivo, UbicacionFlotaActualizada } from "../types/flota-posiciones.types";
 
 export const POSICIONES_FLOTA_KEY = ["fleet-live-positions"] as const;
 const EVENTOS_FLOTA = ["dispatch.location.updated", "dispatch.status_changed", "route.assigned", "route.batch_reassigned"] as const;
@@ -26,7 +25,6 @@ export function usePosicionesFlota() {
     queryFn: ({ signal }) => obtenerPosicionesFlota(signal),
     ...QUERY_POLICIES.live,
   });
-  const umbrales = useUmbralesAlerta();
   const refetchPosiciones = posiciones.refetch;
 
   const onEvent = useCallback((eventName: string, payload: unknown) => {
@@ -58,5 +56,5 @@ export function usePosicionesFlota() {
     if (connected) void refetchPosiciones();
   }, [connected, refetchPosiciones]);
 
-  return { posiciones, umbrales, connected };
+  return { posiciones, connected };
 }

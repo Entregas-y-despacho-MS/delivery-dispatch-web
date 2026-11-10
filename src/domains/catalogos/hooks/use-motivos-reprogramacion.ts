@@ -1,13 +1,13 @@
 import { toast } from "sonner";
 
 import { useCrud } from "@/shared/hooks/use-crud";
-import type { MotivoReprogramacionFormValues } from "../catalogos.schemas";
+import type { MotivoReprogramacionFormValues } from "../schemas/catalogos.schemas";
 import type {
   MotivoReprogramacion,
   MotivoReprogramacionCreate,
   MotivoReprogramacionListParams,
   MotivoReprogramacionUpdate,
-} from "../catalogos.types";
+} from "../types/catalogos.types";
 import { motivosReprogramacionService } from "../services/motivos-reprogramacion.service";
 
 export function useMotivosReprogramacion(params: MotivoReprogramacionListParams, enabled = true) {

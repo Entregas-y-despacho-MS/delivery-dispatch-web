@@ -1,11 +1,11 @@
 import { useCrud } from "@/shared/hooks/use-crud";
-import type { TipoIncidenteVehiculoFormValues } from "../catalogos.schemas";
+import type { TipoIncidenteVehiculoFormValues } from "../schemas/catalogos.schemas";
 import type {
   TipoIncidenteVehiculo,
   TipoIncidenteVehiculoCreate,
   TipoIncidenteVehiculoListParams,
   TipoIncidenteVehiculoUpdate,
-} from "../catalogos.types";
+} from "../types/catalogos.types";
 import { tiposIncidenteVehiculoService } from "../services/tipos-incidente-vehiculo.service";
 
 export function useTiposIncidenteVehiculo(params: TipoIncidenteVehiculoListParams) {

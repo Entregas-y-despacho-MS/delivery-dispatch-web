@@ -1,5 +1,5 @@
 import api from "@/shared/lib/axios";
-import type { CotejoResuelto, DespachoCancelado, ExcluidoCotejo, ExcluidosCotejoResponse } from "../excluidos-cotejo.types";
+import type { CotejoResuelto, DespachoCancelado, ExcluidoCotejo, ExcluidosCotejoResponse } from "../types/excluidos-cotejo.types";
 
 /** Paradas fuera de la ruta por falla de cotejo (ST-241.3). Coordinador y supervisor. */
 export async function obtenerExcluidosCotejo(signal?: AbortSignal): Promise<ExcluidoCotejo[]> {

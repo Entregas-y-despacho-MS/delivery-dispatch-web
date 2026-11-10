@@ -1,5 +1,5 @@
 import { parseApiError } from "@/shared/lib/api-error";
-import type { EstadoMantenimiento, MantenimientoListParams, TipoMantenimiento } from "./flota.types";
+import type { EstadoMantenimiento, MantenimientoListParams, TipoMantenimiento } from "./types/flota.types";
 
 export const ESTADOS_MANTENIMIENTO: readonly EstadoMantenimiento[] = ["pending", "in_progress", "completed"];
 

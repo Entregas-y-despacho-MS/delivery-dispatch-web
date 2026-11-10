@@ -1,5 +1,5 @@
 import { createCrudService } from "@/shared/lib/base.service";
-import type { ParametroSistema } from "../configuracion.types";
+import type { ParametroSistema } from "../types/configuracion.types";
 
 /** Cuerpo de PUT /settings/:key. El back recibe siempre texto ("15", "08:00", "1,2,3"). */
 export interface ActualizarParametroPayload {

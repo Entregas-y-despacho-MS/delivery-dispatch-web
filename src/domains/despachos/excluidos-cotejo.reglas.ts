@@ -1,5 +1,5 @@
 import type { ApiError } from "@/shared/lib/api-error";
-import type { ExcluidoCotejo } from "./excluidos-cotejo.types";
+import type { ExcluidoCotejo } from "./types/excluidos-cotejo.types";
 
 /** Lo que ve el coordinador para identificar la parada: el código de seguimiento o, si no tiene, la referencia. */
 export const codigoParada = (p: Pick<ExcluidoCotejo, "trackingCode" | "sourceOrderRef">) => p.trackingCode ?? p.sourceOrderRef;

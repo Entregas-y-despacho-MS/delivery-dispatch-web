@@ -2,12 +2,12 @@ import { useMemo } from "react";
 
 import { useListFilters } from "@/shared/hooks/use-list-filters";
 import { useEditorDialog } from "@/shared/hooks/use-editor-dialog";
-import type { TipoIncidenteVehiculoFormValues } from "../catalogos.schemas";
+import type { TipoIncidenteVehiculoFormValues } from "../schemas/catalogos.schemas";
 import type {
   SeveridadIncidenteVehiculo,
   TipoIncidenteVehiculo,
   TipoIncidenteVehiculoListParams,
-} from "../catalogos.types";
+} from "../types/catalogos.types";
 import { useTiposIncidenteVehiculo } from "./use-tipos-incidente-vehiculo";
 
 const PAGE_SIZE = 10;

@@ -1,5 +1,5 @@
 import api from "@/shared/lib/axios";
-import type { IndicadoresFlota, ParamsReporteSla, PeriodoKpi, ReporteSla } from "../reportes.types";
+import type { IndicadoresFlota, ParamsReporteSla, PeriodoKpi, ReporteSla } from "../types/reportes.types";
 
 /** Reporte de cumplimiento SLA (ST-54.2). Solo coordinador; el back lo guarda en caché 10 minutos. */
 export async function obtenerReporteSla(params: ParamsReporteSla, signal?: AbortSignal): Promise<ReporteSla> {

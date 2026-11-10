@@ -10,7 +10,7 @@ import {
   formatearFechaHora,
   siguienteEstado,
 } from "../flota.mantenimiento";
-import type { EstadoMantenimiento, Mantenimiento } from "../flota.types";
+import type { EstadoMantenimiento, Mantenimiento } from "../types/flota.types";
 
 const CLASE_ESTADO: Record<EstadoMantenimiento, string> = {
   pending: "bg-warning/10 text-warning",

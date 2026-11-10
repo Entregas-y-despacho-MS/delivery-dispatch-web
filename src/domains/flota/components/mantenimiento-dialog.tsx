@@ -4,16 +4,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { LoaderCircle, TriangleAlert, Wrench } from "lucide-react";
 import { useForm, useWatch } from "react-hook-form";
 
-import { useTiposIncidenteVehiculo } from "@/domains/catalogos";
 import { FormDialogHeader } from "@/shared/components/common/form-dialog-header";
+import { FormDialogContent, FormDialogFooter } from "@/shared/components/common/form-dialog";
 import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 import { Button } from "@/shared/components/ui/button";
-import { Dialog, DialogContent } from "@/shared/components/ui/dialog";
+import { Dialog } from "@/shared/components/ui/dialog";
 import { Label } from "@/shared/components/ui/label";
 import { Textarea } from "@/shared/components/ui/textarea";
 import type { ErrorMantenimiento } from "../flota.mantenimiento";
-import { registrarMantenimientoSchema, type RegistrarMantenimientoFormValues } from "../flota.schemas";
-import type { RegistrarMantenimientoInput } from "../flota.types";
+import { registrarMantenimientoSchema, type RegistrarMantenimientoFormValues } from "../schemas/flota.schemas";
+import type { RegistrarMantenimientoInput } from "../types/flota.types";
 import type { VehiculoOpcion } from "./mantenimientos-filtros";
 
 const CLASE_SELECT = "h-11 w-full rounded-md border border-input bg-background px-3 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 aria-[invalid=true]:border-destructive";
@@ -22,10 +22,20 @@ interface MantenimientoDialogProps {
   abierto: boolean;
   onOpenChange: (abierto: boolean) => void;
   vehiculos: VehiculoOpcion[];
+  tipos: TipoIncidenteOpcion[];
+  tiposCargando: boolean;
+  tiposError: boolean;
   /** Vehículo ya elegido (por ejemplo, el del filtro del historial). */
   vehiculoInicial?: number | null;
   onRegistrar: (input: RegistrarMantenimientoInput) => Promise<ErrorMantenimiento | null>;
   registrando?: boolean;
+}
+
+interface TipoIncidenteOpcion {
+  id: number;
+  code: string;
+  name: string;
+  disablesVehicle: boolean;
 }
 
 function ErrorCampo({ id, mensaje }: { id: string; mensaje?: string }) {
@@ -46,11 +56,13 @@ export function MantenimientoDialog({
   abierto,
   onOpenChange,
   vehiculos,
+  tipos,
+  tiposCargando,
+  tiposError,
   vehiculoInicial = null,
   onRegistrar,
   registrando = false,
 }: MantenimientoDialogProps) {
-  const tipos = useTiposIncidenteVehiculo({ limit: 100 });
   const [fallo, setFallo] = useState<ErrorMantenimiento | null>(null);
   const {
     register,
@@ -65,8 +77,8 @@ export function MantenimientoDialog({
   const tipoElegido = useWatch({ control, name: "tipoIncidenteId" });
   const descripcion = useWatch({ control, name: "descripcion" }) ?? "";
   const dejaFueraDeServicio = useMemo(
-    () => tipos.data.find((tipo) => String(tipo.id) === tipoElegido)?.disablesVehicle ?? false,
-    [tipos.data, tipoElegido],
+    () => tipos.find((tipo) => String(tipo.id) === tipoElegido)?.disablesVehicle ?? false,
+    [tipos, tipoElegido],
   );
 
   const enviar = handleSubmit(async (valores) => {
@@ -87,7 +99,7 @@ export function MantenimientoDialog({
 
   return (
     <Dialog open={abierto} onOpenChange={cambiarAbierto}>
-      <DialogContent data-form-dialog className="form-dialog-content max-h-[90dvh] overflow-y-auto bg-card sm:max-w-lg motion-reduce:animate-none">
+      <FormDialogContent className="sm:max-w-2xl">
         <FormDialogHeader
           icon={Wrench}
           title="Registrar incidencia"
@@ -127,14 +139,14 @@ export function MantenimientoDialog({
 
           <div className="space-y-2">
             <Label htmlFor="mantenimiento-tipo">Tipo de incidente</Label>
-            <select id="mantenimiento-tipo" className={CLASE_SELECT} disabled={tipos.isLoading} aria-invalid={!!errors.tipoIncidenteId}
+            <select id="mantenimiento-tipo" className={CLASE_SELECT} disabled={tiposCargando || tiposError} aria-invalid={!!errors.tipoIncidenteId}
               aria-describedby={errors.tipoIncidenteId ? "mantenimiento-tipo-error" : "mantenimiento-tipo-ayuda"} {...register("tipoIncidenteId")}>
-              <option value="">{tipos.isLoading ? "Cargando tipos…" : "Elige el tipo"}</option>
-              {tipos.data.map((tipo) => <option key={tipo.id} value={tipo.id}>{tipo.code} · {tipo.name}</option>)}
+              <option value="">{tiposCargando ? "Cargando tipos…" : "Elige el tipo"}</option>
+              {tipos.map((tipo) => <option key={tipo.id} value={tipo.id}>{tipo.code} · {tipo.name}</option>)}
             </select>
             {errors.tipoIncidenteId ? (
               <ErrorCampo id="mantenimiento-tipo-error" mensaje={errors.tipoIncidenteId.message} />
-            ) : tipos.isError ? (
+            ) : tiposError ? (
               <p id="mantenimiento-tipo-ayuda" className="text-sm text-destructive">No pudimos cargar los tipos de incidente.</p>
             ) : dejaFueraDeServicio ? (
               <p id="mantenimiento-tipo-ayuda" className="text-sm text-warning">Este tipo deja el vehículo en mantenimiento hasta que se complete.</p>
@@ -154,15 +166,15 @@ export function MantenimientoDialog({
             <ErrorCampo id="mantenimiento-descripcion-error" mensaje={errors.descripcion?.message} />
           </div>
 
-          <div className="flex flex-col-reverse gap-2 border-t pt-4 sm:flex-row sm:justify-end">
+          <FormDialogFooter>
             <Button type="button" variant="outline" disabled={registrando} onClick={() => cambiarAbierto(false)}>Cancelar</Button>
             <Button type="submit" disabled={registrando}>
               {registrando ? <LoaderCircle className="animate-spin" aria-hidden /> : <Wrench aria-hidden />}
               {registrando ? "Registrando…" : "Registrar incidencia"}
             </Button>
-          </div>
+          </FormDialogFooter>
         </form>
-      </DialogContent>
+      </FormDialogContent>
     </Dialog>
   );
 }

@@ -10,7 +10,7 @@ import type {
   AsignarVehiculoPayload,
   ReasignarRevisorPayload,
   RevisorLote,
-} from "./planificacion.types";
+} from "./types/planificacion.types";
 
 /** Caché de los lotes de ruta (lista y detalle). */
 export const lotesKeys = createQueryKeys("route-batches");

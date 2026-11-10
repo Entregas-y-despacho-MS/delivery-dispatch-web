@@ -4,7 +4,7 @@ import type {
   MotivoIncidenciaCreate,
   MotivoIncidenciaListParams,
   MotivoIncidenciaUpdate,
-} from "../catalogos.types";
+} from "../types/catalogos.types";
 
 export const motivosIncidenciaService = createCrudService<
   MotivoIncidencia,

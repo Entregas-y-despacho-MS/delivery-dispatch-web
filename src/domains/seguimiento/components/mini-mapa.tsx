@@ -1,7 +1,7 @@
-import "leaflet/dist/leaflet.css";
-import { CircleMarker, MapContainer, TileLayer } from "react-leaflet";
+import { CircleMarker } from "react-leaflet";
 
-import type { UbicacionRepartidor } from "../seguimiento.types";
+import { MapView } from "@/shared/components/common/map-view";
+import type { UbicacionRepartidor } from "../types/seguimiento.types";
 
 /**
  * Mapa chico con la última posición del repartidor. Un círculo en vez del marcador de Leaflet:
@@ -10,18 +10,14 @@ import type { UbicacionRepartidor } from "../seguimiento.types";
 export default function MiniMapa({ ubicacion }: { ubicacion: UbicacionRepartidor }) {
   const centro: [number, number] = [ubicacion.latitude, ubicacion.longitude];
   return (
-    <MapContainer
+    <MapView
       key={`${ubicacion.latitude},${ubicacion.longitude}`}
       center={centro}
       zoom={15}
       scrollWheelZoom={false}
       className="h-56 w-full rounded-lg border"
     >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
-      <CircleMarker center={centro} radius={9} pathOptions={{ color: "#265c7f", fillColor: "#e18641", fillOpacity: 0.9, weight: 3 }} />
-    </MapContainer>
+      <CircleMarker center={centro} radius={9} pathOptions={{ color: "var(--map-marker-outline)", fillColor: "var(--map-marker-fill)", fillOpacity: 0.9, weight: 3 }} />
+    </MapView>
   );
 }

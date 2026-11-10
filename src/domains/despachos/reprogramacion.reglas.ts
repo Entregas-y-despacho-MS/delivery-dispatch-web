@@ -1,5 +1,5 @@
 import type { ApiError } from "@/shared/lib/api-error";
-import type { DespachoDetalle } from "./despacho-detalle.types";
+import type { DespachoDetalle } from "./types/despacho-detalle.types";
 
 /*
  * Reprogramación del coordinador (ST-52.1, RF-A05): POST /dispatches/:id/reschedule y POST /dispatches/:id/return.

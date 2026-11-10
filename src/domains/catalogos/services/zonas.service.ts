@@ -4,7 +4,7 @@ import type {
   Zona,
   ZonaInput,
   ZonaListParams,
-} from "../catalogos.types";
+} from "../types/catalogos.types";
 
 export const zonasService = createCrudService<
   Zona,

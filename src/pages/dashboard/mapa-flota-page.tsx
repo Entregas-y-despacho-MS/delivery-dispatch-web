@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { Radio, RadioTower } from "lucide-react";
+import { MapPinned, Radio, RadioTower } from "lucide-react";
 
 import { MapaPosicionesFlota, PanelVehiculosFlota, usePosicionesFlota, type FiltroEstadoFlota } from "@/domains/flota";
 import { ReasignarParadasDialog } from "@/domains/planificacion";
 import { useMotivosReprogramacion } from "@/domains/catalogos";
+import { useUmbralesAlerta } from "@/domains/configuracion";
 import { hasRole, ROLES } from "@/config/roles";
 import { useAuthStore } from "@/shared/store/use-auth-store";
 import { PageHeader } from "@/shared/components/common/page-header";
@@ -13,7 +14,8 @@ import { Skeleton } from "@/shared/components/ui/skeleton";
 const TICK_SENAL_MS = 15_000;
 
 export default function MapaFlotaPage() {
-  const { posiciones, umbrales, connected } = usePosicionesFlota();
+  const { posiciones, connected } = usePosicionesFlota();
+  const umbrales = useUmbralesAlerta();
   const [ahora, setAhora] = useState(() => Date.now());
   const [zonaId, setZonaId] = useState("todas");
   const [estado, setEstado] = useState<FiltroEstadoFlota>("todos");
@@ -36,7 +38,12 @@ export default function MapaFlotaPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Mapa de la flota" description="Ubicación en vivo de los vehículos en ruta" />
+      <PageHeader
+        eyebrow="Flota"
+        title="Mapa de la flota"
+        icon={MapPinned}
+        description="Ubicación en vivo de los vehículos en ruta."
+      />
 
       <div className="flex flex-wrap items-center gap-x-5 gap-y-2 rounded-xl border bg-card px-4 py-3 text-sm">
         <span className="font-medium">Actualizaciones en vivo</span>

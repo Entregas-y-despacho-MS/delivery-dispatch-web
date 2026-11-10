@@ -1,4 +1,4 @@
-import type { ColumnaKanban, ColumnaKanbanKey } from "./despachos.types";
+import type { ColumnaKanban, ColumnaKanbanKey } from "./types/despachos.types";
 
 export const COLUMNAS_OPERATIVAS: readonly { key: ColumnaKanbanKey; label: string }[] = [
   { key: "pending", label: "Pendiente" },

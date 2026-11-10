@@ -1,4 +1,4 @@
-import type { SeveridadIncidenteVehiculo } from "./catalogos.types";
+import type { SeveridadIncidenteVehiculo } from "./types/catalogos.types";
 
 const SEVERIDAD_CONFIG: Record<SeveridadIncidenteVehiculo, {
   value: SeveridadIncidenteVehiculo;

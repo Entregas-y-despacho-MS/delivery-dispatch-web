@@ -6,7 +6,7 @@ import { hasRole, ROLES_WEB } from "@/config/roles";
 import { useAuthStore } from "@/shared/store/use-auth-store";
 import { authService } from "../services/auth.service";
 import { describeLoginError, WebAccessDeniedError } from "../auth.errors";
-import type { LoginInput } from "../auth.schemas";
+import type { LoginInput } from "../schemas/auth.schemas";
 
 /**
  * A dónde ir tras entrar: la ruta que se intentó abrir sin sesión (ProtectedRoute la deja

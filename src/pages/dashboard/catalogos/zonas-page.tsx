@@ -9,6 +9,7 @@ import {
 } from "@/domains/catalogos";
 import { PageHeader } from "@/shared/components/common/page-header";
 import { FormDialogHeader } from "@/shared/components/common/form-dialog-header";
+import { FormDialogContent } from "@/shared/components/common/form-dialog";
 import { ConfirmActionDialog } from "@/shared/components/common/confirm-action-dialog";
 import { PaginationControls } from "@/shared/components/common/pagination-controls";
 import { SearchField } from "@/shared/components/common/search-field";
@@ -20,7 +21,6 @@ import { useListFilters } from "@/shared/hooks/use-list-filters";
 import { parseApiError } from "@/shared/lib/api-error";
 import {
   Dialog,
-  DialogContent,
 } from "@/shared/components/ui/dialog";
 
 const PAGE_SIZE = 10;
@@ -67,7 +67,7 @@ export default function ZonasPage() {
         eyebrow="Catálogos"
         title="Zonas de reparto"
         icon={MapPin}
-        description="Define el tiempo base que utiliza el equipo para planificar las entregas."
+        description="Delimita en el mapa dónde se reciben y planifican entregas en La Paz."
         action={(
           <Button onClick={editor.openCreate}>
             <Plus aria-hidden /> Nueva zona
@@ -114,12 +114,12 @@ export default function ZonasPage() {
       </section>
 
       <Dialog open={editor.open} onOpenChange={editor.onOpenChange}>
-        <DialogContent data-form-dialog className="form-dialog-content max-h-[90dvh] overflow-y-auto bg-card sm:max-w-2xl motion-reduce:animate-none">
+        <FormDialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-5xl">
           <FormDialogHeader icon={MapPin}
             title={editor.editingItem ? "Editar zona" : "Nueva zona"}
             description={editor.editingItem
-              ? "Actualiza el código, nombre o tiempo base de la zona."
-              : "Registra una zona para incluirla en la planificación de entregas."} />
+              ? "Actualiza los datos y revisa el área de cobertura de reparto."
+              : "Registra la zona y confirma su cobertura en el mapa para clasificar pedidos por ubicación."} />
           <ZonaForm
             key={editor.editingItem?.id ?? "new"}
             zona={editor.editingItem}
@@ -128,7 +128,7 @@ export default function ZonasPage() {
             onDirtyChange={editor.setDirty}
             guardando={zonas.isSaving}
           />
-        </DialogContent>
+        </FormDialogContent>
       </Dialog>
 
       <ConfirmActionDialog open={!!confirmation.item}

@@ -10,9 +10,12 @@ import {
   useAccionesMantenimiento,
   useHistorialMantenimientos,
   useVehiculos,
+  type ErrorMantenimiento,
   type Mantenimiento,
+  type RegistrarMantenimientoInput,
   type VehiculoOpcion,
 } from "@/domains/flota";
+import { useTiposIncidenteVehiculo } from "@/domains/catalogos";
 import { portalHref } from "@/config/portal-routes";
 import { PageHeader } from "@/shared/components/common/page-header";
 import { PaginationControls } from "@/shared/components/common/pagination-controls";
@@ -112,7 +115,7 @@ function HistorialMantenimientos() {
       />
 
       {registrando && (
-        <MantenimientoDialog
+        <MantenimientoDialogConCatalogo
           abierto
           onOpenChange={setRegistrando}
           vehiculos={vehiculos}
@@ -122,5 +125,24 @@ function HistorialMantenimientos() {
         />
       )}
     </div>
+  );
+}
+
+function MantenimientoDialogConCatalogo(props: {
+  abierto: boolean;
+  onOpenChange: (abierto: boolean) => void;
+  vehiculos: VehiculoOpcion[];
+  vehiculoInicial: number | null;
+  onRegistrar: (input: RegistrarMantenimientoInput) => Promise<ErrorMantenimiento | null>;
+  registrando: boolean;
+}) {
+  const tipos = useTiposIncidenteVehiculo({ page: 1, limit: 100 });
+  return (
+    <MantenimientoDialog
+      {...props}
+      tipos={tipos.data}
+      tiposCargando={tipos.isLoading}
+      tiposError={tipos.isError}
+    />
   );
 }

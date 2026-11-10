@@ -8,7 +8,7 @@ import { parseApiError } from "@/shared/lib/api-error";
 import { createQueryKeys } from "@/shared/lib/query-keys";
 import { errorEnlace } from "../solicitudes-cambio.reglas";
 import { revelarEnlaceSeguimiento, solicitudesCambioService } from "../services/solicitudes-cambio.service";
-import type { SolicitudCambio, SolicitudesCambioParams } from "../solicitudes-cambio.types";
+import type { SolicitudCambio, SolicitudesCambioParams } from "../types/solicitudes-cambio.types";
 import {
   escribirFiltrosSolicitudes,
   leerFiltrosSolicitudes,

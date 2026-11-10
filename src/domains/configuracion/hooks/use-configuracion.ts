@@ -5,13 +5,13 @@ import { toast } from "sonner";
 import { useCrud } from "@/shared/hooks/use-crud";
 import { guardarParametros, mensajeGuardado, type ErrorGuardado } from "../configuracion.guardado";
 import { validarParametro } from "../configuracion.reglas";
-import { CLAVES_PARAMETROS_OPERATIVOS } from "../configuracion.schemas";
+import { CLAVES_PARAMETROS_OPERATIVOS } from "../schemas/configuracion.schemas";
 import type {
   ClaveParametroOperativo,
   EstadoValorParametro,
   ParametroSistema,
   ParametrosOperativos,
-} from "../configuracion.types";
+} from "../types/configuracion.types";
 import { parametrosService, type ActualizarParametroPayload } from "../services/configuracion.service";
 
 /** El back marca en la descripción los valores de demostración o sin definir (plan, 6.4). */

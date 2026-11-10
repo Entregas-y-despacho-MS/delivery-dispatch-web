@@ -3,12 +3,14 @@ import { AlertTriangle, Ban, CalendarClock, ImageIcon, PackageX } from "lucide-r
 
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/shared/components/ui/dialog";
+import { Dialog } from "@/shared/components/ui/dialog";
+import { FormDialogContent, FormDialogFooter } from "@/shared/components/common/form-dialog";
+import { FormDialogHeader } from "@/shared/components/common/form-dialog-header";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { formatearFechaHoraExacta } from "../despacho-detalle.format";
-import type { DespachoDetalle } from "../despacho-detalle.types";
+import type { DespachoDetalle } from "../types/despacho-detalle.types";
 import { useAhora } from "../hooks/use-ahora";
 import {
   contarIntentos,
@@ -59,9 +61,9 @@ export function ReprogramarDespachoDialog({ abierto, onOpenChange, ...resto }: R
   const ocupado = resto.enviando || resto.devolviendo;
   return (
     <Dialog open={abierto} onOpenChange={(valor) => !ocupado && onOpenChange(valor)}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+      <FormDialogContent className="sm:max-w-3xl">
         {abierto && <Contenido {...resto} onCerrar={() => onOpenChange(false)} />}
-      </DialogContent>
+      </FormDialogContent>
     </Dialog>
   );
 }
@@ -96,15 +98,11 @@ function Contenido({
 
   return (
     <>
-      <DialogHeader>
-        <DialogTitle className="flex flex-wrap items-center gap-2">
-          {`Reprogramar ${despacho.sourceOrderRef}`}
-          <Badge variant={intentos.alcanzado ? "destructive" : "outline"}>{`Intento ${intentos.siguiente} de ${intentos.limite}`}</Badge>
-        </DialogTitle>
-        <DialogDescription>
-          Cuentan las entregas no concretadas, no las reprogramaciones. El pedido sale de su ruta y vuelve al plan en la fecha pactada.
-        </DialogDescription>
-      </DialogHeader>
+      <FormDialogHeader
+        icon={CalendarClock}
+        title={<span className="flex flex-wrap items-center gap-2">{`Reprogramar ${despacho.sourceOrderRef}`}<Badge variant={intentos.alcanzado ? "destructive" : "outline"}>{`Intento ${intentos.siguiente} de ${intentos.limite}`}</Badge></span>}
+        description="Cuentan las entregas no concretadas, no las reprogramaciones. El pedido sale de su ruta y vuelve al plan en la fecha pactada."
+      />
 
       <section className="space-y-2" aria-label="Historial del pedido">
         <h3 className="text-sm font-semibold">Historial del pedido</h3>
@@ -199,7 +197,7 @@ function Contenido({
 
       {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
 
-      <DialogFooter>
+      <FormDialogFooter>
         <Button type="button" variant="outline" onClick={onCerrar} disabled={ocupado}>Cancelar</Button>
         {intentos.alcanzado ? (
           sePuedeDevolver && (
@@ -212,7 +210,7 @@ function Contenido({
             <CalendarClock aria-hidden /> {enviando ? "Reprogramando..." : "Reprogramar"}
           </Button>
         )}
-      </DialogFooter>
+      </FormDialogFooter>
 
       <EvidenciaVisor
         evidencia={fotos.find((foto) => foto.id === fotoId) ?? null}

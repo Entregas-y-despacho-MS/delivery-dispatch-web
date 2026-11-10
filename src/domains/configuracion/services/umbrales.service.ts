@@ -1,5 +1,5 @@
 import api from "@/shared/lib/axios";
-import type { UmbralesAlerta, UmbralesAlertaGuardados } from "../configuracion.types";
+import type { UmbralesAlerta, UmbralesAlertaGuardados } from "../types/configuracion.types";
 
 const RUTA = "/settings/alert-thresholds";
 

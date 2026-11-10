@@ -1,4 +1,4 @@
-import type { ActorEvento, EvidenciaDetalle, EventoDetalle, TipoEvidencia } from "./despacho-detalle.types";
+import type { ActorEvento, EvidenciaDetalle, EventoDetalle, TipoEvidencia } from "./types/despacho-detalle.types";
 
 const ZONA = "America/La_Paz";
 const fechaHora = new Intl.DateTimeFormat("es-BO", {

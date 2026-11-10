@@ -1,6 +1,6 @@
 import { parseApiError } from "@/shared/lib/api-error";
 import { validarCruces, validarParametro } from "./configuracion.reglas";
-import type { ClaveParametroOperativo } from "./configuracion.types";
+import type { ClaveParametroOperativo } from "./types/configuracion.types";
 
 export interface CambioParametro {
   clave: ClaveParametroOperativo;

@@ -1,5 +1,5 @@
 import type { ApiError } from "@/shared/lib/api-error";
-import type { AgrupacionSla, FilaSla, FiltrosSla, ParamsReporteSla } from "./reportes.types";
+import type { AgrupacionSla, FilaSla, FiltrosSla, ParamsReporteSla } from "./types/reportes.types";
 
 export const AGRUPACIONES_SLA: readonly { valor: AgrupacionSla; etiqueta: string }[] = [
   { valor: "zone", etiqueta: "Zona" },

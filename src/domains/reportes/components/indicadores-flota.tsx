@@ -4,6 +4,7 @@ import { Bar, BarChart, CartesianGrid, Cell, ReferenceLine, ResponsiveContainer,
 
 import { Button } from "@/shared/components/ui/button";
 import { cn } from "@/shared/lib/utils";
+import { IndicadorCard } from "./indicador-card";
 import {
   direccionInicial,
   nombreRepartidor,
@@ -14,7 +15,7 @@ import {
   type DireccionOrden,
 } from "../reportes.kpis";
 import { cumpleUmbral, formatoPorcentaje, UMBRAL_SLA_PORCENTAJE } from "../reportes.reglas";
-import type { FilaSla, MetricasSla, PeriodoKpi } from "../reportes.types";
+import type { FilaSla, MetricasSla, PeriodoKpi } from "../types/reportes.types";
 
 /** Hoy, esta semana o este mes. */
 export function SelectorPeriodoKpi({ periodo, onCambiar, deshabilitado }: {
@@ -41,35 +42,24 @@ export function SelectorPeriodoKpi({ periodo, onCambiar, deshabilitado }: {
   );
 }
 
-function Tarjeta({ titulo, valor, detalle, tono }: { titulo: string; valor: string; detalle?: string; tono?: "ok" | "alerta" }) {
-  return (
-    <div className="rounded-lg border bg-card p-4">
-      <dt className="text-xs font-medium text-muted-foreground">{titulo}</dt>
-      <dd className={cn("mt-1 text-3xl font-semibold tabular-nums", tono === "ok" && "text-success", tono === "alerta" && "text-destructive")}>
-        {valor}
-      </dd>
-      {detalle && <dd className="mt-0.5 text-xs text-muted-foreground">{detalle}</dd>}
-    </div>
-  );
-}
-
 /** Tarjetas del período (escenario 1 de ES-61): % a tiempo, entregas cerradas e incidencias. */
 export function TarjetasKpi({ totales }: { totales: MetricasSla }) {
   const sinEntregas = totales.deliveredCount === 0;
   return (
     <dl className="grid gap-3 sm:grid-cols-3" aria-label="Indicadores del período">
-      <Tarjeta
+      <IndicadorCard
         titulo="Entregas a tiempo"
         valor={formatoPorcentaje(totales.onTimePercentage)}
         detalle={`${totales.onTimeCount} de ${totales.deliveredCount} entregados · umbral ${UMBRAL_SLA_PORCENTAJE} %`}
         tono={sinEntregas ? undefined : cumpleUmbral(totales.onTimePercentage) ? "ok" : "alerta"}
+        tamano="destacado"
       />
-      <Tarjeta
+      <IndicadorCard tamano="destacado"
         titulo="Entregas cerradas"
         valor={String(totales.closedCount)}
         detalle={`${totales.deliveredCount} entregados · ${totales.lateCount} con demora`}
       />
-      <Tarjeta titulo="Incidencias" valor={String(totales.incidentCount)} detalle="Registradas en los despachos del período" />
+      <IndicadorCard tamano="destacado" titulo="Incidencias" valor={String(totales.incidentCount)} detalle="Registradas en los despachos del período" />
     </dl>
   );
 }

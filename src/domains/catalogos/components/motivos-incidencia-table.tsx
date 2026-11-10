@@ -1,11 +1,12 @@
-import { Camera, CameraOff, Pencil, Power } from "lucide-react";
+import { Camera, CameraOff, Pencil } from "lucide-react";
 
 import type { Column } from "@/shared/components/common/data-table";
 import { ResponsiveList } from "@/shared/components/common/responsive-list";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import { Switch } from "@/shared/components/ui/switch";
-import type { MotivoIncidencia } from "../catalogos.types";
+import { EstadoCatalogoBadge } from "./estado-catalogo-badge";
+import type { MotivoIncidencia } from "../types/catalogos.types";
 
 /** Indicador visual del requisito de foto que la app móvil aplica al reportar la incidencia. */
 function EvidenciaBadge({ requiresEvidence }: { requiresEvidence: boolean }) {
@@ -16,18 +17,6 @@ function EvidenciaBadge({ requiresEvidence }: { requiresEvidence: boolean }) {
   ) : (
     <Badge variant="outline" className="border-muted-foreground/20 bg-muted text-muted-foreground">
       <CameraOff aria-hidden /> Foto opcional
-    </Badge>
-  );
-}
-
-function StatusBadge({ active }: { active: boolean }) {
-  return active ? (
-    <Badge variant="outline" className="border-success/20 bg-success/10 text-success">
-      <Power aria-hidden /> Activo
-    </Badge>
-  ) : (
-    <Badge variant="outline" className="border-muted-foreground/20 bg-muted text-muted-foreground">
-      Inactivo
     </Badge>
   );
 }
@@ -77,7 +66,7 @@ export function MotivosIncidenciaTable({
     },
     {
       header: "Estado",
-      cell: (motivo) => <StatusBadge active={motivo.active} />,
+      cell: (motivo) => <EstadoCatalogoBadge activo={motivo.active} />,
       className: "w-[24%]",
     },
     {
@@ -108,7 +97,7 @@ export function MotivosIncidenciaTable({
             <EvidenciaBadge requiresEvidence={motivo.requiresEvidence} />
           </div>
           <div className="mt-3 flex items-center justify-between border-t pt-3">
-            <StatusBadge active={motivo.active} />
+            <EstadoCatalogoBadge activo={motivo.active} />
             <Switch checked={motivo.active} disabled={busy} onCheckedChange={() => onToggle(motivo)} aria-label={`${motivo.active ? "Desactivar" : "Activar"} ${motivo.name}`} />
           </div>
         </article>

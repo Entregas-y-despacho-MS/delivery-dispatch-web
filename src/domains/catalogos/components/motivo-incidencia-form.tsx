@@ -10,8 +10,8 @@ import { Label } from "@/shared/components/ui/label";
 import { Switch } from "@/shared/components/ui/switch";
 import { parseApiError } from "@/shared/lib/api-error";
 import { useFormSubmitConfirmation } from "@/shared/hooks/use-form-submit-confirmation";
-import { motivoIncidenciaSchema, type MotivoIncidenciaFormValues } from "../catalogos.schemas";
-import type { MotivoIncidencia } from "../catalogos.types";
+import { motivoIncidenciaSchema, type MotivoIncidenciaFormValues } from "../schemas/catalogos.schemas";
+import type { MotivoIncidencia } from "../types/catalogos.types";
 
 const FIELD_ICON = "pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground";
 

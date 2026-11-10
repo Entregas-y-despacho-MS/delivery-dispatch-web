@@ -4,9 +4,10 @@ import { LoaderCircle, MapPin, PackagePlus, TriangleAlert } from "lucide-react";
 import { useForm, useWatch } from "react-hook-form";
 
 import { FormDialogHeader } from "@/shared/components/common/form-dialog-header";
+import { FormDialogContent, FormDialogFooter } from "@/shared/components/common/form-dialog";
 import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 import { Button } from "@/shared/components/ui/button";
-import { Dialog, DialogContent } from "@/shared/components/ui/dialog";
+import { Dialog } from "@/shared/components/ui/dialog";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { Skeleton } from "@/shared/components/ui/skeleton";
@@ -20,8 +21,8 @@ import {
   crearRecojoSchema,
   RECOJO_FORM_VACIO,
   type RecojoFormValues,
-} from "../recojos.schemas";
-import type { CrearRecojoInput } from "../recojos.types";
+} from "../schemas/recojos.schemas";
+import type { CrearRecojoInput } from "../types/recojos.types";
 
 // Leaflet pesa: el mapa se descarga solo cuando se abre el formulario.
 const PuntoRecojoMapa = lazy(() => import("./punto-recojo-mapa"));
@@ -105,7 +106,7 @@ export function NuevoRecojoDialog({ abierto, onOpenChange, onCrear, creando = fa
   const e = errors;
   return (
     <Dialog open={abierto} onOpenChange={cambiarAbierto}>
-      <DialogContent data-form-dialog className="form-dialog-content max-h-[90dvh] overflow-y-auto bg-card sm:max-w-3xl motion-reduce:animate-none">
+      <FormDialogContent className="sm:max-w-3xl">
         <FormDialogHeader
           icon={PackagePlus}
           title="Nuevo recojo"
@@ -183,15 +184,15 @@ export function NuevoRecojoDialog({ abierto, onOpenChange, onCrear, creando = fa
             </Campo>
           </fieldset>
 
-          <div className="flex flex-col-reverse gap-2 border-t pt-4 sm:flex-row sm:justify-end">
+          <FormDialogFooter>
             <Button type="button" variant="outline" disabled={creando} onClick={() => cambiarAbierto(false)}>Cancelar</Button>
             <Button type="submit" disabled={creando}>
               {creando ? <LoaderCircle className="animate-spin" aria-hidden /> : <PackagePlus aria-hidden />}
               {creando ? "Registrando…" : "Registrar recojo"}
             </Button>
-          </div>
+          </FormDialogFooter>
         </form>
-      </DialogContent>
+      </FormDialogContent>
     </Dialog>
   );
 }

@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { CambiarEstadoDialog } from "./cambiar-estado-dialog";
 import { vehiculosService } from "../services/vehiculos.service";
-import type { Vehiculo } from "../flota.types";
+import type { Vehiculo } from "../types/flota.types";
 
 Element.prototype.scrollIntoView = () => undefined;
 HTMLElement.prototype.hasPointerCapture = () => false;

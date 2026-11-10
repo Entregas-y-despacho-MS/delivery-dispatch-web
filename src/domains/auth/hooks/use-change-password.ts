@@ -2,7 +2,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { closeSession } from "@/shared/lib/session-lifecycle";
-import type { ChangePasswordInput } from "../auth.schemas";
+import type { ChangePasswordInput } from "../schemas/auth.schemas";
 import { authService } from "../services/auth.service";
 
 export function useChangePassword() {

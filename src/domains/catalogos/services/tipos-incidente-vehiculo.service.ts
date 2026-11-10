@@ -1,11 +1,11 @@
 import { createCrudService, type PaginatedApiResponse } from "@/shared/lib/base.service";
-import { tipoIncidenteVehiculoResponseSchema } from "../catalogos.schemas";
+import { tipoIncidenteVehiculoResponseSchema } from "../schemas/catalogos.schemas";
 import type {
   TipoIncidenteVehiculo,
   TipoIncidenteVehiculoCreate,
   TipoIncidenteVehiculoListParams,
   TipoIncidenteVehiculoUpdate,
-} from "../catalogos.types";
+} from "../types/catalogos.types";
 
 export const tiposIncidenteVehiculoService = createCrudService<
   TipoIncidenteVehiculo,

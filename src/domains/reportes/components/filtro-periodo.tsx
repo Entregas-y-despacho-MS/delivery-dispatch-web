@@ -5,7 +5,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { cn } from "@/shared/lib/utils";
 import { AGRUPACIONES_SLA, MENSAJE_RANGO, type ProblemaRango } from "../reportes.reglas";
-import type { AgrupacionSla } from "../reportes.types";
+import type { AgrupacionSla } from "../types/reportes.types";
 
 const CLASE_SELECT = "h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50";
 

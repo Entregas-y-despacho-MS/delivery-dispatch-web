@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { authService } from "../services/auth.service";
-import type { ForgotPasswordInput } from "../auth.schemas";
+import type { ForgotPasswordInput } from "../schemas/auth.schemas";
 import { parseApiError } from "@/shared/lib/api-error";
 
 /**

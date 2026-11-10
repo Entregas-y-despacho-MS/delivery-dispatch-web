@@ -7,8 +7,8 @@ import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { parseApiError } from "@/shared/lib/api-error";
 import { useFormSubmitConfirmation } from "@/shared/hooks/use-form-submit-confirmation";
-import { vehiculoSchema, type VehiculoFormValues } from "../flota.schemas";
-import type { Vehiculo } from "../flota.types";
+import { vehiculoSchema, type VehiculoFormValues } from "../schemas/flota.schemas";
+import type { Vehiculo } from "../types/flota.types";
 
 const FIELD_ICON = "pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground";
 

@@ -13,7 +13,7 @@ const toast = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn(), info: vi.fn(
 vi.mock("sonner", () => ({ toast }));
 const { default: api } = await import("@/shared/lib/axios");
 // oxlint-disable-next-line no-restricted-imports -- las pruebas revisan el esquema directamente.
-const { umbralesSchema } = await import("@/domains/configuracion/configuracion.schemas");
+const { umbralesSchema } = await import("@/domains/configuracion/schemas/configuracion.schemas");
 // oxlint-disable-next-line no-restricted-imports -- las pruebas revisan la traducción de errores directamente.
 const { errorGuardadoUmbrales } = await import("@/domains/configuracion/configuracion.umbrales");
 // oxlint-disable-next-line no-restricted-imports -- las pruebas revisan la página completa.

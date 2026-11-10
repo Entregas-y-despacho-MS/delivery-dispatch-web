@@ -35,6 +35,8 @@ export function LoteResumenCard({
   seleccionado = false,
   onSeleccionar,
 }: LoteResumenCardProps) {
+  const esRecojoProveedor = zona === null;
+
   return (
     <Card
       className={cn(
@@ -60,13 +62,13 @@ export function LoteResumenCard({
             : <span>{titulo}</span>}
           <span className="flex items-center gap-1 text-xs font-normal text-muted-foreground">
             <Package className="size-3.5" aria-hidden />
-            {`${cantidadPedidos} ${cantidadPedidos === 1 ? "pedido" : "pedidos"}`}
+            {`${cantidadPedidos} ${esRecojoProveedor ? (cantidadPedidos === 1 ? "recojo" : "recojos") : (cantidadPedidos === 1 ? "pedido" : "pedidos")}`}
           </span>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3 px-4 text-xs">
         <dl className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-muted-foreground">
-          <Dato icono={<MapPin aria-hidden />} etiqueta="Zona" valor={zona ?? "Sin zona"} />
+          <Dato icono={<MapPin aria-hidden />} etiqueta={esRecojoProveedor ? "Operación" : "Zona"} valor={zona ?? "Recojos de proveedor"} />
           <Dato icono={<CalendarDays aria-hidden />} etiqueta="Fecha" valor={formatearFechaTurno(fecha)} />
           <Dato icono={<Truck aria-hidden />} etiqueta="Vehículo" valor={vehiculo ?? "Sin vehículo"} />
           <Dato icono={<UserRound aria-hidden />} etiqueta="Revisor" valor={revisor ?? "Sin asignar"} />

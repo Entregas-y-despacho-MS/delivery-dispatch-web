@@ -1,6 +1,6 @@
 import api from "@/shared/lib/axios";
 import type { ListResult } from "@/shared/lib/base.service";
-import type { LoteDetalle, LoteResumen, LotesParams, LotesResponse } from "../lotes.types";
+import type { LoteDetalle, LoteResumen, LotesParams, LotesResponse } from "../types/lotes.types";
 
 /** Lista de lotes filtrada por estado, fecha y revisor (GET /route-batches). */
 export async function listarLotes(params: LotesParams, signal?: AbortSignal): Promise<ListResult<LoteResumen>> {

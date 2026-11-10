@@ -26,6 +26,7 @@ interface AprobarPromesasDialogProps {
   sacados: PedidoDelLote[];
   aprobando: boolean;
   onConfirmar: () => void;
+  modoRecojo?: boolean;
 }
 
 /**
@@ -40,6 +41,7 @@ export function AprobarPromesasDialog({
   sacados,
   aprobando,
   onConfirmar,
+  modoRecojo = false,
 }: AprobarPromesasDialogProps) {
   const correos = aprobados.length;
 
@@ -47,27 +49,24 @@ export function AprobarPromesasDialog({
     <Dialog open={abierto} onOpenChange={(valor) => !aprobando && onOpenChange(valor)}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{`Aprobar promesas del ${titulo}`}</DialogTitle>
+          <DialogTitle>{modoRecojo ? `Confirmar revisión del ${titulo}` : `Aprobar promesas del ${titulo}`}</DialogTitle>
           <DialogDescription>
-            Los pedidos aprobados pasan a programados y cada cliente recibe su fecha y franja.
+            {modoRecojo ? "Confirma que revisaste las órdenes de compra, las ventanas acordadas y la capacidad del lote. El recojo no envía una promesa ni un correo al cliente." : "Los pedidos aprobados pasan a programados y cada cliente recibe su fecha y franja."}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3 text-sm">
-          <p className="flex items-start gap-2 rounded-md border border-info/30 bg-info/10 p-3">
+          {!modoRecojo && <p className="flex items-start gap-2 rounded-md border border-info/30 bg-info/10 p-3">
             <Mail className="mt-0.5 size-4 shrink-0 text-info" aria-hidden />
-            <span>
-              Saldrán <strong>{correos} {correos === 1 ? "correo" : "correos"}</strong> a los clientes.
-              Los pedidos sin correo registrado se aprueban igual, pero no reciben aviso.
-            </span>
-          </p>
+            <span>Saldrán <strong>{correos} {correos === 1 ? "correo" : "correos"}</strong> a los clientes. Los pedidos sin correo registrado se aprueban igual, pero no reciben aviso.</span>
+          </p>}
 
           {sacados.length > 0 && (
             <div className="flex items-start gap-2 rounded-md border border-warning/30 bg-warning/10 p-3">
               <Undo2 className="mt-0.5 size-4 shrink-0 text-warning" aria-hidden />
               <div>
                 <p>
-                  {sacados.length === 1 ? "Este pedido vuelve" : "Estos pedidos vuelven"} a pendientes, sin correo:
+                  {sacados.length === 1 ? (modoRecojo ? "Este recojo vuelve" : "Este pedido vuelve") : (modoRecojo ? "Estos recojos vuelven" : "Estos pedidos vuelven")} {modoRecojo ? "a la cola de programación:" : "a pendientes, sin correo:"}
                 </p>
                 <p className="mt-1 font-mono text-xs text-muted-foreground">
                   {sacados.map((pedido) => pedido.orderNumber).join(", ")}
@@ -83,7 +82,7 @@ export function AprobarPromesasDialog({
             Cancelar
           </Button>
           <Button type="button" onClick={onConfirmar} disabled={aprobando || correos === 0}>
-            {aprobando ? "Aprobando..." : `Aprobar ${correos} ${correos === 1 ? "pedido" : "pedidos"}`}
+            {aprobando ? "Guardando…" : modoRecojo ? "Confirmar revisión" : `Aprobar ${correos} ${correos === 1 ? "pedido" : "pedidos"}`}
           </Button>
         </DialogFooter>
       </DialogContent>

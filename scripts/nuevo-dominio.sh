@@ -18,9 +18,9 @@ PASCAL="$(echo "$D" | awk -F- '{for(i=1;i<=NF;i++) printf toupper(substr($i,1,1)
 SINGULAR="${PASCAL%s}"
 CAMEL="$(echo "$PASCAL" | awk '{print tolower(substr($0,1,1)) substr($0,2)}')"
 
-mkdir -p "src/domains/$D/services" "src/domains/$D/hooks" "src/domains/$D/components"
+mkdir -p "src/domains/$D/schemas" "src/domains/$D/types" "src/domains/$D/services" "src/domains/$D/hooks" "src/domains/$D/components"
 
-cat > "src/domains/$D/$D.types.ts" <<TYPES
+cat > "src/domains/$D/types/$D.types.ts" <<TYPES
 // Tipos del dominio "$D" — refleja lo que devuelve el backend.
 export interface $SINGULAR {
   id: number;
@@ -30,7 +30,7 @@ export interface $SINGULAR {
 }
 TYPES
 
-cat > "src/domains/$D/$D.schemas.ts" <<SCHEMAS
+cat > "src/domains/$D/schemas/$D.schemas.ts" <<SCHEMAS
 import { z } from "zod";
 
 export const ${CAMEL}Schema = z.object({
@@ -43,7 +43,7 @@ SCHEMAS
 
 cat > "src/domains/$D/services/$D.service.ts" <<SVC
 import { createCrudService } from "@/shared/lib/base.service";
-import type { $SINGULAR } from "../$D.types";
+import type { $SINGULAR } from "../types/$D.types";
 
 export const ${CAMEL}Service = {
   ...createCrudService<$SINGULAR>("/$D"),
@@ -55,7 +55,7 @@ SVC
 cat > "src/domains/$D/hooks/use-$D.ts" <<HOOK
 import { useCrud } from "@/shared/hooks/use-crud";
 import { ${CAMEL}Service } from "../services/$D.service";
-import type { $SINGULAR } from "../$D.types";
+import type { $SINGULAR } from "../types/$D.types";
 
 /** Punto único de acceso a los datos de $D. */
 export function use$PASCAL() {
@@ -65,10 +65,8 @@ HOOK
 
 cat > "src/domains/$D/index.ts" <<BARREL
 // API pública del dominio "$D".
-export { ${CAMEL}Service } from "./services/$D.service";
 export { use$PASCAL } from "./hooks/use-$D";
-export { ${CAMEL}Schema, type ${SINGULAR}Input } from "./$D.schemas";
-export type { $SINGULAR } from "./$D.types";
+export type { $SINGULAR } from "./types/$D.types";
 BARREL
 
 cat > "src/pages/dashboard/$D-page.tsx" <<PAGE
@@ -142,7 +140,7 @@ open(nav, "w").write(s)
 PY
 
 echo "✅ Dominio '$D' creado y enganchado:"
-echo "   src/domains/$D/              (index.ts, types, schemas, service, hook)"
+echo "   src/domains/$D/              (index.ts, schemas/, types/, service, hook)"
 echo "   src/pages/dashboard/$D-page.tsx"
 echo "   ruta /app/$D  +  permisos $ROLE  +  ítem en el sidebar"
 echo ""

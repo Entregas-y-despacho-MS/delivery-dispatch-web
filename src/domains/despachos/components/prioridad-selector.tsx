@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
 import { nombrePrioridad, puedeCambiarPrioridad } from "../despachos.prioridad";
-import type { PedidoPendiente, PrioridadPedido } from "../despachos.types";
+import type { PedidoPendiente, PrioridadPedido } from "../types/despachos.types";
 import { PrioridadBadge } from "./pedido-badges";
 
 const OPCIONES: { valor: PrioridadPedido; etiqueta: string; icono: typeof Zap }[] = [

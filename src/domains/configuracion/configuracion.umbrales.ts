@@ -1,5 +1,5 @@
 import { parseApiError } from "@/shared/lib/api-error";
-import type { CampoUmbral } from "./configuracion.types";
+import type { CampoUmbral } from "./types/configuracion.types";
 
 export const CAMPOS_UMBRAL: readonly CampoUmbral[] = [
   "slaAlertMinOnTimePct",

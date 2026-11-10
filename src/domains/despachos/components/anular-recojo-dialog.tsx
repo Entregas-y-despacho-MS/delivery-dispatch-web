@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Label } from "@/shared/components/ui/label";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { MAX_MOTIVO_ANULACION, type ErrorRecojo } from "../recojos.reglas";
-import type { Recojo } from "../recojos.types";
+import type { Recojo } from "../types/recojos.types";
 
 interface AnularRecojoDialogProps {
   /** Recojo a anular; null cierra el diálogo. */

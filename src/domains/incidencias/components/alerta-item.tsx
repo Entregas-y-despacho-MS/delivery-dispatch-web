@@ -5,7 +5,7 @@ import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import { cn } from "@/shared/lib/utils";
 import { descripcionAlerta, enlaceAlerta, etiquetaEstadoAlerta, etiquetaTipoAlerta, fechaHoraBolivia } from "../incidencias.alertas";
-import type { AlertaOperativa } from "../incidencias.types";
+import type { AlertaOperativa } from "../types/incidencias.types";
 
 interface AlertaItemProps {
   alerta: AlertaOperativa;

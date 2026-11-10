@@ -22,7 +22,7 @@ import {
 } from "@/shared/components/ui/table";
 import { cn } from "@/shared/lib/utils";
 import type { OrdenActual } from "../hooks/use-bandeja-pedidos";
-import type { OrdenBandeja, PedidoPendiente, PrioridadPedido } from "../despachos.types";
+import type { OrdenBandeja, PedidoPendiente, PrioridadPedido } from "../types/despachos.types";
 import { formatearFranja, formatearKilos, formatearMetrosCubicos } from "../despachos.format";
 import { PedidoBadges } from "./pedido-badges";
 import { PrioridadSelector, type PedidoConPrioridad } from "./prioridad-selector";

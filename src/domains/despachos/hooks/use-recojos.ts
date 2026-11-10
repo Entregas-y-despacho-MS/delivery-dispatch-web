@@ -14,7 +14,7 @@ import {
   type ErrorRecojo,
   type FiltrosRecojos,
 } from "../recojos.reglas";
-import type { CrearRecojoInput, RecojoListParams } from "../recojos.types";
+import type { CrearRecojoInput, RecojoListParams } from "../types/recojos.types";
 import { recojosService } from "../services/recojos.service";
 
 export const recojosKeys = createQueryKeys<RecojoListParams>("pickup-orders");

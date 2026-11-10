@@ -8,11 +8,12 @@ import {
 } from "@/domains/catalogos";
 import { PageHeader } from "@/shared/components/common/page-header";
 import { FormDialogHeader } from "@/shared/components/common/form-dialog-header";
+import { FormDialogContent } from "@/shared/components/common/form-dialog";
 import { PaginationControls } from "@/shared/components/common/pagination-controls";
 import { SearchField } from "@/shared/components/common/search-field";
 import { ErrorAlert } from "@/shared/components/feedback/error-alert";
 import { Button } from "@/shared/components/ui/button";
-import { Dialog, DialogContent } from "@/shared/components/ui/dialog";
+import { Dialog } from "@/shared/components/ui/dialog";
 
 export default function TiposIncidenteVehiculoPage() {
   const screen = useTiposIncidenteVehiculoScreen();
@@ -59,14 +60,14 @@ export default function TiposIncidenteVehiculoPage() {
       </section>
 
       <Dialog open={screen.dialogOpen} onOpenChange={screen.closeDialog}>
-        <DialogContent data-form-dialog className="form-dialog-content max-h-[90dvh] overflow-y-auto bg-card sm:max-w-2xl motion-reduce:animate-none">
+        <FormDialogContent className="sm:max-w-2xl">
           <FormDialogHeader icon={Wrench}
             title={screen.editingTipo ? "Editar tipo de falla" : "Nuevo tipo de falla"}
             description="Define la severidad y si esta falla impide asignar nuevos despachos al vehículo." />
           <TipoIncidenteVehiculoForm key={screen.editingTipo?.id ?? "new"} tipo={screen.editingTipo}
             onSubmit={screen.saveTipo} onCancel={() => screen.closeDialog(false)}
             onDirtyChange={screen.setFormDirty} guardando={tipos.isSaving} />
-        </DialogContent>
+        </FormDialogContent>
       </Dialog>
     </div>
   );

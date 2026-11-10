@@ -1,4 +1,4 @@
-import type { ItemRecepcion, ResultadoRecepcion } from "./recepcion.types";
+import type { ItemRecepcion, ResultadoRecepcion } from "./types/recepcion.types";
 
 /** Tono visual de cada resultado: verde, ámbar o rojo. */
 export type TonoRecepcion = "ok" | "diferencias" | "rechazo";

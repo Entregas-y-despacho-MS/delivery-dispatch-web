@@ -5,7 +5,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/shared/components/ui/dialog";
 import { useAhora } from "../hooks/use-ahora";
 import { enlaceMapa, etiquetaEvidencia, formatearCoordenadas, formatearFechaHoraExacta, urlVencida } from "../despacho-detalle.format";
-import type { EvidenciaDetalle } from "../despacho-detalle.types";
+import type { EvidenciaDetalle } from "../types/despacho-detalle.types";
 
 const NIVELES_ZOOM = [1, 1.5, 2, 3] as const;
 

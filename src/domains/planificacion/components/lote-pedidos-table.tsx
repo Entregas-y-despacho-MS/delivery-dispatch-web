@@ -4,7 +4,7 @@ import { cn } from "cn";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/shared/components/ui/table";
-import type { PedidoLote } from "../lotes.types";
+import type { PedidoLote } from "../types/lotes.types";
 import { formatearFranja } from "../planificacion.format";
 import { EstadoPedidoLoteBadge } from "./estado-pedido-lote-badge";
 
@@ -15,12 +15,13 @@ interface LotePedidosTableProps {
   /** Sin esto la tabla es de solo lectura (lote ajeno o acción en curso). */
   onSacar?: (pedido: PedidoLote) => void;
   onDevolver?: (dispatchId: number) => void;
+  modoRecojo?: boolean;
 }
 
 /** Pedidos del lote en orden de visita con su franja propuesta (ST-215.1). */
-export function LotePedidosTable({ pedidos, sacados, onSacar, onDevolver }: LotePedidosTableProps) {
+export function LotePedidosTable({ pedidos, sacados, onSacar, onDevolver, modoRecojo = false }: LotePedidosTableProps) {
   if (pedidos.length === 0) {
-    return <p className="py-6 text-center text-sm text-muted-foreground">El lote no tiene pedidos.</p>;
+    return <p className="py-6 text-center text-sm text-muted-foreground">El lote no tiene elementos.</p>;
   }
 
   return (
@@ -29,9 +30,9 @@ export function LotePedidosTable({ pedidos, sacados, onSacar, onDevolver }: Lote
         <TableHeader>
           <TableRow>
             <TableHead className="w-10">#</TableHead>
-            <TableHead>Pedido</TableHead>
-            <TableHead>Dirección</TableHead>
-            <TableHead>Franja propuesta</TableHead>
+            <TableHead>{modoRecojo ? "Orden de compra" : "Pedido"}</TableHead>
+            <TableHead>{modoRecojo ? "Proveedor" : "Dirección"}</TableHead>
+            <TableHead>{modoRecojo ? "Ventana de recojo" : "Franja propuesta"}</TableHead>
             <TableHead className="text-right">Acción</TableHead>
           </TableRow>
         </TableHeader>

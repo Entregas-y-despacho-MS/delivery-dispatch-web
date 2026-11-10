@@ -13,7 +13,7 @@ const server = await createServer({
 });
 after(async () => server.close());
 
-const { crearParametrosSchema, CLAVES_PARAMETROS_OPERATIVOS } = await server.ssrLoadModule("/src/domains/configuracion/configuracion.schemas.ts");
+const { crearParametrosSchema, CLAVES_PARAMETROS_OPERATIVOS } = await server.ssrLoadModule("/src/domains/configuracion/schemas/configuracion.schemas.ts");
 const { planificarGuardado, guardarParametros, mensajeGuardado } = await server.ssrLoadModule("/src/domains/configuracion/configuracion.guardado.ts");
 const { validarCruces } = await server.ssrLoadModule("/src/domains/configuracion/configuracion.reglas.ts");
 const { ParametrosForm } = await server.ssrLoadModule("/src/domains/configuracion/components/parametros-form.tsx");

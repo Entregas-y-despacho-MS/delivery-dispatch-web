@@ -6,7 +6,7 @@ import { QUERY_POLICIES } from "@/shared/lib/query-policies";
 import { createQueryKeys } from "@/shared/lib/query-keys";
 import type { ParamsReporteFlota } from "../reportes.flota";
 import { escribirFiltrosSla, leerFiltrosSla, problemaRango } from "../reportes.reglas";
-import type { FiltrosSla } from "../reportes.types";
+import type { FiltrosSla } from "../types/reportes.types";
 import { obtenerReporteFlota } from "../services/reporte-flota.service";
 
 export const reporteFlotaKeys = createQueryKeys<{ from: string; to: string }>("fleet-report");

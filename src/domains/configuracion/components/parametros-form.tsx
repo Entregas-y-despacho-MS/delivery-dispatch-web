@@ -4,29 +4,25 @@ import { CircleDashed, LoaderCircle, Save, TriangleAlert, Undo2, WandSparkles } 
 import { useForm } from "react-hook-form";
 
 import { Alert, AlertDescription } from "@/shared/components/ui/alert";
-import { Badge } from "@/shared/components/ui/badge";
+import { StatusBadge } from "@/shared/components/common/status-badge";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { cn } from "@/shared/lib/utils";
 import { GRUPOS_PARAMETROS, type CampoParametro } from "../configuracion.grupos";
-import { CLAVES_PARAMETROS_OPERATIVOS, crearParametrosSchema, type ParametrosFormValues } from "../configuracion.schemas";
-import type { ClaveParametroOperativo, EstadoValorParametro } from "../configuracion.types";
+import { CLAVES_PARAMETROS_OPERATIVOS, crearParametrosSchema, type ParametrosFormValues } from "../schemas/configuracion.schemas";
+import type { ClaveParametroOperativo, EstadoValorParametro } from "../types/configuracion.types";
 import type { ErrorGuardado } from "../hooks/use-configuracion";
 
 function EstadoBadge({ estado }: { estado: EstadoValorParametro }) {
   if (estado === "propuesto") {
     return (
-      <Badge variant="outline" className="border-warning/20 bg-warning/10 text-warning">
-        <WandSparkles aria-hidden /> Propuesto
-      </Badge>
+      <StatusBadge tone="warning" icon={<WandSparkles aria-hidden />}>Propuesto</StatusBadge>
     );
   }
   if (estado === "sin-definir") {
     return (
-      <Badge variant="outline" className="border-muted-foreground/20 bg-muted text-muted-foreground">
-        <CircleDashed aria-hidden /> Sin definir
-      </Badge>
+      <StatusBadge tone="muted" icon={<CircleDashed aria-hidden />}>Sin definir</StatusBadge>
     );
   }
   return null;

@@ -1,5 +1,5 @@
 import { fechaValida } from "./historial.url";
-import type { SolicitudesCambioParams } from "./solicitudes-cambio.types";
+import type { SolicitudesCambioParams } from "./types/solicitudes-cambio.types";
 
 export const FILAS_SOLICITUDES = 10;
 

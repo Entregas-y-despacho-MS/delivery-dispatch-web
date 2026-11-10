@@ -1,5 +1,5 @@
 import { parseApiError } from "@/shared/lib/api-error";
-import type { OrigenRecojo, RecojoListParams } from "./recojos.types";
+import type { OrigenRecojo, RecojoListParams } from "./types/recojos.types";
 
 export const RECOJOS_POR_PAGINA = 10;
 

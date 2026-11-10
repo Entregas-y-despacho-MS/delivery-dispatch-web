@@ -5,7 +5,7 @@ import type {
   MantenimientoListParams,
   MantenimientosResponse,
   RegistrarMantenimientoInput,
-} from "../flota.types";
+} from "../types/flota.types";
 
 const RUTA = "/vehicle-maintenances";
 

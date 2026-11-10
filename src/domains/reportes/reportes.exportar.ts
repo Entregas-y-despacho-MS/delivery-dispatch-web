@@ -1,5 +1,5 @@
 import { etiquetaAgrupacion, filasPorDemora, nombreGrupo } from "./reportes.reglas";
-import type { MetricasSla, ReporteSla } from "./reportes.types";
+import type { MetricasSla, ReporteSla } from "./types/reportes.types";
 
 export type Celda = string | number | null;
 

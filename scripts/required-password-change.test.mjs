@@ -27,7 +27,7 @@ const { needsPasswordChange, useAuthStore } = await server.ssrLoadModule("/src/s
 delete globalThis.window;
 
 const { authService } = await server.ssrLoadModule("/src/domains/auth/services/auth.service.ts");
-const { changePasswordSchema } = await server.ssrLoadModule("/src/domains/auth/auth.schemas.ts");
+const { changePasswordSchema } = await server.ssrLoadModule("/src/domains/auth/schemas/auth.schemas.ts");
 const { describeChangePasswordError } = await server.ssrLoadModule("/src/domains/auth/auth.errors.ts");
 const { default: api } = await server.ssrLoadModule("/src/shared/lib/axios.ts");
 const { closeSession } = await server.ssrLoadModule("/src/shared/lib/session-lifecycle.ts");

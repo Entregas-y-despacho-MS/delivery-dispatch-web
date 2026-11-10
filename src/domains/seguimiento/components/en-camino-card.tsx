@@ -4,7 +4,7 @@ import { Bike, Clock3, MapPin, UserRound } from "lucide-react";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { formatearHora } from "../seguimiento.format";
 import { descripcionVehiculo, detalleEta, estaEnCamino, textoEta } from "../seguimiento.en-vivo";
-import type { SeguimientoPublico } from "../seguimiento.types";
+import type { SeguimientoPublico } from "../types/seguimiento.types";
 
 // Leaflet pesa: solo se descarga cuando hay una posición que mostrar.
 const MiniMapa = lazy(() => import("./mini-mapa"));

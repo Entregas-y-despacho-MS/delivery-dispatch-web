@@ -1,7 +1,7 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
 import { QUERY_POLICIES } from "@/shared/lib/query-policies";
-import type { LotesParams } from "../lotes.types";
+import type { LotesParams } from "../types/lotes.types";
 import { lotesKeys } from "../planificacion.mutaciones";
 import { listarLotes, obtenerLote } from "../services/lotes.service";
 

@@ -4,7 +4,7 @@ import type {
   NivelServicioCreate,
   NivelServicioListParams,
   NivelServicioUpdate,
-} from "../catalogos.types";
+} from "../types/catalogos.types";
 
 export const nivelesServicioService = createCrudService<
   NivelServicio,

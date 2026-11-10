@@ -8,7 +8,7 @@ import {
   formatearFechaHoraExacta,
   quienOrigino,
 } from "../despacho-detalle.format";
-import type { EvidenciaDetalle, EventoDetalle } from "../despacho-detalle.types";
+import type { EvidenciaDetalle, EventoDetalle } from "../types/despacho-detalle.types";
 
 interface FichaLineaTiempoProps {
   eventos: EventoDetalle[];

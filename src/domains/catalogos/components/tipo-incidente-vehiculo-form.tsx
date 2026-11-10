@@ -10,8 +10,8 @@ import { Label } from "@/shared/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 import { parseApiError } from "@/shared/lib/api-error";
 import { useFormSubmitConfirmation } from "@/shared/hooks/use-form-submit-confirmation";
-import { tipoIncidenteVehiculoSchema, type TipoIncidenteVehiculoFormValues } from "../catalogos.schemas";
-import type { SeveridadIncidenteVehiculo, TipoIncidenteVehiculo } from "../catalogos.types";
+import { tipoIncidenteVehiculoSchema, type TipoIncidenteVehiculoFormValues } from "../schemas/catalogos.schemas";
+import type { SeveridadIncidenteVehiculo, TipoIncidenteVehiculo } from "../types/catalogos.types";
 import { SEVERIDADES_INCIDENTE_VEHICULO } from "../tipos-incidente-vehiculo.constants";
 
 interface TipoIncidenteVehiculoFormProps {

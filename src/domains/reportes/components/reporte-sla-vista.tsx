@@ -6,7 +6,7 @@ import { ErrorAlert } from "@/shared/components/feedback/error-alert";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { parseApiError } from "@/shared/lib/api-error";
 import { mensajeErrorSla } from "../reportes.reglas";
-import type { ReporteSla } from "../reportes.types";
+import type { ReporteSla } from "../types/reportes.types";
 import { GraficoTiemposPorGrupo, MedidorCumplimiento } from "./grafico-cumplimiento";
 import { ResumenSla } from "./resumen-sla";
 import { TablaSla } from "./tabla-sla";

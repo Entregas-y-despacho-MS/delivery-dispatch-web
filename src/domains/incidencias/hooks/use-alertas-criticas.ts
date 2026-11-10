@@ -13,7 +13,7 @@ import {
   ordenarAlertas,
   paramsAlertas,
 } from "../incidencias.alertas";
-import type { EstadoAlerta, FiltrosAlertas } from "../incidencias.types";
+import type { EstadoAlerta, FiltrosAlertas } from "../types/incidencias.types";
 import { atenderAlerta, listarAlertas } from "../services/alertas.service";
 
 export const alertasKeys = createQueryKeys<{ status?: EstadoAlerta; page: number; limit: number }>("operational-alerts");

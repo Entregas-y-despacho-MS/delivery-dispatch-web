@@ -1,5 +1,5 @@
 import { formatearHora } from "./seguimiento.format";
-import type { EtaSeguimiento, RepartidorSeguimiento, SeguimientoPublico } from "./seguimiento.types";
+import type { EtaSeguimiento, RepartidorSeguimiento, SeguimientoPublico } from "./types/seguimiento.types";
 
 /** Estados en los que el back manda ETA y repartidor (ST-40.1). */
 const EN_CAMINO = new Set(["out_for_delivery", "in_transit"]);

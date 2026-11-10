@@ -1,5 +1,5 @@
 import api from "@/shared/lib/axios";
-import type { FiltrosTableroKanban, TableroKanban, TableroKanbanFiltrosCatalogo } from "../despachos.types";
+import type { FiltrosTableroKanban, TableroKanban, TableroKanbanFiltrosCatalogo } from "../types/despachos.types";
 
 /** Lectura de columnas y despachos operativos agrupados para la fecha seleccionada. */
 export async function obtenerTableroKanban(params: FiltrosTableroKanban, signal?: AbortSignal): Promise<TableroKanban> {

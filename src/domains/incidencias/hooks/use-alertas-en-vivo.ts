@@ -4,10 +4,10 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import { useSocketEvents } from "@/shared/hooks/use-socket";
-import { descripcionAlerta, enlaceAlerta, esAlertaLevantada, etiquetaTipoAlerta, EVENTO_ALERTA_LEVANTADA } from "../incidencias.alertas";
+import { descripcionAlerta, enlaceAlerta, esAlertaLevantada, etiquetaTipoAlerta, EVENTO_ALERTA_ATENDIDA, EVENTO_ALERTA_LEVANTADA } from "../incidencias.alertas";
 import { alertasKeys } from "./use-alertas-criticas";
 
-const EVENTOS_ALERTAS = [EVENTO_ALERTA_LEVANTADA] as const;
+const EVENTOS_ALERTAS = [EVENTO_ALERTA_LEVANTADA, EVENTO_ALERTA_ATENDIDA] as const;
 /** Las advertencias se van solas; las críticas quedan hasta que alguien las cierre. */
 const DURACION_ADVERTENCIA_MS = 10_000;
 
@@ -21,6 +21,11 @@ export function useAlertasEnVivo({ hrefCentro }: { hrefCentro: string }) {
   const navigate = useNavigate();
 
   const onEvent = useCallback((_evento: string, payload: unknown) => {
+    if (_evento === EVENTO_ALERTA_ATENDIDA) {
+      if (!payload || typeof payload !== "object" || !Number.isInteger((payload as { id?: unknown }).id)) return;
+      void queryClient.invalidateQueries({ queryKey: alertasKeys.all });
+      return;
+    }
     if (!esAlertaLevantada(payload)) return;
     void queryClient.invalidateQueries({ queryKey: alertasKeys.all });
 

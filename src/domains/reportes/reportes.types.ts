@@ -1,5 +1,5 @@
 /** Agrupaciones de `GET /reports/sla` (ST-54.2). */
-export type AgrupacionSla = "zone" | "service_level" | "driver";
+export type AgrupacionSla = "zone" | "service_level" | "zone_service" | "driver";
 
 /** Cifras de un grupo o del total, tal como las devuelve el back. */
 export interface MetricasSla {
@@ -23,6 +23,9 @@ export interface FilaSla extends MetricasSla {
   /** null: despachos sin zona, nivel o repartidor. */
   groupId: number | null;
   groupName: string | null;
+  groupKey?: string;
+  zoneName?: string;
+  serviceLevelName?: string;
 }
 
 export interface ReporteSla {

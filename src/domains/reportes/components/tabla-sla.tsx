@@ -35,7 +35,7 @@ export function TablaSla({ filas, totales, agrupacion }: TablaSlaProps) {
         <TableCaption className="mb-3">Ordenado de mayor a menor demora promedio.</TableCaption>
         <TableHeader>
           <TableRow>
-            <TableHead scope="col">{grupo}</TableHead>
+            {agrupacion === "zone_service" ? <><TableHead scope="col">Zona</TableHead><TableHead scope="col">Servicio</TableHead></> : <TableHead scope="col">{grupo}</TableHead>}
             <TableHead scope="col" className="text-right">Cerrados</TableHead>
             <TableHead scope="col" className="text-right">Entregados</TableHead>
             <TableHead scope="col" className="text-right">A tiempo</TableHead>
@@ -47,10 +47,14 @@ export function TablaSla({ filas, totales, agrupacion }: TablaSlaProps) {
         </TableHeader>
         <TableBody>
           {filasPorDemora(filas).map((fila) => (
-            <TableRow key={fila.groupId ?? "sin-grupo"}>
-              <TableHead scope="row" className={cn("font-medium", fila.groupName === null && "italic text-muted-foreground")}>
-                {nombreGrupo(fila, agrupacion)}
-              </TableHead>
+            <TableRow key={fila.groupKey ?? fila.groupId ?? "sin-grupo"}>
+              {agrupacion === "zone_service" ? (
+                <><TableHead scope="row" className="font-medium">{fila.zoneName ?? "Sin zona"}</TableHead><TableCell>{fila.serviceLevelName ?? "Sin nivel"}</TableCell></>
+              ) : (
+                <TableHead scope="row" className={cn("font-medium", fila.groupName === null && "italic text-muted-foreground")}>
+                  {nombreGrupo(fila, agrupacion)}
+                </TableHead>
+              )}
               <Celdas m={fila} />
             </TableRow>
           ))}

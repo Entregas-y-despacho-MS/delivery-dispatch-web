@@ -4,6 +4,7 @@ import type { AgrupacionSla, FilaSla, FiltrosSla, ParamsReporteSla } from "./rep
 export const AGRUPACIONES_SLA: readonly { valor: AgrupacionSla; etiqueta: string }[] = [
   { valor: "zone", etiqueta: "Zona" },
   { valor: "service_level", etiqueta: "Nivel de servicio" },
+  { valor: "zone_service", etiqueta: "Zona y servicio" },
   { valor: "driver", etiqueta: "Repartidor" },
 ];
 
@@ -81,6 +82,7 @@ export const paramsReporteSla = ({ desde, hasta, agrupacion }: FiltrosSla): Para
 const SIN_GRUPO: Record<AgrupacionSla, string> = {
   zone: "Sin zona",
   service_level: "Sin nivel de servicio",
+  zone_service: "Sin clasificación",
   driver: "Sin repartidor",
 };
 

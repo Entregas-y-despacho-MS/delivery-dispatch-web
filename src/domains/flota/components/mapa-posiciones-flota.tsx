@@ -14,6 +14,11 @@ function fechaVisible(fecha: string | null): string {
   return Number.isFinite(date.getTime()) ? new Intl.DateTimeFormat("es-BO", { dateStyle: "short", timeStyle: "short" }).format(date) : "Hora no disponible";
 }
 
+function horaVisible(fecha: string | null): string {
+  if (!fecha || !Number.isFinite(Date.parse(fecha))) return "hora desconocida";
+  return new Intl.DateTimeFormat("es-BO", { timeZone: "America/La_Paz", hour: "2-digit", minute: "2-digit" }).format(new Date(fecha));
+}
+
 function AjustarVistaInicial({
   puntos,
   rutaSeleccionada,
@@ -87,7 +92,7 @@ export function MapaPosicionesFlota({
                 <p>Parada: {posicion.currentStop?.trackingCode ?? "Sin parada abierta"}</p>
                 <p>Estado: {posicion.currentStop?.status === "in_transit" ? "En movimiento" : "En ruta"}</p>
                 <p>Última ubicación: {fechaVisible(posicion.lastLocationAt)}</p>
-                {sinSenal && <p className="font-medium text-zinc-500">Sin señal GPS</p>}
+                {sinSenal && <p className="font-medium text-zinc-500">Sin señal desde {horaVisible(posicion.lastLocationAt)}</p>}
                 {onReasignar && <button type="button" className="mt-2 rounded-md bg-primary px-3 py-1.5 text-primary-foreground" onClick={(event) => { event.stopPropagation(); onReasignar(posicion.routeBatchId); }}>Reasignar paradas</button>}
               </div>
             </Popup>

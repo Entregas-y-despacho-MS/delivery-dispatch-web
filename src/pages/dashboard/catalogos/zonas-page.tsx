@@ -1,71 +1,64 @@
-import { useDeferredValue, useMemo, useState, type ComponentProps } from "react";
-import { MapPin, Plus, Timer } from "lucide-react";
+import { useMemo, type ComponentProps } from "react";
+import { MapPin, Plus } from "lucide-react";
 
 import {
   ZonaForm,
-  ZonasSearch,
   ZonasTable,
   useZonas,
   type Zona,
 } from "@/domains/catalogos";
 import { PageHeader } from "@/shared/components/common/page-header";
+import { FormDialogHeader } from "@/shared/components/common/form-dialog-header";
+import { FormDialogContent } from "@/shared/components/common/form-dialog";
+import { ConfirmActionDialog } from "@/shared/components/common/confirm-action-dialog";
+import { PaginationControls } from "@/shared/components/common/pagination-controls";
+import { SearchField } from "@/shared/components/common/search-field";
 import { ErrorAlert } from "@/shared/components/feedback/error-alert";
 import { Button } from "@/shared/components/ui/button";
+import { useEditorDialog } from "@/shared/hooks/use-editor-dialog";
+import { useConfirmAction } from "@/shared/hooks/use-confirm-action";
+import { useListFilters } from "@/shared/hooks/use-list-filters";
+import { parseApiError } from "@/shared/lib/api-error";
 import {
   Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
 } from "@/shared/components/ui/dialog";
 
 const PAGE_SIZE = 10;
 
 export default function ZonasPage() {
-  const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingZona, setEditingZona] = useState<Zona>();
-  const [zonaToDeactivate, setZonaToDeactivate] = useState<Zona>();
-  const deferredSearch = useDeferredValue(search);
+  const { search, debouncedSearch, page, setPage, setSearch, clearFilters, hasFilters } = useListFilters({});
   const params = useMemo(() => ({
     page,
     limit: PAGE_SIZE,
-    search: deferredSearch.trim() || undefined,
-  }), [deferredSearch, page]);
+    search: debouncedSearch || undefined,
+  }), [debouncedSearch, page]);
   const zonas = useZonas(params);
-  const hasSearch = deferredSearch.trim().length > 0;
   const totalPages = zonas.pages ?? 1;
-
-  const openCreate = () => {
-    setEditingZona(undefined);
-    setDialogOpen(true);
-  };
-
-  const openEdit = (zona: Zona) => {
-    setEditingZona(zona);
-    setDialogOpen(true);
-  };
-
-  const closeDialog = (open: boolean) => {
-    setDialogOpen(open);
-    if (!open) setEditingZona(undefined);
-  };
+  const editor = useEditorDialog<Zona>({
+    busy: zonas.isSaving,
+  });
+  const confirmation = useConfirmAction<Zona>();
 
   const saveZona: ComponentProps<typeof ZonaForm>["onSubmit"] = async (values) => {
-    if (editingZona) {
-      await zonas.updateItem({ id: editingZona.id, data: values });
+    if (editor.editingItem) {
+      await zonas.updateItem({ id: editor.editingItem.id, data: values });
     } else {
       await zonas.createItem(values);
     }
-    closeDialog(false);
+    editor.finish();
   };
 
   // La API actual solo expone eliminación lógica; la reactivación requerirá un endpoint adicional.
   const deactivateZona = async () => {
+    const zonaToDeactivate = confirmation.item;
     if (!zonaToDeactivate) return;
-    await zonas.deleteItem(zonaToDeactivate.id);
-    setZonaToDeactivate(undefined);
+    confirmation.setError("");
+    try {
+      await zonas.deleteItem(zonaToDeactivate.id);
+      confirmation.close();
+    } catch (error) {
+      confirmation.setError(parseApiError(error).message);
+    }
   };
 
   return (
@@ -74,28 +67,23 @@ export default function ZonasPage() {
         eyebrow="Catálogos"
         title="Zonas de reparto"
         icon={MapPin}
-        description="Define el tiempo base que utiliza el equipo para planificar las entregas."
+        description="Delimita en el mapa dónde se reciben y planifican entregas en La Paz."
         action={(
-          <Button onClick={openCreate}>
+          <Button onClick={editor.openCreate}>
             <Plus aria-hidden /> Nueva zona
           </Button>
         )}
       />
 
       <section className="rounded-xl border bg-card p-4 shadow-sm sm:p-5" aria-label="Catálogo de zonas">
-        <div className="flex flex-col gap-4 border-b pb-4 sm:flex-row sm:items-end sm:justify-between">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <Timer className="size-4 text-primary" aria-hidden />
-              <h2 className="font-semibold">Catálogo operativo</h2>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              {zonas.total} {zonas.total === 1 ? "zona registrada" : "zonas registradas"}
-            </p>
-          </div>
-          <ZonasSearch
+        <div className="border-b pb-4">
+          <SearchField
+            id="zonas-search"
+            label="Buscar por código o nombre"
             value={search}
-            onChange={(value) => { setSearch(value); setPage(1); }}
+            onChange={setSearch}
+            placeholder="ZON-SUR o Zona Sur"
+            className="md:max-w-sm"
           />
         </div>
 
@@ -103,7 +91,6 @@ export default function ZonasPage() {
           <ErrorAlert
             error={zonas.error}
             onRetry={() => zonas.refetch()}
-            autoRetry={5}
             className="mt-4"
           />
         ) : (
@@ -111,84 +98,47 @@ export default function ZonasPage() {
             <ZonasTable
               data={zonas.data}
               loading={zonas.isLoading}
-              searchActive={hasSearch}
-              onClearFilters={() => { setSearch(""); setPage(1); }}
+              searchActive={hasFilters}
+              onClearFilters={clearFilters}
               deactivating={zonas.deleteMutation.isPending}
-              onEdit={openEdit}
-              onDeactivate={setZonaToDeactivate}
+              onEdit={editor.openEdit}
+              onDeactivate={confirmation.request}
             />
           </div>
         )}
 
         {!zonas.isError && !zonas.isLoading && zonas.total > 0 && (
-          <div className="mt-4 flex flex-col gap-3 border-t pt-4 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-            <p>
-              Página <span className="font-medium text-foreground">{zonas.page ?? page}</span> de {totalPages}
-            </p>
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={page <= 1 || zonas.isFetching}
-                onClick={() => setPage((current) => Math.max(1, current - 1))}
-              >
-                Anterior
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={page >= totalPages || zonas.isFetching}
-                onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
-              >
-                Siguiente
-              </Button>
-            </div>
-          </div>
+          <PaginationControls page={page} totalPages={totalPages} reportedPage={zonas.page}
+            onPageChange={setPage} busy={zonas.isFetching} />
         )}
       </section>
 
-      <Dialog open={dialogOpen} onOpenChange={closeDialog}>
-        <DialogContent className="sm:max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>{editingZona ? "Editar zona" : "Nueva zona"}</DialogTitle>
-            <DialogDescription>
-              {editingZona
-                ? "Actualiza el código, nombre o tiempo base de la zona."
-                : "Registra una zona para incluirla en la planificación de entregas."}
-            </DialogDescription>
-          </DialogHeader>
+      <Dialog open={editor.open} onOpenChange={editor.onOpenChange}>
+        <FormDialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-5xl">
+          <FormDialogHeader icon={MapPin}
+            title={editor.editingItem ? "Editar zona" : "Nueva zona"}
+            description={editor.editingItem
+              ? "Actualiza los datos y revisa el área de cobertura de reparto."
+              : "Registra la zona y confirma su cobertura en el mapa para clasificar pedidos por ubicación."} />
           <ZonaForm
-            key={editingZona?.id ?? "new"}
-            zona={editingZona}
+            key={editor.editingItem?.id ?? "new"}
+            zona={editor.editingItem}
             onSubmit={saveZona}
-            onCancel={() => closeDialog(false)}
+            onCancel={() => editor.onOpenChange(false)}
+            onDirtyChange={editor.setDirty}
             guardando={zonas.isSaving}
           />
-        </DialogContent>
+        </FormDialogContent>
       </Dialog>
 
-      <Dialog open={!!zonaToDeactivate} onOpenChange={(open) => { if (!open) setZonaToDeactivate(undefined); }}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Desactivar zona</DialogTitle>
-            <DialogDescription>
-              {zonaToDeactivate
-                ? `La zona ${zonaToDeactivate.code} dejará de aparecer en el catálogo y no podrá asignarse a nuevas entregas.`
-                : "La zona dejará de estar disponible para nuevas entregas."}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
-            <Button type="button" variant="outline" onClick={() => setZonaToDeactivate(undefined)} disabled={zonas.deleteMutation.isPending}>
-              Cancelar
-            </Button>
-            <Button type="button" variant="destructive" onClick={deactivateZona} disabled={zonas.deleteMutation.isPending}>
-              {zonas.deleteMutation.isPending ? "Desactivando…" : "Desactivar zona"}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <ConfirmActionDialog open={!!confirmation.item}
+        onOpenChange={confirmation.onOpenChange}
+        title="Desactivar zona"
+        description={confirmation.item
+          ? `La zona ${confirmation.item.code} dejará de aparecer en el catálogo y no podrá asignarse a nuevas entregas.`
+          : "La zona dejará de estar disponible para nuevas entregas."}
+        confirmLabel="Desactivar zona" confirmVariant="destructive" busyLabel="Desactivando…"
+        busy={zonas.deleteMutation.isPending} error={confirmation.error} onConfirm={deactivateZona} />
     </div>
   );
 }

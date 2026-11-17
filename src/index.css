@@ -4,6 +4,7 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -38,6 +39,10 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-brand-blue: var(--brand-blue);
+  --color-brand-turquoise: var(--brand-turquoise);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-orange: var(--brand-orange);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -47,24 +52,34 @@
 :root {
   --radius: 0.625rem;
 
-  /* Base: stone (gris cálido, hermana el naranja) */
-  --background: oklch(0.985 0.001 106.423);
-  --foreground: oklch(0.216 0.006 56.043);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.216 0.006 56.043);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.216 0.006 56.043);
+  --brand-blue: #265c7f;
+  --brand-turquoise: #469db0;
+  --brand-soft: #ddf3fe;
+  --brand-orange: #e18641;
 
-  /* MARCA — orange-500 con texto oscuro encima: 7.3:1 */
-  --primary: oklch(0.705 0.213 47.604);
-  --primary-foreground: oklch(0.216 0.006 56.043);
+  --background: #f5fafc;
+  --foreground: #1f2730;
+  --card: #ffffff;
+  --card-foreground: #1f2730;
+  --popover: #ffffff;
+  --popover-foreground: #1f2730;
 
-  --secondary: oklch(0.97 0.001 106.424);
-  --secondary-foreground: oklch(0.216 0.006 56.043);
-  --muted: oklch(0.97 0.001 106.424);
-  --muted-foreground: oklch(0.553 0.013 58.071);
-  --accent: oklch(0.98 0.016 73.684);
-  --accent-foreground: oklch(0.408 0.123 38.172);
+  --primary: #469db0;
+  --primary-foreground: #1f2730;
+
+  --secondary: #eaf4f8;
+  --secondary-foreground: #265c7f;
+  --muted: #edf5f8;
+  --muted-foreground: #526472;
+  --accent: #ddf3fe;
+  --accent-foreground: #265c7f;
+
+  /* Colores reutilizables de los marcadores; los alias siguen el tema y los tokens de estado. */
+  --map-marker-outline: var(--brand-blue);
+  --map-marker-fill: var(--brand-orange);
+  --map-marker-active: var(--success);
+  --map-marker-selected: var(--brand-orange);
+  --map-marker-muted: var(--muted-foreground);
 
   --destructive: oklch(0.577 0.245 27.325);
   /* Estados fuera de las graficas: se usan como texto/icono sobre fondo suave
@@ -72,70 +87,291 @@
   --warning: oklch(0.550 0.130 70.000);
   --success: oklch(0.520 0.130 155.000);
   --info: oklch(0.550 0.130 240.000);
-  --border: oklch(0.923 0.003 48.717);
-  --input: oklch(0.923 0.003 48.717);
-  --ring: oklch(0.705 0.213 47.604);
+  --border: #d4e3ea;
+  --input: #c7dae4;
+  --ring: #265c7f;
 
-  /* Series de gráficas: marca, azul, verde, rojo, neutro */
-  --chart-1: oklch(0.705 0.213 47.604);
-  --chart-2: oklch(0.600 0.130 240.000);
+  /* Series de gráficas */
+  --chart-1: #265c7f;
+  --chart-2: #469db0;
   --chart-3: oklch(0.650 0.150 155.000);
-  --chart-4: oklch(0.577 0.245 27.325);
-  --chart-5: oklch(0.553 0.013 58.071);
+  --chart-4: #e18641;
+  --chart-5: #526472;
 
-  --sidebar: oklch(1 0 0);
-  --sidebar-foreground: oklch(0.216 0.006 56.043);
-  --sidebar-primary: oklch(0.705 0.213 47.604);
-  --sidebar-primary-foreground: oklch(0.216 0.006 56.043);
-  --sidebar-accent: oklch(0.98 0.016 73.684);
-  --sidebar-accent-foreground: oklch(0.408 0.123 38.172);
-  --sidebar-border: oklch(0.923 0.003 48.717);
-  --sidebar-ring: oklch(0.705 0.213 47.604);
+  --sidebar: #265c7f;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #ddf3fe;
+  --sidebar-primary-foreground: #265c7f;
+  --sidebar-accent: #ddf3fe;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #4e809e;
+  --sidebar-ring: #ddf3fe;
 }
 
 .dark {
-  --background: oklch(0.147 0.004 49.25);
-  --foreground: oklch(0.97 0.001 106.424);
-  --card: oklch(0.216 0.006 56.043);
-  --card-foreground: oklch(0.97 0.001 106.424);
-  --popover: oklch(0.216 0.006 56.043);
-  --popover-foreground: oklch(0.97 0.001 106.424);
+  --brand-blue: #9bcde8;
+  --brand-turquoise: #7acddd;
+  --brand-soft: #23465b;
+  --brand-orange: #e18641;
 
-  --primary: oklch(0.705 0.213 47.604);
-  --primary-foreground: oklch(0.147 0.004 49.25);
+  --background: #10212d;
+  --foreground: #eaf4fa;
+  --card: #19303f;
+  --card-foreground: #eaf4fa;
+  --popover: #19303f;
+  --popover-foreground: #eaf4fa;
 
-  --secondary: oklch(0.268 0.007 34.298);
-  --secondary-foreground: oklch(0.97 0.001 106.424);
-  --muted: oklch(0.268 0.007 34.298);
-  --muted-foreground: oklch(0.709 0.01 56.259);
-  --accent: oklch(0.268 0.007 34.298);
-  --accent-foreground: oklch(0.837 0.128 66.29);
+  --primary: #7acddd;
+  --primary-foreground: #1f2730;
+
+  --secondary: #223c4c;
+  --secondary-foreground: #eaf4fa;
+  --muted: #223c4c;
+  --muted-foreground: #b3c5d0;
+  --accent: #23465b;
+  --accent-foreground: #eaf4fa;
 
   --destructive: oklch(0.704 0.191 22.216);
   --warning: oklch(0.800 0.150 70.000);
   --success: oklch(0.750 0.150 155.000);
   --info: oklch(0.720 0.130 240.000);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.705 0.213 47.604);
+  --border: #385464;
+  --input: #456272;
+  --ring: #9bcde8;
 
-  --chart-1: oklch(0.750 0.183 55.934);
-  --chart-2: oklch(0.680 0.130 240.000);
+  --chart-1: #9bcde8;
+  --chart-2: #7acddd;
   --chart-3: oklch(0.720 0.150 155.000);
-  --chart-4: oklch(0.704 0.191 22.216);
-  --chart-5: oklch(0.709 0.01 56.259);
+  --chart-4: #e18641;
+  --chart-5: #b3c5d0;
 
-  --sidebar: oklch(0.216 0.006 56.043);
-  --sidebar-foreground: oklch(0.97 0.001 106.424);
-  --sidebar-primary: oklch(0.705 0.213 47.604);
-  --sidebar-primary-foreground: oklch(0.147 0.004 49.25);
-  --sidebar-accent: oklch(0.268 0.007 34.298);
-  --sidebar-accent-foreground: oklch(0.837 0.128 66.29);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.705 0.213 47.604);
+  --sidebar: #17394f;
+  --sidebar-foreground: #eaf4fa;
+  --sidebar-primary: #7acddd;
+  --sidebar-primary-foreground: #10212d;
+  --sidebar-accent: #2b566f;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #446981;
+  --sidebar-ring: #9bcde8;
 }
 
 @layer base {
   * { @apply border-border outline-ring/50; }
-  body { @apply bg-background text-foreground antialiased; }
+  body { @apply bg-background font-sans text-foreground antialiased; }
+}
+
+@layer components {
+  .sidebar-nav-panel {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+  }
+
+  .sidebar-nav-panel[data-open="true"] {
+    grid-template-rows: 1fr;
+    opacity: 1;
+  }
+
+  .sidebar-nav-chevron {
+    transform: rotate(0deg);
+  }
+
+  .sidebar-nav-section[aria-expanded="true"] .sidebar-nav-chevron {
+    transform: rotate(90deg);
+  }
+
+  .sidebar-nav-link::before,
+  .sidebar-nav-link::after {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    pointer-events: none;
+  }
+
+  .sidebar-nav-link::before {
+    z-index: 0;
+    width: 100%;
+    border-radius: inherit;
+    background: var(--brand-orange);
+    transform: scaleX(0);
+    transform-origin: left center;
+  }
+
+  .sidebar-nav-link::after {
+    z-index: 2;
+    width: 3px;
+    border-radius: 3px;
+    background: var(--brand-orange);
+    opacity: 0;
+    transform: scaleY(0.3);
+  }
+
+  .sidebar-nav-link[aria-current="page"]::before {
+    transform: scaleX(1);
+  }
+
+  .sidebar-nav-link[aria-current="page"]::after {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .sidebar-nav-section { transition: background-color 180ms ease; }
+    .sidebar-nav-section-content,
+    .sidebar-nav-link-content { transition: transform 180ms ease; }
+    .sidebar-nav-section:hover .sidebar-nav-section-content,
+    .sidebar-nav-link:hover .sidebar-nav-link-content { transform: translateX(3px); }
+    .sidebar-nav-chevron { transition: transform 200ms ease; }
+    .sidebar-nav-panel { transition: grid-template-rows 220ms ease, opacity 180ms ease; }
+    .sidebar-nav-link { transition: background-color 180ms ease, color 180ms ease; }
+    .sidebar-nav-link::before { transition: transform 420ms cubic-bezier(0.4, 0, 0.2, 1); }
+    .sidebar-nav-link::after { transition: transform 180ms ease, opacity 180ms ease; }
+    .topbar-surface { animation: topbar-arrive 420ms cubic-bezier(0.2, 0.75, 0.3, 1) both; }
+    .topbar-profile { transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease; }
+    .topbar-profile:hover { transform: translateY(-2px); box-shadow: 0 5px 14px rgb(15 35 49 / 18%); }
+    .topbar-profile:active { transform: translateY(0) scale(0.98); }
+    .topbar-theme-control { transition: transform 180ms ease, background-color 180ms ease; }
+    .topbar-theme-control:hover { transform: translateY(-1px); }
+
+    .form-dialog-content[data-state="open"] {
+      animation-duration: 260ms;
+      animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .form-dialog-content[data-state="closed"] {
+      animation-duration: 180ms;
+      animation-timing-function: ease-in;
+    }
+    .form-dialog-content .relative > svg {
+      transition: color 160ms ease, transform 160ms ease;
+    }
+    .form-dialog-content .relative:focus-within > svg {
+      color: var(--brand-turquoise);
+      transform: scale(1.08);
+    }
+    .form-dialog-footer button {
+      transition: transform 160ms ease, box-shadow 160ms ease;
+    }
+    .form-dialog-footer button[type="submit"]:enabled:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px color-mix(in srgb, var(--brand-orange) 28%, transparent);
+    }
+    .form-dialog-footer button[type="submit"].bg-brand-blue:enabled:hover {
+      box-shadow: 0 4px 12px color-mix(in srgb, var(--brand-blue) 28%, transparent);
+    }
+  }
+
+  @keyframes topbar-arrive {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
+
+/* ==========================================================================
+   Estilos de Componentes Flotantes - Toasts (Sonner)
+   Basado en mockup componentes-flotantes-v2.png
+   ========================================================================== */
+@layer components {
+  [data-sonner-toaster] [data-sonner-toast] {
+    --normal-bg: var(--card);
+    --normal-border: var(--border);
+    --normal-text: var(--card-foreground);
+    background: var(--card) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 1rem !important;
+    box-shadow: 0 10px 25px -5px rgba(38, 92, 127, 0.08), 0 8px 10px -6px rgba(38, 92, 127, 0.04) !important;
+    padding: 0.875rem 1rem !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+  }
+
+  .dark [data-sonner-toaster] [data-sonner-toast] {
+    box-shadow: 0 12px 28px -4px rgba(0, 0, 0, 0.45) !important;
+  }
+
+  /* Contenedor del icono en squircle con fondo pastel */
+  [data-sonner-toaster] [data-sonner-toast] [data-icon] {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 2.5rem !important;
+    height: 2.5rem !important;
+    border-radius: 0.75rem !important;
+    margin: 0 !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Variante Éxito (Success) - Verde menta suave */
+  [data-sonner-toaster] [data-sonner-toast][data-type="success"] [data-icon] {
+    background-color: color-mix(in srgb, var(--success) 12%, var(--card)) !important;
+    color: var(--success) !important;
+  }
+  .dark [data-sonner-toaster] [data-sonner-toast][data-type="success"] [data-icon] {
+    background-color: color-mix(in srgb, var(--success) 18%, var(--card)) !important;
+    color: var(--success) !important;
+  }
+
+  /* Variante Info / En camino - Turquesa / Celeste suave */
+  [data-sonner-toaster] [data-sonner-toast][data-type="info"] [data-icon],
+  [data-sonner-toaster] [data-sonner-toast][data-type="default"] [data-icon] {
+    background-color: color-mix(in srgb, var(--brand-soft) 75%, var(--card)) !important;
+    color: var(--brand-blue) !important;
+  }
+  .dark [data-sonner-toaster] [data-sonner-toast][data-type="info"] [data-icon],
+  .dark [data-sonner-toaster] [data-sonner-toast][data-type="default"] [data-icon] {
+    background-color: color-mix(in srgb, var(--brand-turquoise) 18%, var(--card)) !important;
+    color: var(--brand-turquoise) !important;
+  }
+
+  /* Variante Advertencia (Warning) - Ámbar / Naranja suave */
+  [data-sonner-toaster] [data-sonner-toast][data-type="warning"] [data-icon] {
+    background-color: color-mix(in srgb, var(--warning) 12%, var(--card)) !important;
+    color: var(--warning) !important;
+  }
+  .dark [data-sonner-toaster] [data-sonner-toast][data-type="warning"] [data-icon] {
+    background-color: color-mix(in srgb, var(--warning) 18%, var(--card)) !important;
+    color: var(--warning) !important;
+  }
+
+  /* Variante Error / Destructivo - Coral / Rojo suave */
+  [data-sonner-toaster] [data-sonner-toast][data-type="error"] [data-icon] {
+    background-color: color-mix(in srgb, var(--destructive) 12%, var(--card)) !important;
+    color: var(--destructive) !important;
+  }
+  .dark [data-sonner-toaster] [data-sonner-toast][data-type="error"] [data-icon] {
+    background-color: color-mix(in srgb, var(--destructive) 18%, var(--card)) !important;
+    color: var(--destructive) !important;
+  }
+
+  /* Variante Loading - Turquesa suave */
+  [data-sonner-toaster] [data-sonner-toast][data-type="loading"] [data-icon] {
+    background-color: color-mix(in srgb, var(--brand-soft) 75%, var(--card)) !important;
+    color: var(--brand-turquoise) !important;
+  }
+  .dark [data-sonner-toaster] [data-sonner-toast][data-type="loading"] [data-icon] {
+    background-color: color-mix(in srgb, var(--brand-turquoise) 18%, var(--card)) !important;
+    color: var(--brand-turquoise) !important;
+  }
+
+  /* Botón de cierre */
+  [data-sonner-toaster] [data-sonner-toast] [data-close-button] {
+    position: absolute !important;
+    top: 0.75rem !important;
+    right: 0.75rem !important;
+    left: auto !important;
+    transform: none !important;
+    border: none !important;
+    background: transparent !important;
+    color: var(--muted-foreground) !important;
+    border-radius: 0.5rem !important;
+    padding: 0.25rem !important;
+    opacity: 0.7 !important;
+    transition: opacity 0.15s ease, background-color 0.15s ease, color 0.15s ease !important;
+  }
+
+  [data-sonner-toaster] [data-sonner-toast] [data-close-button]:hover {
+    opacity: 1 !important;
+    background-color: var(--muted) !important;
+    color: var(--foreground) !important;
+  }
 }

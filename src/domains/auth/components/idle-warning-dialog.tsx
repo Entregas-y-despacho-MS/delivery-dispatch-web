@@ -22,7 +22,7 @@ export function IdleWarningDialog() {
       <DialogContent className="sm:max-w-md" showCloseButton={false}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Clock className="h-5 w-5 text-primary" aria-hidden />
+            <Clock className="h-5 w-5 text-warning" aria-hidden />
             ¿Sigues ahí?
           </DialogTitle>
           <DialogDescription>

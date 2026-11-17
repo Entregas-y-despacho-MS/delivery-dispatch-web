@@ -1,0 +1,270 @@
+import {
+  createColumnHelper,
+  rowSelectionFeature,
+  rowSortingFeature,
+  tableFeatures,
+  useTable,
+  type RowSelectionState,
+  type SortingState,
+} from "@tanstack/react-table";
+import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
+import { createContext, useContext, useMemo } from "react";
+import { Link } from "react-router-dom";
+
+import { Checkbox } from "@/shared/components/ui/checkbox";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/shared/components/ui/table";
+import { cn } from "@/shared/lib/utils";
+import type { OrdenActual } from "../hooks/use-bandeja-pedidos";
+import type { OrdenBandeja, PedidoPendiente, PrioridadPedido } from "../types/despachos.types";
+import { formatearFranja, formatearKilos, formatearMetrosCubicos } from "../despachos.format";
+import { PedidoBadges } from "./pedido-badges";
+import { PrioridadSelector, type PedidoConPrioridad } from "./prioridad-selector";
+import { VencimientoSla } from "./vencimiento-sla";
+
+// TanStack Table v9: las features se declaran una vez, fuera del componente.
+// columnMeta tipa `meta` de cada columna (las numéricas se alinean a la derecha).
+const features = tableFeatures({
+  rowSortingFeature,
+  rowSelectionFeature,
+  columnMeta: {} as { numerica?: boolean },
+});
+const columna = createColumnHelper<typeof features, PedidoPendiente>();
+
+/** Las columnas se declaran fuera del componente: el cambio de prioridad y el link a la ficha les llegan por contexto. */
+const CambioPrioridadContext = createContext<{
+  onCambiar?: (pedido: PedidoConPrioridad, prioridad: PrioridadPedido) => void;
+  cambiandoId?: number;
+  hrefFicha?: (id: number) => string;
+}>({});
+
+/** N° de orden con link a la ficha 360° (ST-241.4); sin `hrefFicha` queda como texto. */
+function CeldaOrden({ pedido }: { pedido: PedidoPendiente }) {
+  const { hrefFicha } = useContext(CambioPrioridadContext);
+  if (!hrefFicha) return <p className="font-medium tabular-nums">{pedido.orderNumber}</p>;
+  return (
+    <Link
+      to={hrefFicha(pedido.id)}
+      className="block font-medium tabular-nums text-primary underline-offset-4 hover:underline"
+      aria-label={`Ver ficha del pedido ${pedido.orderNumber}`}
+    >
+      {pedido.orderNumber}
+    </Link>
+  );
+}
+
+function CeldaPrioridad({ pedido }: { pedido: PedidoPendiente }) {
+  const { onCambiar, cambiandoId } = useContext(CambioPrioridadContext);
+  return <PrioridadSelector pedido={pedido} onCambiar={onCambiar} guardando={cambiandoId === pedido.id} />;
+}
+
+/** El id de cada columna es el `sortBy` que entiende el back; las que no ordena llevan enableSorting: false. */
+const columnas = columna.columns([
+  // Selección para armar la ruta. Los pedidos que planifica otro coordinador no se pueden marcar.
+  columna.display({
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        aria-label="Seleccionar los pedidos disponibles de esta página"
+        checked={table.getIsAllPageRowsSelected() ? true : table.getIsSomePageRowsSelected() ? "indeterminate" : false}
+        onCheckedChange={(valor) => table.toggleAllPageRowsSelected(valor === true)}
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        aria-label={row.getCanSelect()
+          ? `Seleccionar el pedido ${row.original.orderNumber}`
+          : row.original.readOnly
+            ? `El pedido ${row.original.orderNumber} tiene la dirección en revisión y todavía no se puede planificar`
+            : `El pedido ${row.original.orderNumber} lo está planificando ${row.original.reservation?.reservedByName ?? "otro coordinador"}`}
+        checked={row.getIsSelected()}
+        disabled={!row.getCanSelect()}
+        onCheckedChange={(valor) => row.toggleSelected(valor === true)}
+      />
+    ),
+  }),
+  columna.accessor("orderNumber", {
+    id: "orderNumber",
+    header: "N° de orden",
+    cell: ({ row }) => (
+      <div className="min-w-36 max-w-52 space-y-1">
+        <CeldaOrden pedido={row.original} />
+        {row.original.trackingCode && (
+          <p className="font-mono text-xs text-muted-foreground">{row.original.trackingCode}</p>
+        )}
+        <PedidoBadges pedido={row.original} />
+      </div>
+    ),
+  }),
+  columna.accessor("recipient", {
+    id: "recipient",
+    header: "Destinatario",
+    cell: ({ getValue }) => getValue() ?? <span className="text-muted-foreground">Sin nombre</span>,
+  }),
+  columna.accessor("address", {
+    id: "address",
+    header: "Dirección",
+    enableSorting: false,
+    cell: ({ getValue }) => <span className="line-clamp-2 min-w-40 max-w-56">{getValue()}</span>,
+  }),
+  columna.accessor("zoneName", {
+    id: "zone",
+    header: "Zona",
+    cell: ({ getValue }) => <span className="block min-w-24">{getValue() ?? <span className="text-muted-foreground">Sin zona</span>}</span>,
+  }),
+  columna.accessor("windowStart", {
+    id: "window",
+    header: "Franja",
+    cell: ({ row }) => (
+      <span className="whitespace-nowrap tabular-nums">{formatearFranja(row.original.windowStart, row.original.windowEnd)}</span>
+    ),
+  }),
+  columna.accessor("packagesCount", {
+    id: "packages",
+    header: "Bultos",
+    enableSorting: false,
+    meta: { numerica: true },
+  }),
+  columna.accessor("weightKg", {
+    id: "weight",
+    header: "Peso (kg)",
+    meta: { numerica: true },
+    cell: ({ getValue }) => formatearKilos(getValue()),
+  }),
+  columna.accessor("volumeM3", {
+    id: "volume",
+    header: "Volumen (m³)",
+    enableSorting: false,
+    meta: { numerica: true },
+    cell: ({ getValue }) => formatearMetrosCubicos(getValue()),
+  }),
+  columna.accessor("priority", {
+    id: "priority",
+    header: "Prioridad",
+    // Debajo de la prioridad, el vencimiento del SLA: juntos dicen qué tan apurado está el pedido
+    // sin sumar otra columna a una tabla que ya es ancha.
+    cell: ({ row }) => (
+      <div className="flex flex-col items-start gap-1">
+        <CeldaPrioridad pedido={row.original} />
+        <VencimientoSla slaDueAt={row.original.slaDueAt} />
+      </div>
+    ),
+  }),
+]);
+
+function IconoOrden({ direccion }: { direccion: false | "asc" | "desc" }) {
+  if (direccion === "asc") return <ArrowUp className="size-3.5" aria-hidden />;
+  if (direccion === "desc") return <ArrowDown className="size-3.5" aria-hidden />;
+  return <ArrowUpDown className="size-3.5 opacity-50" aria-hidden />;
+}
+
+export interface BandejaPedidosTableProps {
+  data: PedidoPendiente[];
+  orden: OrdenActual | null;
+  onToggleOrden: (columna: OrdenBandeja) => void;
+  /** Filas marcadas, por id de pedido. */
+  seleccion: RowSelectionState;
+  onSeleccionChange: (seleccion: RowSelectionState) => void;
+  /** Cambio rápido de prioridad desde el badge (ST-58.1). Sin esta función el badge es de solo lectura. */
+  onCambiarPrioridad?: (pedido: PedidoConPrioridad, prioridad: PrioridadPedido) => void;
+  /** Pedido cuyo cambio de prioridad se está guardando. */
+  cambiandoPrioridadId?: number;
+  /** Link a la ficha 360° de cada despacho; sin él el N° de orden no enlaza. */
+  hrefFicha?: (id: number) => string;
+}
+
+/** Tabla de la bandeja con TanStack Table v9. El orden lo resuelve el servidor (manualSorting). */
+export function BandejaPedidosTable({
+  data,
+  orden,
+  onToggleOrden,
+  seleccion,
+  onSeleccionChange,
+  onCambiarPrioridad,
+  cambiandoPrioridadId,
+  hrefFicha,
+}: BandejaPedidosTableProps) {
+  const cambioPrioridad = useMemo(
+    () => ({ onCambiar: onCambiarPrioridad, cambiandoId: cambiandoPrioridadId, hrefFicha }),
+    [onCambiarPrioridad, cambiandoPrioridadId, hrefFicha],
+  );
+  const sorting: SortingState = orden ? [{ id: orden.sortBy, desc: orden.order === "desc" }] : [];
+
+  const table = useTable({
+    features,
+    columns: columnas,
+    data,
+    state: { sorting, rowSelection: seleccion },
+    // El clic en el encabezado lo maneja el hook (toggleOrden), que vuelve a pedir la página al servidor.
+    onSortingChange: () => {},
+    manualSorting: true,
+    // `locked`: otro coordinador lo está planificando y no puede entrar en una segunda ruta.
+    // `readOnly`: solo lectura (dirección en revisión); el back rechaza reservarlo con 409.
+    enableRowSelection: (row) => !row.original.locked && !row.original.readOnly,
+    onRowSelectionChange: (updater) => onSeleccionChange(typeof updater === "function" ? updater(seleccion) : updater),
+    getRowId: (pedido) => String(pedido.id),
+  });
+
+  return (
+    <CambioPrioridadContext.Provider value={cambioPrioridad}>
+      <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((grupo) => (
+              <TableRow key={grupo.id} className="hover:bg-transparent">
+                {grupo.headers.map((header) => {
+                  const numerica = header.column.columnDef.meta?.numerica;
+                  const direccion = header.column.getIsSorted();
+                  const titulo = <table.FlexRender header={header} />;
+                  return (
+                    <TableHead
+                      key={header.id}
+                      aria-sort={direccion === "asc" ? "ascending" : direccion === "desc" ? "descending" : undefined}
+                      className={cn("font-semibold", numerica && "text-right")}
+                    >
+                      {header.column.getCanSort() ? (
+                        <button
+                          type="button"
+                          onClick={() => onToggleOrden(header.column.id as OrdenBandeja)}
+                          className="-mx-2 inline-flex items-center gap-1.5 rounded-md px-2 py-1 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          {titulo}
+                          <IconoOrden direccion={direccion} />
+                        </button>
+                      ) : titulo}
+                    </TableHead>
+                  );
+                })}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows.map((row) => (
+              <TableRow
+                key={row.id}
+                data-state={row.getIsSelected() ? "selected" : undefined}
+                aria-disabled={!row.getCanSelect() || undefined}
+                className={cn("align-top transition-colors hover:bg-muted/40", !row.getCanSelect() && "bg-muted/30 text-muted-foreground")}
+              >
+                {row.getAllCells().map((cell) => (
+                  <TableCell
+                    key={cell.id}
+                    className={cn(cell.column.columnDef.meta?.numerica && "text-right tabular-nums")}
+                  >
+                    <table.FlexRender cell={cell} />
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </CambioPrioridadContext.Provider>
+  );
+}

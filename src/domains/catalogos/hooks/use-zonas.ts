@@ -1,12 +1,13 @@
 import { useCrud, type UseCrudOptions } from "@/shared/hooks/use-crud";
 import { zonasService } from "../services/zonas.service";
-import type { Zona, ZonaInput, ZonaListParams } from "../catalogos.types";
+import type { Zona, ZonaInput, ZonaListParams } from "../types/catalogos.types";
 
 export function useZonas(
   params?: ZonaListParams,
   options: Omit<UseCrudOptions<ZonaListParams, Zona>, "params"> = {},
 ) {
   return useCrud<Zona, ZonaInput, ZonaInput, ZonaListParams>(zonasService, "delivery-zones", {
+    policy: "catalog",
     ...options,
     params,
     notifications: {

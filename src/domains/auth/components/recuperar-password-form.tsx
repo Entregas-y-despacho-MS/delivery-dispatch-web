@@ -10,7 +10,7 @@ import { Label } from "@/shared/components/ui/label";
 import { Separator } from "@/shared/components/ui/separator";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/components/ui/alert";
 import { useRecuperarPassword } from "../hooks/use-recuperar-password";
-import { forgotPasswordSchema, type ForgotPasswordInput } from "../auth.schemas";
+import { forgotPasswordSchema, type ForgotPasswordInput } from "../schemas/auth.schemas";
 
 const CONTROL = "h-11";
 const ICONO_CAMPO =
@@ -52,7 +52,7 @@ export function RecuperarPasswordForm() {
     <div className="w-full max-w-sm space-y-8">
       {/* Cabecera móvil con logo */}
       <div className="flex items-center gap-3 lg:hidden">
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-brand-blue text-white dark:text-background">
           <Truck className="size-5" aria-hidden />
         </span>
         <span className="text-base font-semibold tracking-tight">Delivery Dispatch</span>

@@ -1,12 +1,16 @@
-export { vehiculosService } from "./services/vehiculos.service";
+export { PanelVehiculosFlota } from "./components/panel-vehiculos-flota";
+export type { FiltroEstadoFlota } from "./types/flota-posiciones.types";
+export { MapaPosicionesFlota } from "./components/mapa-posiciones-flota";
+export { usePosicionesFlota } from "./hooks/use-posiciones-flota";
 export { useVehiculos } from "./hooks/use-vehiculos";
+export { useAccionesMantenimiento, useHistorialMantenimientos } from "./hooks/use-mantenimientos";
+export { type ErrorMantenimiento } from "./flota.mantenimiento";
 export { VehiculoForm } from "./components/vehiculo-form";
-export { VehiculosSearch, VehiculosTable } from "./components/vehiculos-table";
-export { vehiculoSchema, type VehiculoFormValues } from "./flota.schemas";
-export type {
-  EstadoVehiculo,
-  Vehiculo,
-  VehiculoInput,
-  VehiculoListParams,
-  VehiculoUpdateInput,
-} from "./flota.types";
+export { CambiarEstadoDialog } from "./components/cambiar-estado-dialog";
+export { VehiculosTable } from "./components/vehiculos-table";
+export { MantenimientosTable } from "./components/mantenimientos-table";
+export { AvanzarMantenimientoDialog } from "./components/avanzar-mantenimiento-dialog";
+export { MantenimientoDialog } from "./components/mantenimiento-dialog";
+export { MantenimientosFiltros, type VehiculoOpcion } from "./components/mantenimientos-filtros";
+export { type VehiculoFormValues } from "./schemas/flota.schemas";
+export type { Mantenimiento, RegistrarMantenimientoInput, Vehiculo } from "./types/flota.types";

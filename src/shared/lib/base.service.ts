@@ -13,8 +13,8 @@ export interface ListResult<T> {
 }
 
 export interface CrudService<TItem, TCreate, TUpdate, TListParams extends QueryParams = QueryParams> {
-  list: (params?: TListParams) => Promise<ListResult<TItem>>;
-  getOne: (id: string | number) => Promise<TItem>;
+  list: (params?: TListParams, signal?: AbortSignal) => Promise<ListResult<TItem>>;
+  getOne: (id: string | number, signal?: AbortSignal) => Promise<TItem>;
   create: (payload: TCreate) => Promise<TItem>;
   update: (id: string | number, payload: TUpdate) => Promise<TItem>;
   delete: (id: string | number) => Promise<void>;
@@ -64,12 +64,12 @@ export function createCrudService<
   };
 
   return {
-    list: async (params) => {
-      const { data } = await api.get<TListResponse>(endpoint, { ...requestConfig, params });
+    list: async (params, signal) => {
+      const { data } = await api.get<TListResponse>(endpoint, { ...requestConfig, params, signal });
       return mapList(data);
     },
-    getOne: async (id) => {
-      const { data } = await api.get<TApiItem>(`${endpoint}/${id}`, requestConfig);
+    getOne: async (id, signal) => {
+      const { data } = await api.get<TApiItem>(`${endpoint}/${id}`, { ...requestConfig, signal });
       return mapItem(data);
     },
     create: async (payload) => {

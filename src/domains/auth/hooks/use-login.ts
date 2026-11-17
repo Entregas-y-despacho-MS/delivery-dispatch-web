@@ -6,7 +6,7 @@ import { hasRole, ROLES_WEB } from "@/config/roles";
 import { useAuthStore } from "@/shared/store/use-auth-store";
 import { authService } from "../services/auth.service";
 import { describeLoginError, WebAccessDeniedError } from "../auth.errors";
-import type { LoginInput } from "../auth.schemas";
+import type { LoginInput } from "../schemas/auth.schemas";
 
 /**
  * A dónde ir tras entrar: la ruta que se intentó abrir sin sesión (ProtectedRoute la deja
@@ -39,10 +39,12 @@ export function useLogin() {
     },
     onSuccess: ({ user, accessToken, refreshToken }) => {
       setLogin(user, accessToken, refreshToken);
-      toast.success(`Bienvenido, ${user.nombres}`);
-      // TODO ST-17.2: llevar a la vista de cambio obligatorio de contraseña cuando exista.
-      if (user.requiresPwdChange) toast.warning("Debes cambiar tu contraseña antes de continuar.");
-      navigate(destination, { replace: true });
+      if (user.mustChangePassword) {
+        navigate("/cambiar-password", { replace: true });
+      } else {
+        toast.success(`Bienvenido, ${user.nombres}`);
+        navigate(destination, { replace: true });
+      }
     },
     onError: (error) => {
       const { kind } = describeLoginError(error);

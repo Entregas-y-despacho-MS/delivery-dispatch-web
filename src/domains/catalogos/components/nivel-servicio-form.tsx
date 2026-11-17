@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FileText, Gauge, ListOrdered, LoaderCircle, Timer, TriangleAlert } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -8,8 +9,9 @@ import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { parseApiError } from "@/shared/lib/api-error";
-import { nivelServicioSchema, type NivelServicioFormValues } from "../catalogos.schemas";
-import type { NivelServicio } from "../catalogos.types";
+import { useFormSubmitConfirmation } from "@/shared/hooks/use-form-submit-confirmation";
+import { nivelServicioSchema, type NivelServicioFormValues } from "../schemas/catalogos.schemas";
+import type { NivelServicio } from "../types/catalogos.types";
 
 const FIELD_ICON = "pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground";
 
@@ -17,11 +19,13 @@ export function NivelServicioForm({
   nivel,
   onSubmit,
   onCancel,
+  onDirtyChange,
   guardando = false,
 }: {
   nivel?: NivelServicio;
   onSubmit: (values: NivelServicioFormValues) => Promise<void>;
   onCancel: () => void;
+  onDirtyChange?: (dirty: boolean) => void;
   guardando?: boolean;
 }) {
   const {
@@ -29,7 +33,7 @@ export function NivelServicioForm({
     handleSubmit,
     setError,
     setFocus,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<NivelServicioFormValues>({
     resolver: zodResolver(nivelServicioSchema),
     defaultValues: {
@@ -42,7 +46,10 @@ export function NivelServicioForm({
     reValidateMode: "onChange",
   });
 
-  const submit = handleSubmit(async (values) => {
+  useEffect(() => onDirtyChange?.(isDirty), [isDirty, onDirtyChange]);
+  const confirmation = useFormSubmitConfirmation("nivel de servicio", !!nivel);
+
+  const save = async (values: NivelServicioFormValues) => {
     try {
       await onSubmit(values);
     } catch (error) {
@@ -54,18 +61,16 @@ export function NivelServicioForm({
       }
 
       setError("root", {
-        message: apiError.status === 400
-          ? `El servidor rechazó los datos: ${apiError.message}`
-          : apiError.status === 403
-            ? "No tienes permiso para gestionar niveles de servicio."
-            : apiError.status === 404
-              ? "Este nivel ya no existe. Actualiza la lista."
-              : "No se pudo guardar el nivel. Revisa tu conexión e inténtalo de nuevo.",
+        message: apiError.status === 404
+          ? "Este nivel ya no existe. Actualiza la lista."
+          : apiError.message,
       });
     }
-  });
+  };
+  const submit = handleSubmit((values) => confirmation.requestConfirmation(() => save(values)));
 
   return (
+    <>
     <form onSubmit={submit} className="space-y-5" noValidate>
       {errors.root?.message && (
         <Alert variant="destructive">
@@ -158,13 +163,15 @@ export function NivelServicioForm({
         {errors.description && <p id="nivel-description-error" className="text-sm text-destructive">{errors.description.message}</p>}
       </div>
 
-      <div className="flex flex-col-reverse gap-2 border-t pt-5 sm:flex-row sm:justify-end">
+      <div className="form-dialog-footer flex flex-col-reverse gap-2 border-t pt-5 sm:flex-row sm:justify-end">
         <Button type="button" variant="outline" onClick={onCancel} disabled={guardando}>Cancelar</Button>
-        <Button type="submit" disabled={guardando}>
+        <Button type="submit" variant={nivel ? "brandBlue" : "default"} disabled={guardando}>
           {guardando && <LoaderCircle className="size-4 animate-spin" aria-hidden />}
           {guardando ? "Guardando…" : nivel ? "Guardar cambios" : "Crear nivel"}
         </Button>
       </div>
     </form>
+    {confirmation.confirmationDialog}
+    </>
   );
 }

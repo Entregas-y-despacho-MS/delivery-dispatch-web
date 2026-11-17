@@ -1,13 +1,13 @@
 import { toast } from "sonner";
 
 import { useCrud } from "@/shared/hooks/use-crud";
-import type { NivelServicioFormValues } from "../catalogos.schemas";
+import type { NivelServicioFormValues } from "../schemas/catalogos.schemas";
 import type {
   NivelServicio,
   NivelServicioCreate,
   NivelServicioListParams,
   NivelServicioUpdate,
-} from "../catalogos.types";
+} from "../types/catalogos.types";
 import { nivelesServicioService } from "../services/niveles-servicio.service";
 
 export function useNivelesServicio(params: NivelServicioListParams) {
@@ -16,7 +16,7 @@ export function useNivelesServicio(params: NivelServicioListParams) {
     NivelServicioCreate,
     NivelServicioUpdate,
     NivelServicioListParams
-  >(nivelesServicioService, "service-levels", { params });
+  >(nivelesServicioService, "service-levels", { params, policy: "catalog" });
 
   const saveItem = async (values: NivelServicioFormValues, id?: number) => {
     if (id === undefined) {

@@ -13,7 +13,6 @@ import {
   Lock,
   RotateCcw,
   Truck,
-  X,
   XCircle,
 } from "lucide-react";
 
@@ -23,7 +22,8 @@ import { Label } from "@/shared/components/ui/label";
 import { Separator } from "@/shared/components/ui/separator";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/components/ui/alert";
 import { useRestablecerPassword } from "../hooks/use-restablecer-password";
-import { resetPasswordSchema, type ResetPasswordInput } from "../auth.schemas";
+import { resetPasswordSchema, type ResetPasswordInput } from "../schemas/auth.schemas";
+import { PasswordRequirements } from "./password-requirements";
 
 const CONTROL = "h-11";
 const ICONO_CAMPO =
@@ -34,20 +34,6 @@ const ENLACE =
 interface RestablecerPasswordFormProps {
   token: string;
 }
-
-interface Requisito {
-  id: string;
-  label: string;
-  cumple: (pwd: string) => boolean;
-}
-
-const REQUISITOS: Requisito[] = [
-  { id: "length", label: "Mínimo 8 caracteres", cumple: (p) => p.length >= 8 },
-  { id: "upper", label: "Al menos una mayúscula (A-Z)", cumple: (p) => /[A-Z]/.test(p) },
-  { id: "lower", label: "Al menos una minúscula (a-z)", cumple: (p) => /[a-z]/.test(p) },
-  { id: "number", label: "Al menos un número (0-9)", cumple: (p) => /\d/.test(p) },
-  { id: "symbol", label: "Al menos un símbolo (@$!%*?&#...)", cumple: (p) => /[^A-Za-z0-9]/.test(p) },
-];
 
 /** Formulario para restablecer la contraseña con validación visual y token temporal (RF-A25). */
 export function RestablecerPasswordForm({ token }: RestablecerPasswordFormProps) {
@@ -88,7 +74,7 @@ export function RestablecerPasswordForm({ token }: RestablecerPasswordFormProps)
     return (
       <div className="w-full max-w-sm space-y-6">
         <div className="flex items-center gap-3 lg:hidden">
-          <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-brand-blue text-white dark:text-background">
             <Truck className="size-5" aria-hidden />
           </span>
           <span className="text-base font-semibold tracking-tight">Delivery Dispatch</span>
@@ -129,7 +115,7 @@ export function RestablecerPasswordForm({ token }: RestablecerPasswordFormProps)
     return (
       <div className="w-full max-w-sm space-y-6 motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-2">
         <div className="flex items-center gap-3 lg:hidden">
-          <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-brand-blue text-white dark:text-background">
             <Truck className="size-5" aria-hidden />
           </span>
           <span className="text-base font-semibold tracking-tight">Delivery Dispatch</span>
@@ -165,7 +151,7 @@ export function RestablecerPasswordForm({ token }: RestablecerPasswordFormProps)
     <div className="w-full max-w-sm space-y-8">
       {/* Cabecera móvil con logo */}
       <div className="flex items-center gap-3 lg:hidden">
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-brand-blue text-white dark:text-background">
           <Truck className="size-5" aria-hidden />
         </span>
         <span className="text-base font-semibold tracking-tight">Delivery Dispatch</span>
@@ -244,33 +230,7 @@ export function RestablecerPasswordForm({ token }: RestablecerPasswordFormProps)
         </div>
 
         {/* Validación visual de robustez de contraseña */}
-        <div className="rounded-md border bg-muted/40 p-3 space-y-2">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            Requisitos de seguridad (RF-A25)
-          </p>
-          <ul className="space-y-1.5 text-xs">
-            {REQUISITOS.map((req) => {
-              const cumple = req.cumple(newPasswordValue);
-              return (
-                <li
-                  key={req.id}
-                  className={`flex items-center gap-2 transition-colors ${
-                    cumple
-                      ? "text-emerald-600 dark:text-emerald-400 font-medium"
-                      : "text-muted-foreground"
-                  }`}
-                >
-                  {cumple ? (
-                    <Check className="size-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
-                  ) : (
-                    <X className="size-3.5 shrink-0 text-muted-foreground/60" />
-                  )}
-                  <span>{req.label}</span>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
+        <PasswordRequirements password={newPasswordValue} />
 
         {/* Campo Confirmar Contraseña */}
         <div className="space-y-2">

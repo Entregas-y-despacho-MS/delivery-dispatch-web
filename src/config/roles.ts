@@ -1,7 +1,7 @@
 /**
  * Roles del microservicio de Despachos (RF-A22).
- * El coordinador concentra además toda la administración del sistema
- * (usuarios, catálogos, seguridad y auditoría) — ver sección 4.2 del taller.
+ * El backend reserva la administración de usuarios y ajustes para admin/root.
+ * El coordinador puede consultar usuarios y roles, además de operar sus catálogos.
  *
  * El cliente final NO es un rol: accede al portal público con un token
  * de seguimiento (RF-U14), sin iniciar sesión.
@@ -15,7 +15,7 @@ export const ROLES = {
   REPARTIDOR: 3,
   /** Cuenta semilla del sistema. El backend le permite todo (RolesGuard). */
   ROOT: 4,
-  /** Rol de sistema del backend; el front todavía no le da pantallas propias. */
+  /** Administra usuarios y ajustes del sistema. */
   ADMIN: 5,
 } as const;
 
@@ -39,7 +39,7 @@ export const ROLE_BY_BACKEND_NAME: Record<string, RoleId> = {
 };
 
 /** Roles que pueden entrar al portal web. El repartidor usa la app móvil. */
-export const ROLES_WEB = [ROLES.COORDINADOR, ROLES.SUPERVISOR, ROLES.ROOT] as const;
+export const ROLES_WEB = [ROLES.COORDINADOR, ROLES.SUPERVISOR, ROLES.ADMIN, ROLES.ROOT] as const;
 
 /** Igual que el backend: ROOT pasa cualquier verificación de rol. */
 export const hasRole = (roleId: number | undefined, allowed: readonly RoleId[]) =>

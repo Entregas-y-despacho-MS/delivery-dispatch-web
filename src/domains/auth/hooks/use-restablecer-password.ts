@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { authService } from "../services/auth.service";
-import type { ResetPasswordInput } from "../auth.schemas";
+import type { ResetPasswordInput } from "../schemas/auth.schemas";
 import { describeResetPasswordError, type ResetPasswordErrorInfo } from "../auth.errors";
 
 interface UseRestablecerPasswordOptions {
@@ -32,9 +32,6 @@ export function useRestablecerPassword(options?: UseRestablecerPasswordOptions) 
     onError: (err) => {
       const described = describeResetPasswordError(err);
       setErrorInfo(described);
-      toast.error(described.title, {
-        description: described.message,
-      });
     },
   });
 

@@ -3,10 +3,19 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import { PublicLayout } from "@/shared/components/layout/public-layout";
 import { TrackingLayout } from "@/shared/components/layout/tracking-layout";
-import { DashboardLayout } from "@/shared/components/layout/dashboard-layout";
+import { DashboardLayout } from "@/app/layouts/dashboard-layout";
 import { ProtectedRoute } from "@/shared/guards/protected-route";
 import { LoadingScreen } from "@/shared/components/feedback/loading-screen";
-import { ROLES, ROLES_WEB } from "@/config/roles";
+import { PageErrorBoundary } from "@/shared/components/feedback/page-error-boundary";
+import { PORTAL_ROUTES, portalHomeHref } from "@/config/portal-routes";
+import { PAGE_ROUTES } from "@/app/page-routes";
+import { ROLES_WEB } from "@/config/roles";
+import { useAuthStore } from "@/shared/store/use-auth-store";
+
+function PortalHomeRedirect() {
+  const roleId = useAuthStore((state) => state.user?.rol.id);
+  return <Navigate to={portalHomeHref(roleId ?? 0)} replace />;
+}
 
 // ── Público ──
 const HomePage = lazy(() => import("@/pages/public/home-page"));
@@ -19,54 +28,33 @@ const LoginPage = lazy(() => import("@/pages/auth/login-page"));
 const AccesoDenegado = lazy(() => import("@/pages/auth/acceso-denegado"));
 const RecuperarPasswordPage = lazy(() => import("@/pages/auth/recuperar-password"));
 const RestablecerPasswordPage = lazy(() => import("@/pages/auth/restablecer-password"));
+const CambiarPasswordPage = lazy(() => import("@/pages/auth/cambiar-password"));
 
-// ── Operación ──
-const TableroPage = lazy(() => import("@/pages/dashboard/tablero-page"));
-const DespachosPage = lazy(() => import("@/pages/dashboard/despachos-page"));
-const DespachoDetallePage = lazy(() => import("@/pages/dashboard/despacho-detalle-page"));
-const PlanificacionPage = lazy(() => import("@/pages/dashboard/planificacion-page"));
-const RecojosPage = lazy(() => import("@/pages/dashboard/recojos-page"));
-
-// ── Flota ──
-const MapaFlotaPage = lazy(() => import("@/pages/dashboard/mapa-flota-page"));
-const FlotaPage = lazy(() => import("@/pages/dashboard/flota-page"));
-const FlotaMantenimientoPage = lazy(() => import("@/pages/dashboard/flota-mantenimiento-page"));
-const RepartidoresPage = lazy(() => import("@/pages/dashboard/repartidores-page"));
-
-// ── Control ──
-const IncidenciasPage = lazy(() => import("@/pages/dashboard/incidencias-page"));
-const ReportesPage = lazy(() => import("@/pages/dashboard/reportes-page"));
-
-// ── Administración ──
-const UsuariosPage = lazy(() => import("@/pages/dashboard/usuarios-page"));
-const AuditoriaPage = lazy(() => import("@/pages/dashboard/auditoria-page"));
-const ConfiguracionPage = lazy(() => import("@/pages/dashboard/configuracion-page"));
-
-// ── Catálogos ──
-const ZonasPage = lazy(() => import("@/pages/dashboard/catalogos/zonas-page"));
-const NivelesServicioPage = lazy(() => import("@/pages/dashboard/catalogos/niveles-servicio-page"));
-const MotivosIncidenciaPage = lazy(() => import("@/pages/dashboard/catalogos/motivos-incidencia-page"));
-const MotivosReprogramacionPage = lazy(() => import("@/pages/dashboard/catalogos/motivos-reprogramacion-page"));
-const TiposIncidenteVehiculoPage = lazy(() => import("@/pages/dashboard/catalogos/tipos-incidente-vehiculo-page"));
-// LAZY_ANCHOR — no borres esta línea
+function StandalonePage() {
+  return (
+    <Suspense fallback={<LoadingScreen />}>
+      <PageErrorBoundary />
+    </Suspense>
+  );
+}
 
 export function AppRouter() {
   return (
     <BrowserRouter>
-      <Suspense fallback={<LoadingScreen />}>
-        <Routes>
-          {/* ─── Sitio público ─── */}
-          <Route element={<PublicLayout />}>
-            <Route path="/" element={<HomePage />} />
-          </Route>
+      <Routes>
+        {/* ─── Sitio público ─── */}
+        <Route element={<PublicLayout />}>
+          <Route path="/" element={<HomePage />} />
+        </Route>
 
-          {/* ─── Portal del cliente final: sin login, con token (RF-U14) ─── */}
-          <Route element={<TrackingLayout />}>
-            <Route path="/seguimiento" element={<SeguimientoBuscarPage />} />
-            <Route path="/seguimiento/:token" element={<SeguimientoDetallePage />} />
-          </Route>
+        {/* ─── Portal del cliente final: sin login, con token (RF-U14) ─── */}
+        <Route element={<TrackingLayout />}>
+          <Route path="/seguimiento" element={<SeguimientoBuscarPage />} />
+          <Route path="/seguimiento/:token" element={<SeguimientoDetallePage />} />
+        </Route>
 
-          {/* ─── Autenticación ─── */}
+        {/* ─── Autenticación ─── */}
+        <Route element={<StandalonePage />}>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/recuperar-password" element={<RecuperarPasswordPage />} />
           <Route path="/forgot-password" element={<RecuperarPasswordPage />} />
@@ -75,49 +63,32 @@ export function AppRouter() {
           <Route path="/reset-password" element={<RestablecerPasswordPage />} />
           <Route path="/reset-password/:token" element={<RestablecerPasswordPage />} />
           <Route path="/acceso-denegado" element={<AccesoDenegado />} />
+        </Route>
 
-
-          {/* ─── Panel interno: el repartidor usa la app móvil, no entra aquí ─── */}
-          <Route element={<ProtectedRoute roles={ROLES_WEB} />}>
-            <Route path="/app" element={<DashboardLayout />}>
-              <Route index element={<Navigate to="/app/tablero" replace />} />
-
-              {/* Coordinador y supervisor */}
-              <Route path="tablero" element={<TableroPage />} />
-              <Route path="despachos" element={<DespachosPage />} />
-              <Route path="despachos/:id" element={<DespachoDetallePage />} />
-              <Route path="mapa" element={<MapaFlotaPage />} />
-              <Route path="repartidores" element={<RepartidoresPage />} />
-              <Route path="incidencias" element={<IncidenciasPage />} />
-              <Route path="reportes" element={<ReportesPage />} />
-
-              {/* Solo coordinador */}
-              <Route element={<ProtectedRoute roles={[ROLES.COORDINADOR]} />}>
-                <Route path="planificacion" element={<PlanificacionPage />} />
-                <Route path="recojos" element={<RecojosPage />} />
-                <Route path="usuarios" element={<UsuariosPage />} />
-                <Route path="auditoria" element={<AuditoriaPage />} />
-                <Route path="configuracion" element={<ConfiguracionPage />} />
-                <Route path="catalogos/zonas" element={<ZonasPage />} />
-                <Route path="catalogos/niveles-servicio" element={<NivelesServicioPage />} />
-                <Route path="catalogos/motivos-incidencia" element={<MotivosIncidenciaPage />} />
-                <Route path="catalogos/motivos-reprogramacion" element={<MotivosReprogramacionPage />} />
-                <Route path="catalogos/tipos-incidente-vehiculo" element={<TiposIncidenteVehiculoPage />} />
-              </Route>
-
-              {/* Solo supervisor de flota */}
-              <Route element={<ProtectedRoute roles={[ROLES.SUPERVISOR]} />}>
-                <Route path="flota" element={<FlotaPage />} />
-                <Route path="flota/:id/mantenimiento" element={<FlotaMantenimientoPage />} />
-              </Route>
-
-              {/* ROUTE_ANCHOR — no borres esta línea */}
-            </Route>
+        {/* El cambio obligatorio tiene una ruta autenticada fuera del panel. */}
+        <Route element={<ProtectedRoute passwordChangeOnly />}>
+          <Route element={<StandalonePage />}>
+            <Route path="/cambiar-password" element={<CambiarPasswordPage />} />
           </Route>
+        </Route>
 
+
+        {/* ─── Panel interno: el repartidor usa la app móvil, no entra aquí ─── */}
+        <Route element={<ProtectedRoute roles={ROLES_WEB} />}>
+          <Route path="/app" element={<DashboardLayout />}>
+            <Route index element={<PortalHomeRedirect />} />
+            {PAGE_ROUTES.map(([key, Page]) => (
+              <Route key={key} element={<ProtectedRoute roles={PORTAL_ROUTES[key].roles} />}>
+                <Route path={PORTAL_ROUTES[key].path} element={<Page />} />
+              </Route>
+            ))}
+          </Route>
+        </Route>
+
+        <Route element={<StandalonePage />}>
           <Route path="*" element={<NotFound />} />
-        </Routes>
-      </Suspense>
+        </Route>
+      </Routes>
     </BrowserRouter>
   );
 }

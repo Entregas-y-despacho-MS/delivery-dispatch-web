@@ -9,7 +9,6 @@ export type UsuarioErrorKind =
   | "permisos"
   | "no-encontrado"
   | "bloqueado"
-  | "red"
   | "desconocido";
 
 export interface UsuarioErrorInfo {
@@ -23,23 +22,22 @@ export function describeUsuarioError(error: unknown): UsuarioErrorInfo {
 
   // El backend responde "usuario o correo ya existe" sin decir cuál de los dos choca,
   // por eso el aviso nombra a ambos.
-  if (status === 409 || code === USER_ALREADY_EXISTS) {
+  if (code === USER_ALREADY_EXISTS) {
     return { kind: "duplicado", message: "Ya existe un usuario con ese nombre de usuario o ese correo." };
   }
-  if (status === 400) {
-    // El detalle viene en inglés desde el backend (class-validator); se muestra tal cual.
-    return { kind: "datos", message: `El servidor rechazó los datos. ${message}` };
+  if (code === "CANNOT_MODIFY_OWN_ACCOUNT") {
+    return { kind: "permisos", message: "No puedes cambiar el rol de tu propia cuenta." };
   }
-  if (status === 403) {
-    return { kind: "permisos", message: "No tienes permiso para gestionar usuarios." };
+  if (code === "ROOT_ACCOUNT_PROTECTED") {
+    return { kind: "permisos", message: "Solo la cuenta root puede asignar o quitar el rol root." };
+  }
+  if (code === "INVALID_ROLE") {
+    return { kind: "datos", message: "El rol seleccionado ya no existe. Recarga la página." };
   }
   if (status === 404) {
     return { kind: "no-encontrado", message: "El usuario ya no existe. Actualiza la lista." };
   }
-  if (status === undefined) {
-    return { kind: "red", message: "No se pudo conectar con el servidor. Revisa tu conexión." };
-  }
-  return { kind: "desconocido", message: "No se pudo completar la operación. Inténtalo de nuevo." };
+  return { kind: "desconocido", message };
 }
 
 /**

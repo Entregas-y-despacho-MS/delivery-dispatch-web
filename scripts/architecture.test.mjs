@@ -1,0 +1,140 @@
+import assert from "node:assert/strict";
+import { after, test } from "node:test";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { createServer } from "vite";
+import { fileURLToPath } from "node:url";
+import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { dirname, join, relative, resolve } from "node:path";
+import { execFileSync, spawnSync } from "node:child_process";
+
+// Windows no trae bash (salvo Git Bash en el PATH): ahí se salta la prueba del generador en vez de fallar.
+const HAY_BASH = spawnSync("bash", ["--version"]).status === 0;
+
+const server = await createServer({
+  configFile: false,
+  resolve: { alias: { "@": fileURLToPath(new URL("../src", import.meta.url)) } },
+  server: { middlewareMode: true, hmr: false, ws: false },
+  appType: "custom",
+});
+after(async () => server.close());
+
+const { PORTAL_ROUTES, portalHref, portalHomeHref } = await server.ssrLoadModule("/src/config/portal-routes.ts");
+const { NAV_GROUPS } = await server.ssrLoadModule("/src/config/navigation.ts");
+const { PAGE_ROUTES } = await server.ssrLoadModule("/src/app/page-routes.ts");
+const { ROLES, ROLES_WEB, hasRole } = await server.ssrLoadModule("/src/config/roles.ts");
+const { PermisosRolPanel } = await server.ssrLoadModule("/src/domains/usuarios/components/permisos-rol-panel.tsx");
+
+test("los dominios solo consumen APIs públicas de otros dominios", () => {
+  const sourceRoot = fileURLToPath(new URL("../src", import.meta.url));
+  const domainsRoot = join(sourceRoot, "domains");
+  const listFiles = (directory) => readdirSync(directory).flatMap((name) => {
+    const file = join(directory, name);
+    return statSync(file).isDirectory() ? listFiles(file) : [file];
+  });
+  const importPattern = /(?:\bfrom\s*|\bimport\s*(?:type\s*)?(?:\(\s*)?)["']([^"']+)["']/g;
+  const violations = [];
+
+  for (const sourceFile of listFiles(domainsRoot).filter((file) => /\.[cm]?[jt]sx?$/.test(file))) {
+    const sourceDomain = relative(domainsRoot, sourceFile).split(/[\\/]/)[0];
+    const source = readFileSync(sourceFile, "utf8");
+    for (const match of source.matchAll(importPattern)) {
+      const specifier = match[1];
+      const target = specifier.startsWith("@/")
+        ? resolve(sourceRoot, specifier.slice(2))
+        : specifier.startsWith(".")
+          ? resolve(dirname(sourceFile), specifier)
+          : null;
+      if (!target) continue;
+      const targetWithinDomains = relative(domainsRoot, target);
+      if (targetWithinDomains.startsWith("..") || targetWithinDomains === "") continue;
+      const targetDomain = targetWithinDomains.split(/[\\/]/)[0];
+      if (targetDomain !== sourceDomain) {
+        if (specifier === `@/domains/${targetDomain}`) continue;
+        violations.push(`${relative(sourceRoot, sourceFile)} → ${specifier}`);
+      }
+    }
+  }
+
+  assert.deepEqual(violations, [], `Imports profundos o relativos entre dominios:\n${violations.join("\n")}`);
+});
+
+test("cada ruta del panel tiene página y cada elemento del menú usa su ruta y roles", () => {
+  assert.deepEqual(new Set(PAGE_ROUTES.map(([key]) => key)), new Set(Object.keys(PORTAL_ROUTES)));
+  assert.equal(PAGE_ROUTES.length, Object.keys(PORTAL_ROUTES).length);
+  const menuItems = NAV_GROUPS.flatMap((group) => group.items);
+  assert.equal(new Set(menuItems.map((item) => item.href)).size, menuItems.length);
+  for (const item of menuItems) {
+    const [key] = Object.entries(PORTAL_ROUTES).find(([routeKey]) => portalHref(routeKey) === item.href) ?? [];
+    assert.ok(key, `Sin ruta para ${item.title}`);
+    assert.deepEqual(item.roles, PORTAL_ROUTES[key].roles);
+  }
+});
+
+test("admin, coordinador, supervisor y root llegan solo a sus pantallas", () => {
+  const can = (role, key) => hasRole(role, PORTAL_ROUTES[key].roles);
+  assert.equal(can(ROLES.COORDINADOR, "usuarios"), true);
+  assert.equal(can(ROLES.COORDINADOR, "configuracion"), false);
+  assert.equal(can(ROLES.COORDINADOR, "flota"), false);
+  assert.equal(can(ROLES.SUPERVISOR, "flota"), true);
+  assert.equal(can(ROLES.SUPERVISOR, "usuarios"), false);
+  assert.equal(can(ROLES.SUPERVISOR, "zonas"), false);
+  // ES-59: el Supervisor solo tiene Mapa, Flota, KPIs, Alertas, Tablero, Despachos, Reportes y Umbrales.
+  assert.equal(can(ROLES.SUPERVISOR, "tiposIncidenteVehiculo"), false);
+  for (const key of ["mapa", "flota", "kpis", "alertas", "tablero", "despachos", "reportes", "umbrales"]) {
+    assert.equal(can(ROLES.SUPERVISOR, key), true, `El supervisor debería entrar a ${key}`);
+  }
+  assert.equal(can(ROLES.COORDINADOR, "kpis"), false);
+  assert.equal(can(ROLES.COORDINADOR, "umbrales"), false);
+  assert.equal(can(ROLES.ROOT, "usuarios"), true);
+  assert.equal(can(ROLES.ROOT, "flotaMantenimiento"), true);
+  assert.equal(can(ROLES.ADMIN, "usuarios"), true);
+  assert.equal(can(ROLES.ADMIN, "configuracion"), true);
+  assert.equal(can(ROLES.ADMIN, "tablero"), false);
+  assert.equal(can(ROLES.REPARTIDOR, "tablero"), false);
+  assert.equal(hasRole(ROLES.REPARTIDOR, ROLES_WEB), false);
+  assert.equal(hasRole(ROLES.ADMIN, ROLES_WEB), true);
+  assert.equal(portalHomeHref(ROLES.ADMIN), portalHref("usuarios"));
+  assert.equal(portalHomeHref(ROLES.COORDINADOR), portalHref("tablero"));
+  assert.equal(portalHomeHref(ROLES.SUPERVISOR), portalHref("mapa"));
+  assert.deepEqual(PORTAL_ROUTES.despachoDetalle.roles, PORTAL_ROUTES.despachos.roles);
+  assert.deepEqual(PORTAL_ROUTES.flotaMantenimiento.roles, PORTAL_ROUTES.flota.roles);
+});
+
+test("el panel muestra los permisos de API de cada rol antes de asignarlo", () => {
+  const supervisor = renderToStaticMarkup(createElement(PermisosRolPanel, { rolNombre: "supervisor" }));
+  assert.match(supervisor, /Vehículos/);
+  assert.match(supervisor, /Tipos de falla mecánica/);
+  assert.match(supervisor, /Consultar, crear, editar y eliminar/);
+  assert.doesNotMatch(supervisor, /Usuarios/);
+  const coordinator = renderToStaticMarkup(createElement(PermisosRolPanel, { rolNombre: "coordinator" }));
+  assert.match(coordinator, /Usuarios/);
+  assert.match(coordinator, /Vehículos/);
+  assert.doesNotMatch(coordinator, /cambiar roles/);
+  const admin = renderToStaticMarkup(createElement(PermisosRolPanel, { rolNombre: "admin" }));
+  assert.match(admin, /cambiar roles/);
+  assert.match(admin, /Configuración/);
+  const driver = renderToStaticMarkup(createElement(PermisosRolPanel, { rolNombre: "driver" }));
+  assert.match(driver, /app móvil/);
+  assert.doesNotMatch(driver, /Usuarios/);
+});
+
+test("el generador registra una página nueva en rutas, permisos y menú", { skip: !HAY_BASH && "sin bash en este equipo" }, () => {
+  const root = mkdtempSync(join(tmpdir(), "dispatch-routes-"));
+  try {
+    for (const directory of ["scripts", "src/app", "src/config", "src/pages/dashboard"]) {
+      mkdirSync(join(root, directory), { recursive: true });
+    }
+    for (const file of ["src/app/page-routes.ts", "src/config/portal-routes.ts", "src/config/navigation.ts", "scripts/nuevo-dominio.sh"]) {
+      // Con core.autocrlf el checkout de Windows deja CRLF y bash no acepta «set -euo pipefail\r».
+      writeFileSync(join(root, file), readFileSync(file, "utf8").replace(/\r\n/g, "\n"));
+    }
+    execFileSync("bash", ["scripts/nuevo-dominio.sh", "clientes", "supervisor"], { cwd: root });
+    assert.match(readFileSync(join(root, "src/app/page-routes.ts"), "utf8"), /\["clientes", ClientesPage\]/);
+    assert.match(readFileSync(join(root, "src/config/portal-routes.ts"), "utf8"), /clientes: \{ path: "clientes", roles: SUPERVISOR \}/);
+    assert.match(readFileSync(join(root, "src/config/navigation.ts"), "utf8"), /navItem\("clientes", "Clientes", LayoutDashboard\)/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});

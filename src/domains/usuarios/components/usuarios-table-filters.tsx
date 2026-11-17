@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-import type { Rol } from "../usuarios.types";
+import type { Rol } from "../types/usuarios.types";
 
 interface UsuariosTableFiltersProps {
   search: string;

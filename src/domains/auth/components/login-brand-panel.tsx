@@ -1,65 +1,70 @@
-import { MapPin, Navigation, PackageSearch, Route, Truck } from "lucide-react";
+import mapBackground from "@/assets/login-map-background.webp";
+import darkMapBackground from "@/assets/login-map-background-dark.webp";
 
-/**
- * Panel de marca del login. Se oculta por debajo de `lg`.
- * Superficie neutra con el naranja reservado al acento: no cubre áreas grandes.
- */
-const CAPACIDADES = [
-  {
-    icon: Route,
-    titulo: "Planificación de rutas",
-    detalle: "Agrupa los despachos por zona y arma la ruta del día.",
-  },
-  {
-    icon: Navigation,
-    titulo: "Control de flota",
-    detalle: "Ubicación de los vehículos y estado de cada repartidor.",
-  },
-  {
-    icon: PackageSearch,
-    titulo: "Seguimiento de entregas",
-    detalle: "Estado, evidencia e incidencias de punta a punta.",
-  },
+const brandClaims = [
+  "Rutas eficientes",
+  "Operaciones más inteligentes",
+  "Un mejor mañana",
 ];
 
 export function LoginBrandPanel() {
   return (
-    <aside className="hidden flex-col justify-between border-r bg-muted p-10 lg:flex xl:p-12">
-      <div className="flex items-center gap-3">
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
-          <Truck className="size-5" aria-hidden />
-        </span>
-        <span className="text-base font-semibold tracking-tight">Delivery Dispatch</span>
-      </div>
+    <aside className="relative hidden min-h-screen select-none overflow-hidden bg-[#061626] p-10 text-white lg:flex lg:flex-col lg:justify-end xl:p-14">
+      <img
+        src={mapBackground}
+        alt=""
+        aria-hidden="true"
+        className="absolute inset-0 size-full object-cover object-center transition-opacity duration-500 dark:opacity-0"
+      />
+      <img
+        src={darkMapBackground}
+        alt=""
+        aria-hidden="true"
+        className="absolute inset-0 size-full object-cover object-center opacity-0 transition-opacity duration-500 dark:opacity-100"
+      />
 
-      <div className="space-y-8">
+      <div
+        className="absolute inset-0 bg-gradient-to-b from-[#061626]/15 via-[#061626]/20 to-[#061626]/90"
+        aria-hidden="true"
+      />
+      <div
+        className="absolute inset-0 bg-gradient-to-r from-[#061626]/30 via-transparent to-[#061626]/10"
+        aria-hidden="true"
+      />
+
+      <span
+        className="absolute left-[65%] top-[25%] z-10 size-3 rounded-full bg-white shadow-[0_0_0_8px_rgba(255,255,255,0.08),0_0_24px_8px_rgba(76,215,208,0.32)]"
+        aria-hidden="true"
+      />
+
+      <div className="relative z-10 max-w-2xl space-y-5">
         <div className="space-y-3">
-          <h2 className="max-w-md text-3xl font-semibold leading-tight tracking-tight">
-            Cada despacho, en su lugar y a tiempo.
+          <h2 className="text-5xl leading-[1.08] font-extrabold tracking-tight xl:text-6xl">
+            Cada entrega
+            <br />
+            comienza <span className="text-[#4cd7d0]">aquí</span>
           </h2>
-          <p className="max-w-md text-sm text-muted-foreground">
-            Planifica rutas, controla la flota y da seguimiento a las entregas de la cadena desde un
-            solo panel.
+          <p className="max-w-xl text-lg leading-7 text-slate-100">
+            Controla tus despachos con claridad, de principio a fin.
           </p>
         </div>
 
-        <ul className="space-y-5">
-          {CAPACIDADES.map(({ icon: Icon, titulo, detalle }) => (
-            <li key={titulo} className="flex max-w-md gap-3">
-              <Icon className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
-              <div className="space-y-0.5">
-                <p className="text-sm font-medium">{titulo}</p>
-                <p className="text-sm text-muted-foreground">{detalle}</p>
-              </div>
+        <div
+          className="h-1 w-24 rounded-full bg-gradient-to-r from-[#4cd7d0] via-[#38bdf8] to-transparent shadow-[0_0_12px_rgba(76,215,208,0.7)]"
+          aria-hidden="true"
+        />
+
+        <ul className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-2 text-xs font-semibold tracking-[0.12em] text-slate-300 uppercase">
+          {brandClaims.map((claim, index) => (
+            <li key={claim} className="flex items-center gap-4">
+              {index > 0 && (
+                <span className="size-1.5 rounded-full bg-brand-turquoise" aria-hidden="true" />
+              )}
+              <span>{claim}</span>
             </li>
           ))}
         </ul>
       </div>
-
-      <p className="flex items-center gap-2 text-xs text-muted-foreground">
-        <MapPin className="size-3.5 shrink-0" aria-hidden />
-        ERP corporativo · Gestión de Entregas y Despachos
-      </p>
     </aside>
   );
 }

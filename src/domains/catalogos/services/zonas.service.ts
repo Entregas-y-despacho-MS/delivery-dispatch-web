@@ -4,7 +4,7 @@ import type {
   Zona,
   ZonaInput,
   ZonaListParams,
-} from "../catalogos.types";
+} from "../types/catalogos.types";
 
 export const zonasService = createCrudService<
   Zona,
@@ -15,6 +15,7 @@ export const zonasService = createCrudService<
   DeliveryZonesResponse
 >({
   endpoint: "/delivery-zones",
+  requestConfig: { skipErrorToast: true },
   updateMethod: "put",
   mapListResponse: ({ data, meta }) => ({
     items: data,

@@ -1,14 +1,15 @@
 import api from "@/shared/lib/axios";
 import type { AuthUser } from "@/shared/store/use-auth-store";
 import { ROLE_BY_BACKEND_NAME, ROLE_LABELS } from "@/config/roles";
-import type { LoginInput } from "../auth.schemas";
+import type { LoginInput } from "../schemas/auth.schemas";
 import type {
   BackendUser,
+  ChangePasswordPayload,
   ForgotPasswordPayload,
   LoginResponse,
   ResetPasswordPayload,
   Session,
-} from "../auth.types";
+} from "../types/auth.types";
 import { UnknownRoleError } from "../auth.errors";
 
 /** Adapta el usuario del backend al modelo del front. Es el único lugar que conoce ambos. */
@@ -26,7 +27,6 @@ function toAuthUser(u: BackendUser): AuthUser {
     apellidos: resto.join(" "),
     email: u.email ?? undefined,
     rol: { id: roleId, nombre: ROLE_LABELS[roleId] },
-    requiresPwdChange: u.requiresPwdChange,
   };
 }
 
@@ -39,7 +39,7 @@ export const authService = {
       totpCode: totpCode || undefined,
     });
     return {
-      user: toAuthUser(data.user),
+      user: { ...toAuthUser(data.user), mustChangePassword: data.mustChangePassword || data.user.requiresPwdChange },
       accessToken: data.accessToken,
       refreshToken: data.refreshToken,
     };
@@ -57,19 +57,23 @@ export const authService = {
     );
   },
 
+  /** El backend revoca la sesión tras el cambio; el usuario debe volver a iniciar sesión. */
+  changePassword: async (payload: ChangePasswordPayload): Promise<void> => {
+    await api.patch("/auth/change-password", payload, { skipErrorToast: true });
+  },
+
   /**
    * Solicita el envío de correo para recuperación de contraseña (RF-A23).
    * Devuelve 204 siempre (evita enumeración de usuarios).
    */
   forgotPassword: async (payload: ForgotPasswordPayload): Promise<void> => {
-    await api.post("/auth/forgot-password", payload);
+    await api.post("/auth/forgot-password", payload, { skipErrorToast: true });
   },
 
   /**
    * Establece una nueva contraseña validando el token temporal recibido por correo (RF-A25).
    */
   resetPassword: async (payload: ResetPasswordPayload): Promise<void> => {
-    await api.post("/auth/reset-password", payload);
+    await api.post("/auth/reset-password", payload, { skipErrorToast: true });
   },
 };
-

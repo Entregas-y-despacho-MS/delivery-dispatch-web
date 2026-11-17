@@ -1,5 +1,8 @@
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/shared/components/ui/dialog";
-import type { Usuario } from "../usuarios.types";
+import { FormDialogHeader } from "@/shared/components/common/form-dialog-header";
+import { FormDialogContent } from "@/shared/components/common/form-dialog";
+import { Dialog } from "@/shared/components/ui/dialog";
+import { UserRoundPlus } from "lucide-react";
+import type { Usuario } from "../types/usuarios.types";
 import { UsuarioForm } from "./usuario-form";
 
 interface UsuarioDialogProps {
@@ -15,17 +18,14 @@ export function UsuarioDialog({ open, onOpenChange, usuario }: UsuarioDialogProp
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>{editando ? "Editar usuario" : "Nuevo usuario"}</DialogTitle>
-          <DialogDescription>
-            {editando
-              ? "Modifica los datos del colaborador. Solo se guardan los campos que cambies."
-              : "Registra a un colaborador interno para que pueda ingresar a la plataforma."}
-          </DialogDescription>
-        </DialogHeader>
+      <FormDialogContent className="sm:max-w-2xl">
+        <FormDialogHeader icon={UserRoundPlus}
+          title={editando ? "Editar usuario" : "Nuevo usuario"}
+          description={editando
+            ? "Modifica los datos del colaborador. Solo se guardan los campos que cambies."
+            : "Registra a un colaborador interno para que pueda ingresar a la plataforma."} />
         <UsuarioForm usuario={usuario} onGuardado={() => onOpenChange(false)} onCancelar={() => onOpenChange(false)} />
-      </DialogContent>
+      </FormDialogContent>
     </Dialog>
   );
 }

@@ -25,6 +25,8 @@ export {
   type FiltrosAuditoria,
   type ProblemaFiltrosAuditoria,
 } from "./auditoria.reglas";
+export { buscarEventosAuditoria } from "./services/auditoria.service";
+export { auditoriaKeys, useAuditoria } from "./hooks/use-auditoria";
 export type {
   AuditoriaParams,
   AuditoriaResponse,

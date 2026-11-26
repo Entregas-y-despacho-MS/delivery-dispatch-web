@@ -167,7 +167,8 @@ describe("pantalla del reporte de flota (ST-65.2)", () => {
     expect(llamadasFlota()).toEqual([{ from: "2026-10-01", to: "2026-10-31" }]);
     expect(get.mock.calls.some(([ruta]) => ruta === "/reports/sla")).toBe(false);
     expect(screen.getByRole("heading", { name: "Reporte de flota" })).toBeTruthy();
-    expect(screen.queryByRole("tablist")).toBeNull();
+    // El supervisor no tiene SLA; desde ST-300.3 ve también la pestaña de Calidad.
+    expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual(["Flota", "Calidad y reclamos"]);
     // Empieza por más días en mantenimiento.
     expect(nombres(tablaVehiculos())).toEqual(["9999-TLL", "1234-ABC", "5678-XYZ", "Sin vehículo"]);
     expect(nombres(tablaRepartidores())).toEqual(["Beto Mamani", "Ana Quispe", "Sin repartidor"]);

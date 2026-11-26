@@ -1,14 +1,16 @@
-import { BarChart3, Lock } from "lucide-react";
 import { useMemo } from "react";
+import { BarChart3, Lock } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 
 import { hasRole, ROLES } from "@/config/roles";
+import { useMotivosIncidencia, useZonas } from "@/domains/catalogos";
 import {
   DisponibilidadFlotaPanel,
   ExportarReporteFlota,
   ExportarReporteSla,
   FiltroPeriodoSla,
   FiltroRangoFlota,
+  ReporteCalidadPanel,
   ReporteFlotaVista,
   ReporteSlaVista,
   useReporteFlota,
@@ -20,16 +22,29 @@ import { EmptyState } from "@/shared/components/feedback/empty-state";
 import { Button } from "@/shared/components/ui/button";
 import { useAuthStore } from "@/shared/store/use-auth-store";
 
-type Vista = "sla" | "flota";
+type Vista = "sla" | "flota" | "calidad";
 
 /** Opciones de vehículo y repartidor para el Dashboard 3, sacadas del reporte de flota del mismo período. */
 const opciones = (filas: readonly { groupId: number | null; groupName: string | null }[] | undefined): OpcionFlota[] =>
   (filas ?? []).flatMap((f) => (f.groupId !== null ? [{ id: f.groupId, nombre: f.groupName ?? `#${f.groupId}` }] : []));
 
-const PESTANAS: readonly { valor: Vista; etiqueta: string }[] = [
-  { valor: "sla", etiqueta: "Cumplimiento SLA" },
+/** `soloCoordinador`: el SLA no lo consulta el supervisor. Calidad (ST-300.3) la ven los dos. */
+const PESTANAS: readonly { valor: Vista; etiqueta: string; soloCoordinador?: boolean }[] = [
+  { valor: "sla", etiqueta: "Cumplimiento SLA", soloCoordinador: true },
   { valor: "flota", etiqueta: "Flota" },
+  { valor: "calidad", etiqueta: "Calidad y reclamos" },
 ];
+
+const CATALOGO_PARAMS = { page: 1, limit: 100 };
+
+/** Dashboard 4 (ST-300.3). Los catálogos de sus filtros se piden solo al abrir esta pestaña. */
+function VistaCalidad() {
+  const zonas = useZonas(CATALOGO_PARAMS);
+  const motivos = useMotivosIncidencia(CATALOGO_PARAMS);
+  const opcionesZona = useMemo(() => zonas.data.map((z) => ({ id: z.id, nombre: z.name })), [zonas.data]);
+  const opcionesMotivo = useMemo(() => motivos.data.map((m) => ({ id: m.id, nombre: m.name })), [motivos.data]);
+  return <ReporteCalidadPanel zonas={opcionesZona} motivosIncidencia={opcionesMotivo} />;
+}
 
 /**
  * Reportes (ST-54.1 RF-A07 y ST-65.2 RF-A18). El SLA lo consulta solo el coordinador; el de flota,
@@ -41,7 +56,8 @@ export default function ReportesPage() {
   const esCoordinador = hasRole(rolId, [ROLES.COORDINADOR]);
   const puedeVerFlota = hasRole(rolId, [ROLES.COORDINADOR, ROLES.SUPERVISOR]);
   const [searchParams, setSearchParams] = useSearchParams();
-  const vista: Vista = esCoordinador && searchParams.get("vista") !== "flota" ? "sla" : "flota";
+  const pedida = searchParams.get("vista");
+  const vista: Vista = pedida === "calidad" ? "calidad" : esCoordinador && pedida !== "flota" ? "sla" : "flota";
 
   const sla = useReporteSla({ habilitado: esCoordinador && vista === "sla" });
   const flota = useReporteFlota({ habilitado: puedeVerFlota && vista === "flota" });
@@ -53,8 +69,8 @@ export default function ReportesPage() {
   const cambiarVista = (siguiente: Vista) =>
     setSearchParams((actuales) => {
       const nuevos = new URLSearchParams(actuales);
-      if (siguiente === "flota") nuevos.set("vista", "flota");
-      else nuevos.delete("vista");
+      if (siguiente === "sla") nuevos.delete("vista");
+      else nuevos.set("vista", siguiente);
       return nuevos;
     }, { replace: true });
 
@@ -77,25 +93,25 @@ export default function ReportesPage() {
         />
       ) : (
         <>
-          {esCoordinador && (
-            <div role="tablist" aria-label="Tipo de reporte" className="inline-flex rounded-lg border bg-muted/40 p-1">
-              {PESTANAS.map(({ valor, etiqueta }) => (
-                <Button
-                  key={valor}
-                  type="button"
-                  size="sm"
-                  role="tab"
-                  aria-selected={vista === valor}
-                  variant={vista === valor ? "default" : "ghost"}
-                  onClick={() => cambiarVista(valor)}
-                >
-                  {etiqueta}
-                </Button>
-              ))}
-            </div>
-          )}
+          <div role="tablist" aria-label="Tipo de reporte" className="inline-flex rounded-lg border bg-muted/40 p-1">
+            {PESTANAS.filter((p) => esCoordinador || !p.soloCoordinador).map(({ valor, etiqueta }) => (
+              <Button
+                key={valor}
+                type="button"
+                size="sm"
+                role="tab"
+                aria-selected={vista === valor}
+                variant={vista === valor ? "default" : "ghost"}
+                onClick={() => cambiarVista(valor)}
+              >
+                {etiqueta}
+              </Button>
+            ))}
+          </div>
 
-          {vista === "sla" ? (
+          {vista === "calidad" ? (
+            <VistaCalidad />
+          ) : vista === "sla" ? (
             <section className="space-y-5 rounded-xl border bg-card p-4 shadow-sm sm:p-5" aria-labelledby="sla-titulo">
               <div className="space-y-1">
                 <h2 id="sla-titulo" className="text-lg font-semibold text-brand-blue">Cumplimiento de SLA</h2>

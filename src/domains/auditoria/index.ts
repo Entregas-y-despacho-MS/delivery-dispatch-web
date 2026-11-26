@@ -25,7 +25,16 @@ export {
   type FiltrosAuditoria,
   type ProblemaFiltrosAuditoria,
 } from "./auditoria.reglas";
-export { buscarEventosAuditoria } from "./services/auditoria.service";
+export { buscarEventosAuditoria, exportarEventosAuditoria } from "./services/auditoria.service";
+export {
+  MAX_FILAS_EXPORTACION,
+  avisoLimite,
+  excedeLimite,
+  guardarArchivo,
+  mensajeErrorExportacion,
+  nombreArchivoAuditoria,
+  type FormatoExportacion,
+} from "./auditoria.exportar";
 export { auditoriaKeys, useAuditoria } from "./hooks/use-auditoria";
 export { AuditoriaFiltros } from "./components/auditoria-filtros";
 export { AuditoriaTabla, ResultadoAuditoriaBadge } from "./components/auditoria-tabla";

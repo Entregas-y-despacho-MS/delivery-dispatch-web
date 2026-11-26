@@ -33,6 +33,8 @@ export const PORTAL_ROUTES = {
   flotaMantenimiento: { path: "flota/:id/mantenimiento", roles: SUPERVISOR },
   repartidores: { path: "repartidores", roles: COORDINATOR },
   incidencias: { path: "incidencias", roles: COORDINATOR },
+  // Bandeja de reclamos del CRM (ST-45.3): el back deja leer y trabajar a coordinador y supervisor.
+  reclamos: { path: "reclamos", roles: BOTH },
   reportes: { path: "reportes", roles: BOTH },
   zonas: { path: "catalogos/zonas", roles: COORDINATOR },
   nivelesServicio: { path: "catalogos/niveles-servicio", roles: COORDINATOR },

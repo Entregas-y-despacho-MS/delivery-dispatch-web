@@ -89,7 +89,7 @@ describe("inicio por rol (ST-59.3)", () => {
 
 describe("menú por rol (ST-59.3)", () => {
   it("el supervisor ve exactamente los 8 módulos de la HU ES-59", () => {
-    expect(titulos(ROLES.SUPERVISOR)).toEqual(["Mapa", "Flota", "KPIs", "Alertas", "Tablero", "Despachos", "Reportes", "Umbrales"]);
+    expect(titulos(ROLES.SUPERVISOR)).toEqual(["Mapa", "Flota", "KPIs", "Alertas", "Reclamos", "Tablero", "Despachos", "Reportes", "Umbrales"]);
   });
 
   it("el coordinador ve la operación, sus catálogos y la administración que le toca, sin repetidos", () => {

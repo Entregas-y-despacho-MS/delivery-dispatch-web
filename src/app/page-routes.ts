@@ -23,6 +23,7 @@ const RepartidoresPage = lazy(() => import("@/pages/dashboard/repartidores-page"
 
 // ── Control ──
 const IncidenciasPage = lazy(() => import("@/pages/dashboard/incidencias-page"));
+const ReclamosPage = lazy(() => import("@/pages/dashboard/reclamos-page"));
 const ReportesPage = lazy(() => import("@/pages/dashboard/reportes-page"));
 
 // ── Administración ──
@@ -58,6 +59,7 @@ export const PAGE_ROUTES = [
   ["flotaMantenimiento", FlotaMantenimientoPage],
   ["repartidores", RepartidoresPage],
   ["incidencias", IncidenciasPage],
+  ["reclamos", ReclamosPage],
   ["reportes", ReportesPage],
   ["zonas", ZonasPage],
   ["nivelesServicio", NivelesServicioPage],

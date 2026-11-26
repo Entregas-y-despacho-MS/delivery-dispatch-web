@@ -51,11 +51,20 @@ const usuario = (rolId: number) => useAuthStore.setState({
   user: { id: 1, rol: { id: rolId, nombre: rolId === 1 ? "coordinator" : "supervisor" } } as never,
 });
 
+// Dashboard 3 (ST-303.2): la disponibilidad tiene sus propias pruebas; aquí basta una respuesta vacía.
+const DISPONIBILIDAD_VACIA = {
+  cutoff: { date: "2026-10-31", kind: "current" }, from: "2026-10-01", to: "2026-10-31", units: { time: "calendar_days", load: ["kg", "m3"] }, n: 0,
+  availability: { assignable: 0, registered: 0, inMaintenance: 0, outOfService: 0, unavailableReason: null },
+  maintenance: { count: 0, calendarDays: 0, overlapsDetected: false }, vehicles: [],
+  productivity: { detailRestricted: false, deliveredCount: 0, attemptCount: 0, drivers: [] },
+};
+
 beforeEach(() => {
   respuesta = REPORTE;
   usuario(2);
   get = vi.fn(async (ruta: string) => {
     if (ruta === "/fleet/reports") return { data: respuesta };
+    if (ruta === "/fleet/availability") return { data: DISPONIBILIDAD_VACIA };
     // Reporte SLA vacío, por si el coordinador abre esa pestaña.
     return { data: { from: "2026-10-01", to: "2026-10-31", groupBy: "zone", totals: metricas({}), rows: [] } };
   });
@@ -218,7 +227,16 @@ describe("pantalla del reporte de flota (ST-65.2)", () => {
   });
 
   it("si el back falla muestra el error y reintenta", async () => {
-    get.mockRejectedValueOnce(Object.assign(new Error("Network Error"), { isAxiosError: true, code: "ERR_NETWORK" }));
+    // Falla solo el reporte de flota: la disponibilidad (ST-303.2) se pide en paralelo.
+    const normal = get.getMockImplementation()!;
+    let fallar = true;
+    get.mockImplementation(async (ruta: string, config: unknown) => {
+      if (ruta === "/fleet/reports" && fallar) {
+        fallar = false;
+        throw Object.assign(new Error("Network Error"), { isAxiosError: true, code: "ERR_NETWORK" });
+      }
+      return normal(ruta, config);
+    });
     const user = userEvent.setup();
     abrir();
     await user.click(await screen.findByRole("button", { name: /Reintentar/ }));

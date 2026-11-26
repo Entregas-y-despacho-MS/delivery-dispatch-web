@@ -159,7 +159,16 @@ describe("pantalla del reporte SLA (ST-54.1)", () => {
 
   it("el supervisor ve el reporte de flota y no se consulta el SLA", async () => {
     usuario(2);
-    vi.mocked(api.get).mockResolvedValue({ data: { from: "2026-10-01", to: "2026-10-31", drivers: [], vehicles: [] } } as never);
+    // El Dashboard 3 (ST-303.2) pide /fleet/availability junto al reporte de flota.
+    const disponibilidad = {
+      cutoff: { date: "2026-10-31", kind: "current" }, from: "2026-10-01", to: "2026-10-31", units: { time: "calendar_days", load: ["kg", "m3"] }, n: 0,
+      availability: { assignable: 0, registered: 0, inMaintenance: 0, outOfService: 0, unavailableReason: null },
+      maintenance: { count: 0, calendarDays: 0, overlapsDetected: false }, vehicles: [],
+      productivity: { detailRestricted: false, deliveredCount: 0, attemptCount: 0, drivers: [] },
+    };
+    vi.mocked(api.get).mockImplementation(async (ruta: string) => ({
+      data: ruta === "/fleet/availability" ? disponibilidad : { from: "2026-10-01", to: "2026-10-31", drivers: [], vehicles: [] },
+    }) as never);
     abrir();
     expect(await screen.findByRole("heading", { name: "Reporte de flota" })).toBeTruthy();
     await screen.findByText("Sin datos para el período seleccionado");

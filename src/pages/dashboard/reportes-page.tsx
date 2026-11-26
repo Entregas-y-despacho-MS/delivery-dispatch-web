@@ -1,8 +1,10 @@
 import { BarChart3, Lock } from "lucide-react";
+import { useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import { hasRole, ROLES } from "@/config/roles";
 import {
+  DisponibilidadFlotaPanel,
   ExportarReporteFlota,
   ExportarReporteSla,
   FiltroPeriodoSla,
@@ -11,6 +13,7 @@ import {
   ReporteSlaVista,
   useReporteFlota,
   useReporteSla,
+  type OpcionFlota,
 } from "@/domains/reportes";
 import { PageHeader } from "@/shared/components/common/page-header";
 import { EmptyState } from "@/shared/components/feedback/empty-state";
@@ -18,6 +21,10 @@ import { Button } from "@/shared/components/ui/button";
 import { useAuthStore } from "@/shared/store/use-auth-store";
 
 type Vista = "sla" | "flota";
+
+/** Opciones de vehículo y repartidor para el Dashboard 3, sacadas del reporte de flota del mismo período. */
+const opciones = (filas: readonly { groupId: number | null; groupName: string | null }[] | undefined): OpcionFlota[] =>
+  (filas ?? []).flatMap((f) => (f.groupId !== null ? [{ id: f.groupId, nombre: f.groupName ?? `#${f.groupId}` }] : []));
 
 const PESTANAS: readonly { valor: Vista; etiqueta: string }[] = [
   { valor: "sla", etiqueta: "Cumplimiento SLA" },
@@ -38,6 +45,10 @@ export default function ReportesPage() {
 
   const sla = useReporteSla({ habilitado: esCoordinador && vista === "sla" });
   const flota = useReporteFlota({ habilitado: puedeVerFlota && vista === "flota" });
+  // El detalle por repartidor (y su filtro) es solo del supervisor: el back responde 403 a otro rol.
+  const esSupervisor = hasRole(rolId, [ROLES.SUPERVISOR]);
+  const vehiculosFlota = useMemo(() => opciones(flota.reporte.data?.vehicles), [flota.reporte.data]);
+  const repartidoresFlota = useMemo(() => opciones(flota.reporte.data?.drivers), [flota.reporte.data]);
 
   const cambiarVista = (siguiente: Vista) =>
     setSearchParams((actuales) => {
@@ -162,6 +173,16 @@ export default function ReportesPage() {
                 </div>
               )}
             </section>
+          )}
+
+          {vista === "flota" && flota.problemaRango === null && (
+            <DisponibilidadFlotaPanel
+              desde={flota.filtros.desde}
+              hasta={flota.filtros.hasta}
+              puedeVerConductor={esSupervisor}
+              vehiculos={vehiculosFlota}
+              repartidores={repartidoresFlota}
+            />
           )}
         </>
       )}

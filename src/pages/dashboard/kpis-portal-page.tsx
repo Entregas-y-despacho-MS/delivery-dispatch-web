@@ -1,7 +1,9 @@
+import { useMemo } from "react";
 import { Gauge, LoaderCircle } from "lucide-react";
 
 import {
   BarrasPorVehiculo,
+  DisponibilidadFlotaPanel,
   RankingRepartidores,
   SelectorPeriodoKpi,
   TarjetasKpi,
@@ -9,11 +11,15 @@ import {
   sinDatosKpi,
   textoRangoKpi,
   useIndicadoresFlota,
+  type OpcionFlota,
 } from "@/domains/reportes";
 import { PageHeader } from "@/shared/components/common/page-header";
 import { EmptyState } from "@/shared/components/feedback/empty-state";
 import { ErrorAlert } from "@/shared/components/feedback/error-alert";
 import { Skeleton } from "@/shared/components/ui/skeleton";
+
+const opciones = (filas: readonly { groupId: number | null; groupName: string | null }[] | undefined): OpcionFlota[] =>
+  (filas ?? []).flatMap((f) => (f.groupId !== null ? [{ id: f.groupId, nombre: f.groupName ?? `#${f.groupId}` }] : []));
 
 /** Tablero de KPIs de la flota (ST-61.2, RF-A14): % a tiempo, entregas, incidencias, ranking y vehículos. */
 export default function KpisPortalPage() {
@@ -22,6 +28,8 @@ export default function KpisPortalPage() {
   const etiqueta = PERIODOS_KPI.find((p) => p.valor === periodo)?.etiqueta ?? "";
   // Al cambiar de período se sigue viendo el anterior hasta que llegue el nuevo.
   const actualizando = indicadores.isFetching && indicadores.isPlaceholderData;
+  const vehiculos = useMemo(() => opciones(datos?.vehicles), [datos]);
+  const repartidores = useMemo(() => opciones(datos?.drivers), [datos]);
 
   return (
     <div className="space-y-6">
@@ -71,6 +79,11 @@ export default function KpisPortalPage() {
             <BarrasPorVehiculo filas={datos.vehicles} />
           </div>
         </div>
+      )}
+
+      {/* Dashboard 3 (ST-303.2): mismo período que los KPIs. La página es solo del supervisor. */}
+      {datos && (
+        <DisponibilidadFlotaPanel desde={datos.from} hasta={datos.to} puedeVerConductor vehiculos={vehiculos} repartidores={repartidores} />
       )}
     </div>
   );

@@ -45,9 +45,18 @@ let respuestas: Record<PeriodoKpi, IndicadoresFlota>;
 let get: ReturnType<typeof vi.fn>;
 const periodosPedidos = () => get.mock.calls.filter(([ruta]) => ruta === "/fleet/kpis").map(([, config]) => config.params.period);
 
+// Dashboard 3 (ST-303.2): la disponibilidad tiene sus propias pruebas; aquí basta una respuesta vacía.
+const DISPONIBILIDAD_VACIA = {
+  cutoff: { date: "2026-10-31", kind: "current" }, from: "2026-10-01", to: "2026-10-31", units: { time: "calendar_days", load: ["kg", "m3"] }, n: 0,
+  availability: { assignable: 0, registered: 0, inMaintenance: 0, outOfService: 0, unavailableReason: null },
+  maintenance: { count: 0, calendarDays: 0, overlapsDetected: false }, vehicles: [],
+  productivity: { detailRestricted: false, deliveredCount: 0, attemptCount: 0, drivers: [] },
+};
+
 beforeEach(() => {
   respuestas = { today: HOY, week: SEMANA, month: VACIO };
-  get = vi.fn(async (_ruta: string, config: { params: { period: PeriodoKpi } }) => ({ data: respuestas[config.params.period] }));
+  get = vi.fn(async (ruta: string, config: { params: { period: PeriodoKpi } }) =>
+    ({ data: ruta === "/fleet/availability" ? DISPONIBILIDAD_VACIA : respuestas[config.params.period] }));
   vi.spyOn(api, "get").mockImplementation(get as never);
 });
 afterEach(() => {

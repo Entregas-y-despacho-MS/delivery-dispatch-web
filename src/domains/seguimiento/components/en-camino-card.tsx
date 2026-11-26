@@ -12,8 +12,9 @@ const MiniMapa = lazy(() => import("./mini-mapa"));
 /**
  * «Tu pedido está en camino» (ST-40.2, RF-U15, RF-U17 y RF-U18): llegada estimada, quién entrega y, cuando
  * ya es su turno (in_transit), dónde está el repartidor. Fuera de esos estados no ocupa lugar.
+ * Solo pide esos campos: también sirve para la vista por código de seguimiento (ST-309.2).
  */
-export function EnCaminoCard({ pedido }: { pedido: SeguimientoPublico }) {
+export function EnCaminoCard({ pedido }: { pedido: Pick<SeguimientoPublico, "status" | "windowEnd" | "eta" | "driver" | "location"> }) {
   const { eta, driver, location } = pedido;
   if (!estaEnCamino(pedido.status) || (!eta && !driver)) return null;
   const vehiculo = driver ? descripcionVehiculo(driver) : null;

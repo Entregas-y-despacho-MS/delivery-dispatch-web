@@ -15,3 +15,7 @@ export {
   type FiltrosReclamos,
 } from "./reclamos.reglas";
 export type { Dictamen, EstadoReclamo, Reclamo, ReclamoDetalle, SiguienteAccion } from "./types/reclamos.types";
+export { useReclamos } from "./hooks/use-reclamos";
+export { ReclamosFiltros, type ZonaOpcion } from "./components/reclamos-filtros";
+export { ReclamosTabla } from "./components/reclamos-tabla";
+export { ReclamoDetalle as ReclamoDetalleSheet } from "./components/reclamo-detalle";

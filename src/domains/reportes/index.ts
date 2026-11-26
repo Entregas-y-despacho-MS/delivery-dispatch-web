@@ -12,3 +12,5 @@ export { FiltroRangoFlota } from "./components/filtro-rango-flota";
 export { ExportarReporteFlota } from "./components/exportar-reporte-flota";
 export { ReporteFlotaVista } from "./components/reporte-flota-vista";
 export { TablaRepartidoresFlota } from "./components/tablas-flota";
+// Dashboard 3 de flota (ST-303.2).
+export { DisponibilidadFlotaPanel, type OpcionFlota } from "./components/disponibilidad-flota";

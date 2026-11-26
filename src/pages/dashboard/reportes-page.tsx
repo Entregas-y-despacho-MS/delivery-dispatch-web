@@ -11,6 +11,7 @@ import {
   FiltroPeriodoSla,
   FiltroRangoFlota,
   ReporteCalidadPanel,
+  ReporteProveedoresPanel,
   ReporteFlotaVista,
   ReporteSlaVista,
   useReporteFlota,
@@ -22,7 +23,7 @@ import { EmptyState } from "@/shared/components/feedback/empty-state";
 import { Button } from "@/shared/components/ui/button";
 import { useAuthStore } from "@/shared/store/use-auth-store";
 
-type Vista = "sla" | "flota" | "calidad";
+type Vista = "sla" | "flota" | "calidad" | "proveedores";
 
 /** Opciones de vehículo y repartidor para el Dashboard 3, sacadas del reporte de flota del mismo período. */
 const opciones = (filas: readonly { groupId: number | null; groupName: string | null }[] | undefined): OpcionFlota[] =>
@@ -33,6 +34,8 @@ const PESTANAS: readonly { valor: Vista; etiqueta: string; soloCoordinador?: boo
   { valor: "sla", etiqueta: "Cumplimiento SLA", soloCoordinador: true },
   { valor: "flota", etiqueta: "Flota" },
   { valor: "calidad", etiqueta: "Calidad y reclamos" },
+  // ST-305.2: el back de proveedores es solo del coordinador.
+  { valor: "proveedores", etiqueta: "Proveedores", soloCoordinador: true },
 ];
 
 const CATALOGO_PARAMS = { page: 1, limit: 100 };
@@ -57,7 +60,11 @@ export default function ReportesPage() {
   const puedeVerFlota = hasRole(rolId, [ROLES.COORDINADOR, ROLES.SUPERVISOR]);
   const [searchParams, setSearchParams] = useSearchParams();
   const pedida = searchParams.get("vista");
-  const vista: Vista = pedida === "calidad" ? "calidad" : esCoordinador && pedida !== "flota" ? "sla" : "flota";
+  const vista: Vista = pedida === "calidad"
+    ? "calidad"
+    : esCoordinador && pedida === "proveedores"
+      ? "proveedores"
+      : esCoordinador && pedida !== "flota" ? "sla" : "flota";
 
   const sla = useReporteSla({ habilitado: esCoordinador && vista === "sla" });
   const flota = useReporteFlota({ habilitado: puedeVerFlota && vista === "flota" });
@@ -109,7 +116,9 @@ export default function ReportesPage() {
             ))}
           </div>
 
-          {vista === "calidad" ? (
+          {vista === "proveedores" ? (
+            <ReporteProveedoresPanel />
+          ) : vista === "calidad" ? (
             <VistaCalidad />
           ) : vista === "sla" ? (
             <section className="space-y-5 rounded-xl border bg-card p-4 shadow-sm sm:p-5" aria-labelledby="sla-titulo">

@@ -2,7 +2,7 @@ import {
   LayoutDashboard, ClipboardList, Route, RotateCcw,
   Map, Truck, Users, AlertTriangle, BarChart3,
   UserCog, MapPin, Gauge, ListX, CalendarClock, CarFront,
-  PanelsTopLeft, SlidersHorizontal, History, type LucideIcon,
+  PanelsTopLeft, SlidersHorizontal, History, ScrollText, type LucideIcon,
   MessageSquareWarning,
 } from "lucide-react";
 import { PORTAL_ROUTES, portalHref, type PortalRouteKey } from "@/config/portal-routes";
@@ -75,6 +75,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       navItem("usuarios", "Usuarios", UserCog),
       navItem("parametros", "Parámetros operativos", SlidersHorizontal),
+      navItem("auditoria", "Auditoría", ScrollText),
     ],
   },
 ];

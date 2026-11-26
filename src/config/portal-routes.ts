@@ -40,7 +40,8 @@ export const PORTAL_ROUTES = {
   motivosReprogramacion: { path: "catalogos/motivos-reprogramacion", roles: COORDINATOR },
   tiposIncidenteVehiculo: { path: "catalogos/tipos-incidente-vehiculo", roles: COORDINATOR },
   usuarios: { path: "usuarios", roles: USER_READERS },
-  auditoria: { path: "auditoria", roles: COORDINATOR },
+  // El back (GET /audit/admin-events) es @AdminOnly: solo admin y root (ES-70).
+  auditoria: { path: "auditoria", roles: ADMIN },
   configuracion: { path: "configuracion", roles: ADMIN },
   // El back solo deja guardar parámetros al coordinador (PUT /settings): página propia, aparte de Configuración.
   parametros: { path: "configuracion/parametros", roles: COORDINATOR },

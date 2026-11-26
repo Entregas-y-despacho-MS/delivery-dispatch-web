@@ -17,3 +17,5 @@ export { DisponibilidadFlotaPanel, type OpcionFlota } from "./components/disponi
 // Dashboard 4 de calidad y reclamos (ST-300.3).
 export { ReporteCalidadPanel } from "./components/reporte-calidad-panel";
 export type { OpcionCatalogo } from "./components/calidad-filtros";
+// Desempeño de proveedores (ST-305.2).
+export { ReporteProveedoresPanel } from "./components/reporte-proveedores-panel";

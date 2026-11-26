@@ -14,3 +14,6 @@ export { ReporteFlotaVista } from "./components/reporte-flota-vista";
 export { TablaRepartidoresFlota } from "./components/tablas-flota";
 // Dashboard 3 de flota (ST-303.2).
 export { DisponibilidadFlotaPanel, type OpcionFlota } from "./components/disponibilidad-flota";
+// Dashboard 4 de calidad y reclamos (ST-300.3).
+export { ReporteCalidadPanel } from "./components/reporte-calidad-panel";
+export type { OpcionCatalogo } from "./components/calidad-filtros";

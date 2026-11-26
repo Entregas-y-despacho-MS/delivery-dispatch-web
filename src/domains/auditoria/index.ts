@@ -39,6 +39,7 @@ export { auditoriaKeys, useAuditoria } from "./hooks/use-auditoria";
 export { AuditoriaFiltros } from "./components/auditoria-filtros";
 export { AuditoriaTabla, ResultadoAuditoriaBadge } from "./components/auditoria-tabla";
 export { AuditoriaDetalle } from "./components/auditoria-detalle";
+export { ExportarAuditoria } from "./components/exportar-auditoria";
 export type {
   AuditoriaParams,
   AuditoriaResponse,

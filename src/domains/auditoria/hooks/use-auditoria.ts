@@ -55,6 +55,7 @@ export function useAuditoria() {
   const eventos = busqueda.data?.data ?? [];
   return {
     filtros,
+    params,
     problema,
     busqueda,
     eventos,

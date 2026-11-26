@@ -4,6 +4,7 @@ import {
   AuditoriaDetalle,
   AuditoriaFiltros,
   AuditoriaTabla,
+  ExportarAuditoria,
   hayFiltrosAuditoria,
   mensajeErrorAuditoria,
   useAuditoria,
@@ -37,6 +38,14 @@ export default function AuditoriaPage() {
             onRefrescar={() => void busqueda.refetch()}
             refrescando={busqueda.isFetching}
           />
+          <div className="mt-3">
+            <ExportarAuditoria
+              params={auditoria.params}
+              filtros={filtros}
+              total={busqueda.data && !busqueda.isPlaceholderData ? auditoria.total : null}
+              deshabilitado={problema !== null || busqueda.isError || busqueda.isLoading}
+            />
+          </div>
         </div>
 
         {problema === null && busqueda.isError ? (

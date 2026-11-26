@@ -27,6 +27,9 @@ export {
 } from "./auditoria.reglas";
 export { buscarEventosAuditoria } from "./services/auditoria.service";
 export { auditoriaKeys, useAuditoria } from "./hooks/use-auditoria";
+export { AuditoriaFiltros } from "./components/auditoria-filtros";
+export { AuditoriaTabla, ResultadoAuditoriaBadge } from "./components/auditoria-tabla";
+export { AuditoriaDetalle } from "./components/auditoria-detalle";
 export type {
   AuditoriaParams,
   AuditoriaResponse,

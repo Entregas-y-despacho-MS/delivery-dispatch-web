@@ -113,3 +113,33 @@ export interface FranjasDisponibles {
   slots: FranjaDisponible[];
   unavailableReason: MotivoSinFranjas | null;
 }
+
+/*
+ * Acceso por código de seguimiento + código de un solo uso al correo (ST-309.2, RF-U14).
+ * Es la alternativa al enlace: el código de seguimiento solo dice a quién se envía el código, nunca da acceso.
+ */
+
+/** Respuesta de POST /public/tracking/access/code. Es igual exista o no el código: no dice si se envió. */
+export interface AccesoCodigoAceptado {
+  accepted: boolean;
+  /** Segundos que dura el código una vez enviado. */
+  expiresInSeconds: number;
+}
+
+/** Respuesta de POST /public/tracking/access/verify. La sesión va en la cabecera X-Tracking-Session, nunca en la URL. */
+export interface SesionSeguimiento {
+  session: string;
+  expiresAt: string;
+}
+
+/** Lo que se ve con una sesión (GET /public/tracking/access/view): solo campos públicos y ninguna acción. */
+export interface SeguimientoPorSesion {
+  trackingCode: string | null;
+  status: string;
+  deliveryDate: string | null;
+  windowStart: string | null;
+  windowEnd: string | null;
+  eta: EtaSeguimiento | null;
+  driver: RepartidorSeguimiento | null;
+  location: UbicacionRepartidor | null;
+}

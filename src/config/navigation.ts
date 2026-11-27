@@ -54,6 +54,7 @@ export const NAV_GROUPS: NavGroup[] = [
     icon: AlertTriangle,
     items: [
       navItem("incidencias", "Incidencias", AlertTriangle),
+      navItem("reclamos", "Reclamos", MessageSquareWarning),
       navItem("reportes", "Reportes", BarChart3),
     ],
   },
@@ -89,6 +90,7 @@ const SUPERVISOR_NAV_GROUPS: NavGroup[] = [
       navItem("flota", "Flota", Truck),
       navItem("kpis", "KPIs", BarChart3),
       navItem("alertas", "Alertas", AlertTriangle),
+      navItem("reclamos", "Reclamos", MessageSquareWarning),
       navItem("tablero", "Tablero", LayoutDashboard),
       navItem("despachos", "Despachos", ClipboardList),
       navItem("reportes", "Reportes", BarChart3),

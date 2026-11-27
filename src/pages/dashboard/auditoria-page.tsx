@@ -1,24 +1,77 @@
-import { Link } from "react-router-dom";
-import { ScrollText, UserCog } from "lucide-react";
+import { ScrollText } from "lucide-react";
 
-import { Button } from "@/shared/components/ui/button";
-import { EmptyState } from "@/shared/components/feedback/empty-state";
+import {
+  AuditoriaDetalle,
+  AuditoriaFiltros,
+  AuditoriaTabla,
+  hayFiltrosAuditoria,
+  mensajeErrorAuditoria,
+  useAuditoria,
+} from "@/domains/auditoria";
 import { PageHeader } from "@/shared/components/common/page-header";
+import { PaginationControls } from "@/shared/components/common/pagination-controls";
+import { ErrorAlert } from "@/shared/components/feedback/error-alert";
+import { parseApiError } from "@/shared/lib/api-error";
 
+/** Auditoría de acciones administrativas (ST-70.2, RF-A37): solo administrador y root. */
 export default function AuditoriaPage() {
+  const auditoria = useAuditoria();
+  const { filtros, busqueda, problema } = auditoria;
+
   return (
     <div className="space-y-6">
-      <PageHeader title="Auditoría" description="Consulta de actividad administrativa." />
-      <EmptyState
-        icon={<ScrollText className="size-6" aria-hidden />}
-        title="Auditoría no está disponible todavía"
-        description="Este portal aún no tiene conectada la consulta ni la exportación de registros de auditoría. No se mostrarán datos de ejemplo."
-        action={(
-          <Button asChild variant="outline">
-            <Link to="/app/usuarios"><UserCog aria-hidden /> Ir a usuarios</Link>
-          </Button>
-        )}
+      <PageHeader
+        eyebrow="Administración"
+        title="Auditoría"
+        icon={ScrollText}
+        description="Quién hizo cada acción administrativa, cuándo, sobre qué y con qué resultado. Horas de Bolivia (UTC−4)."
       />
+
+      <section className="rounded-xl border bg-card p-4 shadow-sm sm:p-5" aria-label="Búsqueda de auditoría">
+        <div className="border-b pb-4">
+          <AuditoriaFiltros
+            filtros={filtros}
+            problema={problema}
+            onCambiar={auditoria.actualizar}
+            onLimpiar={auditoria.limpiarFiltros}
+            onRefrescar={() => void busqueda.refetch()}
+            refrescando={busqueda.isFetching}
+          />
+        </div>
+
+        {problema === null && busqueda.isError ? (
+          <ErrorAlert
+            className="mt-4"
+            title="No pudimos cargar la auditoría"
+            error={busqueda.error}
+            description={mensajeErrorAuditoria(parseApiError(busqueda.error))}
+            onRetry={() => busqueda.refetch()}
+            isRetrying={busqueda.isFetching}
+          />
+        ) : (
+          <div className="mt-4">
+            {busqueda.data && problema === null && (
+              <p className="mb-2 text-sm text-muted-foreground" role="status">
+                {auditoria.total === 1 ? "1 evento" : `${auditoria.total} eventos`} en el período
+              </p>
+            )}
+            <AuditoriaTabla
+              eventos={problema === null ? auditoria.eventos : []}
+              loading={problema === null && busqueda.isLoading}
+              filtrado={hayFiltrosAuditoria(filtros)}
+              onLimpiarFiltros={auditoria.limpiarFiltros}
+              onVerDetalle={auditoria.abrirEvento}
+            />
+          </div>
+        )}
+
+        {problema === null && !busqueda.isError && !busqueda.isLoading && auditoria.total > 0 && (
+          <PaginationControls page={filtros.pagina} totalPages={auditoria.paginas} reportedPage={busqueda.data?.meta.page}
+            onPageChange={auditoria.setPagina} busy={busqueda.isFetching} />
+        )}
+      </section>
+
+      <AuditoriaDetalle evento={auditoria.eventoSeleccionado} onCerrar={auditoria.cerrarEvento} />
     </div>
   );
 }

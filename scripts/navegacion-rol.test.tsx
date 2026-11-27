@@ -103,8 +103,8 @@ describe("menú por rol (ST-59.3)", () => {
     }
   });
 
-  it("el administrador solo ve Usuarios mientras los ajustes generales no están disponibles", () => {
-    expect(titulos(ROLES.ADMIN)).toEqual(["Usuarios"]);
+  it("el administrador ve Usuarios y Auditoría mientras los ajustes generales no están disponibles", () => {
+    expect(titulos(ROLES.ADMIN)).toEqual(["Usuarios", "Auditoría"]);
   });
 
   it("cada ítem del menú lleva a una ruta que su rol puede abrir", async () => {

@@ -15,7 +15,7 @@ import { Skeleton } from "@/shared/components/ui/skeleton";
 const FORMATO_FECHA = new Intl.DateTimeFormat("es-BO", { dateStyle: "medium", timeStyle: "short" });
 
 /** Umbrales de alerta del supervisor (ST-67.2, RF-A16). */
-export default function UmbralesPortalPage() {
+export function UmbralesPanel() {
   const { umbrales, guardar, guardando } = useUmbralesAlerta();
   const valores = useMemo(() => (umbrales.data ? umbralesAFormulario(umbrales.data) : undefined), [umbrales.data]);
 
@@ -23,13 +23,6 @@ export default function UmbralesPortalPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        eyebrow="Supervisión"
-        title="Umbrales de alerta"
-        icon={BellRing}
-        description="Criterios para las alertas de desempeño de la flota."
-      />
-
       {umbrales.isLoading ? (
         <div role="status" aria-label="Cargando umbrales">
           <Skeleton className="h-56 rounded-xl" />
@@ -53,4 +46,12 @@ export default function UmbralesPortalPage() {
       )}
     </div>
   );
+}
+
+export default function UmbralesPortalPage() {
+  return <div className="space-y-6">
+    <PageHeader eyebrow="Supervisión" title="Umbrales de alerta" icon={BellRing}
+      description="Criterios para las alertas de desempeño de la flota." />
+    <UmbralesPanel />
+  </div>;
 }

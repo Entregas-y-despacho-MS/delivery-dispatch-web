@@ -6,18 +6,11 @@ import { ErrorAlert } from "@/shared/components/feedback/error-alert";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 
 /** Parámetros operativos del coordinador (ST-57.1, RF-A10). */
-export default function ParametrosPage() {
+export function ParametrosPanel() {
   const { parametros, valores, ventanaGeneral, estados, clavesSinDefinir, guardar, guardando } = useParametrosOperativos();
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        eyebrow="Administración"
-        title="Parámetros operativos"
-        icon={SlidersHorizontal}
-        description="Ventanas de entrega, plazos, horas de corte y reintentos. Los cambios se aplican sin un nuevo despliegue."
-      />
-
       {parametros.isLoading ? (
         <div role="status" aria-label="Cargando parámetros" className="space-y-4">
           {Array.from({ length: 3 }, (_, index) => (
@@ -43,4 +36,12 @@ export default function ParametrosPage() {
       )}
     </div>
   );
+}
+
+export default function ParametrosPage() {
+  return <div className="space-y-6">
+    <PageHeader eyebrow="Administración" title="Parámetros operativos" icon={SlidersHorizontal}
+      description="Ventanas de entrega, plazos, horas de corte y reintentos. Los cambios se aplican sin un nuevo despliegue." />
+    <ParametrosPanel />
+  </div>;
 }

@@ -20,6 +20,7 @@ const { ParametrosForm } = await server.ssrLoadModule("/src/domains/configuracio
 
 const ventanaGeneral = { inicio: "08:00", fin: "20:00" };
 const actuales = {
+  delivery_window_start: "08:00", delivery_window_end: "20:00", sla_alert_threshold_pct: "90",
   morning_window_start: "09:00", morning_window_end: "13:00", afternoon_window_start: "14:00", afternoon_window_end: "18:00",
   slot_duration_minutes: "120", service_min_operating_days: "2", service_max_operating_days: "3",
   promise_response_window_minutes: "720", plan_generation_times: "08:30,13:30", plan_horizon_days: "4",
@@ -81,15 +82,15 @@ test("sin cambios no se envía nada y las claves sin definir vacías no se manda
   assert.equal(planificarGuardado(actuales, { ...actuales, morning_window_end: "08:30" }, ventanaGeneral), null);
 });
 
-test("el formulario muestra los 7 grupos, los 25 campos y las marcas de propuesto y sin definir", () => {
+test("el formulario muestra los 8 grupos, los 28 campos y las marcas de propuesto y sin definir", () => {
   const estados = Object.fromEntries(CLAVES_PARAMETROS_OPERATIVOS.map((clave) => [clave, "definido"]));
   estados.route_cutoff_time = "propuesto";
   estados.stop_service_minutes = "sin-definir";
   const html = renderToStaticMarkup(createElement(ParametrosForm, {
     valores: actuales, estados, clavesSinDefinir: sinDefinir, ventanaGeneral, onGuardar: async () => null,
   }));
-  assert.equal((html.match(/<section/g) ?? []).length, 7);
-  assert.equal((html.match(/<input/g) ?? []).length, 25);
+  assert.equal((html.match(/<section/g) ?? []).length, 8);
+  assert.equal((html.match(/<input/g) ?? []).length, 28);
   assert.match(html, /Propuesto/);
   assert.match(html, /Sin definir/);
   assert.match(html, /Guardar cambios/);

@@ -9,6 +9,9 @@ export interface ParametroSistema {
 
 /** Claves operativas que edita el coordinador (ST-57.1, RF-A10). La ventana express no se muestra (D-16). */
 export type ClaveParametroOperativo =
+  | "delivery_window_start"
+  | "delivery_window_end"
+  | "sla_alert_threshold_pct"
   // Ventanas
   | "morning_window_start"
   | "morning_window_end"

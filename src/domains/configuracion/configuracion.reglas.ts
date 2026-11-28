@@ -15,6 +15,9 @@ type Regla =
 const MINUTOS_SEMANA = 7 * 24 * 60;
 
 export const REGLAS_PARAMETROS: Record<ClaveParametroOperativo, Regla> = {
+  delivery_window_start: { tipo: "hora" },
+  delivery_window_end: { tipo: "hora" },
+  sla_alert_threshold_pct: { tipo: "entero", min: 1, max: 100, unidad: "%" },
   morning_window_start: { tipo: "hora" },
   morning_window_end: { tipo: "hora" },
   afternoon_window_start: { tipo: "hora" },
@@ -112,8 +115,11 @@ export function validarCruces(
     errores.push({ clave: "service_max_operating_days", mensaje: "El plazo máximo no puede ser menor que el mínimo." });
   }
 
-  const generalInicio = ventanaGeneral ? aMinutos(ventanaGeneral.inicio) : null;
-  const generalFin = ventanaGeneral ? aMinutos(ventanaGeneral.fin) : null;
+  const generalInicio = aMinutos(valores.delivery_window_start ?? ventanaGeneral?.inicio ?? "");
+  const generalFin = aMinutos(valores.delivery_window_end ?? ventanaGeneral?.fin ?? "");
+  if (generalInicio !== null && generalFin !== null && generalInicio >= generalFin) {
+    errores.push({ clave: "delivery_window_end", mensaje: "El fin del reparto debe ser posterior al inicio." });
+  }
   const ventanas = [
     ["morning_window_start", "morning_window_end", "mañana"],
     ["afternoon_window_start", "afternoon_window_end", "tarde"],
@@ -127,7 +133,7 @@ export function validarCruces(
     } else if (generalInicio !== null && generalFin !== null && (inicio < generalInicio || fin > generalFin)) {
       errores.push({
         clave: inicio < generalInicio ? claveInicio : claveFin,
-        mensaje: `La ventana de ${nombre} debe estar dentro del horario de reparto (${ventanaGeneral?.inicio}–${ventanaGeneral?.fin}).`,
+        mensaje: `La ventana de ${nombre} debe estar dentro del horario de reparto.`,
       });
     }
   }

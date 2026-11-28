@@ -88,23 +88,23 @@ describe("inicio por rol (ST-59.3)", () => {
 });
 
 describe("menú por rol (ST-59.3)", () => {
-  it("el supervisor ve exactamente los 8 módulos de la HU ES-59", () => {
-    expect(titulos(ROLES.SUPERVISOR)).toEqual(["Mapa", "Flota", "KPIs", "Alertas", "Reclamos", "Tablero", "Despachos", "Reportes", "Umbrales"]);
+  it("el supervisor conserva sus módulos y accede a configuración", () => {
+    expect(titulos(ROLES.SUPERVISOR)).toEqual(["Mapa", "Flota", "KPIs", "Alertas", "Reclamos", "Tablero", "Despachos", "Reportes", "Configuración"]);
   });
 
   it("el coordinador ve la operación, sus catálogos y la administración que le toca, sin repetidos", () => {
     const menu = titulos(ROLES.COORDINADOR);
     expect(new Set(menu).size).toBe(menu.length);
-    for (const titulo of ["Tablero", "Despachos", "Historial", "Solicitudes de cambio", "Planificación", "Recojos", "Reportes", "Zonas de reparto", "Fallas mecánicas", "Usuarios", "Parámetros operativos"]) {
+    for (const titulo of ["Tablero", "Despachos", "Historial", "Solicitudes de cambio", "Planificación", "Recojos a proveedores", "Reportes", "Zonas de reparto", "Fallas mecánicas", "Usuarios", "Configuración"]) {
       expect(menu).toContain(titulo);
     }
-    for (const ajeno of ["KPIs", "Alertas", "Umbrales", "Vehículos", "Configuración"]) {
+    for (const ajeno of ["KPIs", "Alertas", "Umbrales", "Vehículos"]) {
       expect(menu).not.toContain(ajeno);
     }
   });
 
-  it("el administrador ve Usuarios y Auditoría mientras los ajustes generales no están disponibles", () => {
-    expect(titulos(ROLES.ADMIN)).toEqual(["Usuarios", "Auditoría"]);
+  it("el administrador ve su política de seguridad en configuración", () => {
+    expect(titulos(ROLES.ADMIN)).toEqual(["Usuarios", "Configuración", "Auditoría"]);
   });
 
   it("cada ítem del menú lleva a una ruta que su rol puede abrir", async () => {
@@ -132,7 +132,7 @@ describe("menú por rol (ST-59.3)", () => {
       </QueryClientProvider>,
     );
     const enlaces = within(screen.getByRole("navigation")).getAllByRole("link").map((a) => a.getAttribute("href"));
-    expect(enlaces).toEqual(expect.arrayContaining(["/app/mapa", "/app/flota", "/app/kpis", "/app/umbrales"]));
+    expect(enlaces).toEqual(expect.arrayContaining(["/app/mapa", "/app/flota", "/app/kpis", "/app/configuracion"]));
     expect(enlaces).not.toContain("/app/usuarios");
     expect(enlaces).not.toContain("/app/planificacion");
   });

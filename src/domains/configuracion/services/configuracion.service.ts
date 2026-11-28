@@ -9,7 +9,7 @@ export interface ActualizarParametroPayload {
 /**
  * Parámetros del sistema (ST-57.2):
  * - list → GET /settings: todas las claves (admin, coordinador o root).
- * - update(clave, { value }) → PUT /settings/:clave: una clave por petición, solo coordinador o root.
+ * - update(clave, { value }) → PUT /settings/:clave: contraseña solo admin; operación solo coordinador; root ambos.
  *   El back valida cada valor contra los demás y responde 400 INVALID_SETTING_VALUE si no cuadra.
  */
 export const parametrosService = createCrudService<

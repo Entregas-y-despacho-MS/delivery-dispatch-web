@@ -43,7 +43,7 @@ function ExcluidosCotejoSeccion() {
   const excluidos = useExcluidosCotejo();
   const roleId = useAuthStore((estado) => estado.user?.rol.id);
   const esCoordinador = hasRole(roleId, [ROLES.COORDINADOR]);
-  const { valores } = useParametrosOperativos();
+  const { valores } = useParametrosOperativos(esCoordinador);
   const franjas = useMemo(() => generarFranjas(valores), [valores]);
   const limiteIntentos = Number(valores.max_delivery_attempts) || LIMITE_POR_DEFECTO;
   const motivosCatalogo = useMotivosReprogramacion(MOTIVOS_PARAMS);

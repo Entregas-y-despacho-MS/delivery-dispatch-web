@@ -29,10 +29,11 @@ export type { ErrorGuardado } from "../configuracion.guardado";
  * Parámetros operativos del coordinador (ST-57.1): carga los valores actuales y guarda solo lo que
  * cambió, clave por clave y en un orden que el back siempre acepta.
  */
-export function useParametrosOperativos() {
+export function useParametrosOperativos(enabled = true) {
   const queryClient = useQueryClient();
   const parametros = useCrud<ParametroSistema, never, ActualizarParametroPayload>(parametrosService, "settings", {
     policy: "catalog",
+    enabled,
   });
   const [guardando, setGuardando] = useState(false);
 

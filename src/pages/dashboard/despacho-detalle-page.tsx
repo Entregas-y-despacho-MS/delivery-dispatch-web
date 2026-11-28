@@ -22,8 +22,9 @@ import { ErrorAlert } from "@/shared/components/feedback/error-alert";
 import { Button } from "@/shared/components/ui/button";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { parseApiError } from "@/shared/lib/api-error";
-import { ROLES } from "@/config/roles";
+import { ROLES, hasRole } from "@/config/roles";
 import { RequireRole } from "@/shared/guards/require-role";
+import { useAuthStore } from "@/shared/store/use-auth-store";
 
 const MOTIVOS_PARAMS = { page: 1, limit: 100, active: true };
 /** Valor por defecto de max_delivery_attempts si el parámetro todavía no está definido. */
@@ -34,6 +35,7 @@ const LIMITE_POR_DEFECTO = 3;
  * cancelación antes de que salga la ruta (ST-241.4).
  */
 export default function DespachoDetallePage() {
+  const roleId = useAuthStore((state) => state.user?.rol.id);
   const { id } = useParams<{ id: string }>();
   const despachoId = Number(id);
   const valido = Number.isInteger(despachoId) && despachoId > 0;
@@ -42,7 +44,7 @@ export default function DespachoDetallePage() {
   const noExiste = !valido || (detalle.isError && parseApiError(detalle.error).status === 404);
 
   const { reprogramar, devolver } = useReprogramacionDespacho(despachoId);
-  const { valores } = useParametrosOperativos();
+  const { valores } = useParametrosOperativos(hasRole(roleId, [ROLES.COORDINADOR]));
   const franjas = useMemo(() => generarFranjas(valores), [valores]);
   const limiteIntentos = Number(valores.max_delivery_attempts) || LIMITE_POR_DEFECTO;
   const motivosCatalogo = useMotivosReprogramacion(MOTIVOS_PARAMS);

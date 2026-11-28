@@ -44,8 +44,8 @@ export const PORTAL_ROUTES = {
   usuarios: { path: "usuarios", roles: USER_READERS },
   // El back (GET /audit/admin-events) es @AdminOnly: solo admin y root (ES-70).
   auditoria: { path: "auditoria", roles: ADMIN },
-  configuracion: { path: "configuracion", roles: ADMIN },
-  // El back solo deja guardar parámetros al coordinador (PUT /settings): página propia, aparte de Configuración.
+  configuracion: { path: "configuracion", roles: [ROLES.ADMIN, ROLES.COORDINADOR, ROLES.SUPERVISOR] },
+  // Ruta anterior del formulario operativo; se conserva para enlaces existentes.
   parametros: { path: "configuracion/parametros", roles: COORDINATOR },
   // PORTAL_ROUTE_ANCHOR — no borres esta línea
 } as const satisfies Record<string, PortalRoute>;

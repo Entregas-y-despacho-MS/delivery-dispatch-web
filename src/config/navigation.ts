@@ -75,7 +75,7 @@ export const NAV_GROUPS: NavGroup[] = [
     icon: UserCog,
     items: [
       navItem("usuarios", "Usuarios", UserCog),
-      navItem("parametros", "Parámetros operativos", SlidersHorizontal),
+      navItem("configuracion", "Configuración", SlidersHorizontal),
       navItem("auditoria", "Auditoría", ScrollText),
     ],
   },
@@ -94,7 +94,7 @@ const SUPERVISOR_NAV_GROUPS: NavGroup[] = [
       navItem("tablero", "Tablero", LayoutDashboard),
       navItem("despachos", "Despachos", ClipboardList),
       navItem("reportes", "Reportes", BarChart3),
-      navItem("umbrales", "Umbrales", SlidersHorizontal),
+      navItem("configuracion", "Configuración", SlidersHorizontal),
     ],
   },
 ];

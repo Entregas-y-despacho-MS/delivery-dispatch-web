@@ -18,8 +18,18 @@ export interface GrupoParametros {
   campos: CampoParametro[];
 }
 
-/** Los 7 grupos de la tarjeta ST-57.1, en el mismo orden. La ventana express no se muestra (D-16). */
+/** Grupos de la tarjeta de parámetros, en el mismo orden. La ventana express no se muestra (D-16). */
 export const GRUPOS_PARAMETROS: GrupoParametros[] = [
+  {
+    id: "generales",
+    titulo: "Horario general y SLA",
+    descripcion: "Horario de reparto y alerta de cumplimiento operativo. El supervisor configura sus alertas por separado.",
+    campos: [
+      { clave: "delivery_window_start", etiqueta: "Inicio del reparto", ayuda: "Hora de inicio del horario general.", tipo: "hora" },
+      { clave: "delivery_window_end", etiqueta: "Fin del reparto", ayuda: "Posterior al inicio; debe contener las franjas de entrega.", tipo: "hora" },
+      { clave: "sla_alert_threshold_pct", etiqueta: "Umbral SLA operativo", ayuda: "Porcentaje de cumplimiento de 1 a 100.", tipo: "numero", unidad: "%" },
+    ],
+  },
   {
     id: "ventanas",
     titulo: "Ventanas de entrega",
